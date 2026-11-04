@@ -1,5 +1,6 @@
 //! Discovery reads only metadata through the person's Salesforce CLI alias
 //! and names what a pack needs that the org does not keep.
+#![cfg(unix)] // runs a stand-in shell script for the CLI
 use serde_json::Value;
 use std::path::Path;
 use std::process::{Command, Output};

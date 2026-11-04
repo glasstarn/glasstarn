@@ -2,6 +2,7 @@
 //! earlier inventory or extract left files with the same table names. Found
 //! in the first real Salesforce test, where a second pull into the same
 //! project made every table "ambiguous".
+#![cfg(unix)] // runs a stand-in shell script for the CLI
 use pm_project::extract;
 use pm_project::workspace::WorkspaceFolder;
 use serde_json::{Value, json};
