@@ -391,15 +391,19 @@ fn installed_in(paths: &std::ffi::OsStr) -> Option<PathBuf> {
 
 pub(crate) fn on_path(name: &str) -> Option<PathBuf> {
     let paths = std::env::var_os("PATH")?;
+    // On Windows, npm also leaves an extensionless shell script beside
+    // `npm.cmd` for Git Bash; Windows cannot start that, so only the .exe and
+    // .cmd forms count there.
+    let names = if cfg!(windows) {
+        vec![format!("{name}.exe"), format!("{name}.cmd")]
+    } else {
+        vec![name.to_owned()]
+    };
     std::env::split_paths(&paths).find_map(|dir| {
-        [
-            name.to_owned(),
-            format!("{name}.exe"),
-            format!("{name}.cmd"),
-        ]
-        .into_iter()
-        .map(|file| dir.join(file))
-        .find(|path| path.is_file())
+        names
+            .iter()
+            .map(|file| dir.join(file))
+            .find(|path| path.is_file())
     })
 }
 

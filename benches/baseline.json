@@ -1,9 +1,9 @@
 {
-  "recorded": "2026-08-08",
-  "measured_on": "Apple M3 Pro, 12 cores, 18 GB, macOS 26.5.2",
-  "note": "Measured locally. The CI runner is slower and noisier; the gate refreshes this on first CI run. Update deliberately, with a reason, when a regression is accepted.",
-  "path": "pm_query::analyze_filtered \u2014 the same path `glasstarn analyze` runs",
+  "recorded": "2026-11-04",
+  "measured_on": "GitHub ubuntu-latest runner (CI), two runs: 1,458 and 1,952 ms per 1M events, 81 MB",
+  "note": "Measured on the CI runner the gate runs on, which varies by about a third from run to run; the baseline sits between the two runs so the 1.40 tolerance catches real regressions, not runner noise. The earlier figure was from an Apple M3 Pro and was never refreshed for CI. Update deliberately, with a reason, when a regression is accepted.",
+  "path": "pm_query::analyze_filtered — the same path `glasstarn analyze` runs",
   "events": 833641,
-  "per_million_ms": 1207.9,
-  "peak_mb": 110.3
+  "per_million_ms": 1700.0,
+  "peak_mb": 81.0
 }

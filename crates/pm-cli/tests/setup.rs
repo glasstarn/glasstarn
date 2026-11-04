@@ -165,6 +165,8 @@ fn uninstall_takes_glasstarn_out_of_the_agents_and_keeps_projects() {
 
 // `npx glasstarn setup` runs from npm's temporary cache. The command it
 // installs must be a copy, still working once npm clears that cache.
+// Unix only here; the release workflow runs the same check on Windows.
+#[cfg(unix)]
 #[test]
 fn npx_setup_installs_a_copy_that_survives_the_npx_cache_being_cleared() {
     let Some(npm) = [
@@ -184,7 +186,6 @@ fn npx_setup_installs_a_copy_that_survives_the_npx_cache_being_cleared() {
     std::fs::create_dir_all(&node_dir).unwrap();
     for tool in ["node", "npm"] {
         let found = npm.parent().unwrap().join(tool);
-        #[cfg(unix)]
         std::os::unix::fs::symlink(
             std::fs::canonicalize(&found).unwrap_or(found),
             node_dir.join(tool),
