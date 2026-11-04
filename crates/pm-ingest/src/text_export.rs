@@ -17,12 +17,14 @@ const CP1252: [char; 32] = [
 fn decode(bytes: &[u8]) -> (String, Option<&'static str>) {
     let utf16 = |big: bool, body: &[u8]| {
         let units = body
-            .chunks_exact(2)
-            .map(|p| {
+            .as_chunks::<2>()
+            .0
+            .iter()
+            .map(|&p| {
                 if big {
-                    u16::from_be_bytes([p[0], p[1]])
+                    u16::from_be_bytes(p)
                 } else {
-                    u16::from_le_bytes([p[0], p[1]])
+                    u16::from_le_bytes(p)
                 }
             })
             .collect::<Vec<_>>();
