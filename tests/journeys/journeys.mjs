@@ -13,9 +13,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
-const binary = path.join(repo, "target/release/glasstarn");
+// GLASSTARN_BIN tests an installed program instead, as the release run does.
+const binary = process.env.GLASSTARN_BIN || path.join(repo, "target/release", process.platform === "win32" ? "glasstarn.exe" : "glasstarn");
 const data = path.join(repo, "testdata/journeys");
-const chromePath = process.env.CHROME || "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const chromePath = process.env.CHROME || {
+  darwin: "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  win32: "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+}[process.platform] || "google-chrome";
 const home = fs.mkdtempSync(path.join(os.tmpdir(), "glasstarn-journeys-"));
 const work = path.join(home, "Documents", "claims-review");
 fs.mkdirSync(work, { recursive: true });
@@ -44,7 +48,11 @@ function writeJson(name, value) {
   return file;
 }
 function stopPages() {
-  try { execFileSync("pkill", ["-f", `glasstarn-journeys`], { stdio: "ignore" }); } catch { /* none running */ }
+  try {
+    // Windows has no command lines to match: stop the glasstarn under test.
+    if (process.platform === "win32") execFileSync("taskkill", ["/F", "/IM", path.basename(binary)], { stdio: "ignore" });
+    else execFileSync("pkill", ["-f", `glasstarn-journeys`], { stdio: "ignore" });
+  } catch { /* none running */ }
 }
 
 // --- headless Chrome --------------------------------------------------------
@@ -291,7 +299,7 @@ try {
     const gone = !(await refreshWorkspaces()).projects.some(q => q.id === p.id);
     return { after, gone };`);
   check("rename works on a project that was opened", renamed.after === "Excel claims", JSON.stringify(renamed));
-  check("delete moves it to the Trash", renamed.gone && fs.existsSync(path.join(home, process.platform === "darwin" ? ".Trash" : ".local/share/Trash/files", "Excel claims (glasstarn project)")), JSON.stringify(renamed));
+  check("delete moves it to the Trash", renamed.gone && fs.existsSync(path.join(home, { darwin: ".Trash", win32: ".glasstarn/trash" }[process.platform] || ".local/share/Trash/files", "Excel claims (glasstarn project)")), JSON.stringify(renamed));
   list.close();
 
   // J12: a project started before there were files moves into the folder.

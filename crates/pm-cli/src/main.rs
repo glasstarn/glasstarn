@@ -706,9 +706,11 @@ fn already_open(serve_args: &[String]) -> Option<(String, bool)> {
     let id = value("--project")?;
     let root = match value("--workspace-dir") {
         Some(dir) => std::path::PathBuf::from(dir),
-        None => std::path::PathBuf::from(std::env::var_os("HOME")?)
-            .join(".glasstarn")
-            .join("projects"),
+        None => std::path::PathBuf::from(
+            std::env::var_os("HOME").or_else(|| std::env::var_os("USERPROFILE"))?,
+        )
+        .join(".glasstarn")
+        .join("projects"),
     };
     let note_path = root.join(id).join(".browser-session.json");
     let text = std::fs::read_to_string(&note_path).ok()?;
@@ -961,7 +963,7 @@ fn browser_command(url: &str) -> (&'static str, Vec<String>) {
 /// the server still gets its log file, which is passed to it explicitly.
 #[cfg(windows)]
 #[allow(unsafe_code)]
-fn keep_own_output_out_of_children() {
+pub(crate) fn keep_own_output_out_of_children() {
     use std::os::windows::io::AsRawHandle;
     #[link(name = "kernel32")]
     unsafe extern "system" {

@@ -121,7 +121,18 @@ pub(crate) fn command(args: &[String]) -> Result<ExitCode, String> {
         );
         return Ok(ExitCode::SUCCESS);
     }
-    let npm = if cfg!(windows) { "npm.cmd" } else { "npm" };
+    if cfg!(windows) {
+        // Windows will not replace the program while it runs, and this is it:
+        // install just after this command ends, then reconnect the agents.
+        crate::setup::finish_after_exit(&format!(
+            "npm.cmd install -g glasstarn@{latest} & glasstarn.cmd setup"
+        ))?;
+        println!(
+            "glasstarn {latest} is installing in the background; it takes about a minute. Then restart your agent."
+        );
+        return Ok(ExitCode::SUCCESS);
+    }
+    let npm = "npm";
     let installed = Command::new(npm)
         .args(["install", "-g", &format!("glasstarn@{latest}")])
         .status()
@@ -130,12 +141,7 @@ pub(crate) fn command(args: &[String]) -> Result<ExitCode, String> {
         return Err("npm could not install the new version".into());
     }
     // The new version's own setup refreshes Codex and Claude.
-    let glasstarn = if cfg!(windows) {
-        "glasstarn.cmd"
-    } else {
-        "glasstarn"
-    };
-    let _ = Command::new(glasstarn).arg("setup").status();
+    let _ = Command::new("glasstarn").arg("setup").status();
     if let Some(home) = glasstarn_home() {
         let _ = std::fs::write(
             home.join("update-check.json"),

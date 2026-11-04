@@ -170,11 +170,7 @@ pub(crate) fn uninstall(args: &[String]) -> Result<ExitCode, String> {
         }
     }
     // Pages left running in the background.
-    if cfg!(unix) {
-        let _ = Command::new("pkill")
-            .args(["-f", "glasstarn serve"])
-            .status();
-    }
+    stop_pages();
     let own = home.join(".glasstarn");
     for name in [
         "agent-plugin",
@@ -198,8 +194,13 @@ pub(crate) fn uninstall(args: &[String]) -> Result<ExitCode, String> {
         println!("  -  Your projects are kept in {}", projects.display());
     }
     println!("     Projects saved inside your own folders stay there.");
-    if std::env::var_os("GLASSTARN_PLUGIN_DIR").is_some() {
-        let npm = if cfg!(windows) { "npm.cmd" } else { "npm" };
+    if std::env::var_os("GLASSTARN_PLUGIN_DIR").is_some() && cfg!(windows) {
+        // Windows will not delete the program while it runs, and this is it:
+        // finish just after this command ends.
+        finish_after_exit("npm.cmd uninstall -g glasstarn")?;
+        println!("  ✓  The glasstarn program is removed in a few seconds");
+    } else if std::env::var_os("GLASSTARN_PLUGIN_DIR").is_some() {
+        let npm = "npm";
         let removed = Command::new(npm)
             .args(["uninstall", "-g", "glasstarn"])
             .status();
@@ -347,6 +348,11 @@ fn copy_dir(from: &Path, to: &Path) -> std::io::Result<()> {
 /// `npm install -g <folder>` would only link to npm's temporary cache, and the
 /// command would break once npm clears it; a packed archive is copied in.
 fn install_copy(npm: &Path, package: &Path) -> Result<(), String> {
+    // Windows will not replace a program that is running: stop pages left
+    // running by an installed copy first.
+    if cfg!(windows) {
+        stop_pages();
+    }
     let staging = std::env::temp_dir().join(format!("glasstarn-setup-{}", std::process::id()));
     std::fs::create_dir_all(&staging).map_err(|e| e.to_string())?;
     let packed = Command::new(npm)
@@ -423,6 +429,62 @@ fn run(program: &Path, args: &[&str]) -> Result<(), String> {
         .find(|l| !l.trim().is_empty())
         .unwrap_or("failed");
     Err(said.trim().chars().take(160).collect())
+}
+
+/// Stops results pages left running in the background, never this process.
+pub(crate) fn stop_pages() {
+    let mut command = if cfg!(windows) {
+        let mut command = Command::new("taskkill");
+        command.args([
+            "/F",
+            "/FI",
+            "IMAGENAME eq glasstarn.exe",
+            "/FI",
+            &format!("PID ne {}", std::process::id()),
+        ]);
+        command
+    } else {
+        let mut command = Command::new("pkill");
+        command.args(["-f", "glasstarn serve"]);
+        command
+    };
+    let _ = command
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .status();
+    if cfg!(windows) {
+        // Give Windows a moment to release the stopped programs' files.
+        std::thread::sleep(std::time::Duration::from_secs(1));
+    }
+}
+
+/// Windows only: runs `step` a few seconds after this command has ended, in
+/// the background, because Windows will not replace or delete the glasstarn
+/// program while it is the one running.
+pub(crate) fn finish_after_exit(step: &str) -> Result<(), String> {
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const DETACHED_PROCESS: u32 = 0x0000_0008;
+        const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
+        stop_pages();
+        crate::keep_own_output_out_of_children();
+        Command::new("cmd")
+            .args(["/C", &format!("ping -n 4 127.0.0.1 >NUL & {step}")])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP)
+            .spawn()
+            .map(|_| ())
+            .map_err(|e| format!("could not start the last step: {e}"))
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = step;
+        Err("only needed on Windows".into())
+    }
 }
 
 #[cfg(test)]

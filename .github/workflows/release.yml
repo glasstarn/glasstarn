@@ -156,6 +156,38 @@ jobs:
           # caller's output open (an agent waits for this command to finish).
           $(command -v timeout > /dev/null && echo timeout 120) glasstarn open --workspace-dir "$root/purchase-to-pay" --project "$p2p" > open.json
           node -e 'const r=JSON.parse(require("fs").readFileSync("open.json","utf8"));if(!String(r.url).startsWith("http://127.0.0.1:"))process.exit(1);console.log(r.url)'
+      - name: Reinstall while a page is running, then uninstall
+        run: |
+          # The page opened above is still running. Installing again (as an
+          # update does) must replace the program, which Windows only allows
+          # once that page has stopped.
+          package="$PWD/$(ls glasstarn-*.tgz)"
+          if [ "$RUNNER_OS" = Windows ]; then package=$(cygpath -w "$package"); fi
+          npm_config_cache="$RUNNER_TEMP/npm-cache-2" npx --yes --package="$package" glasstarn setup
+          glasstarn --version | grep -x "glasstarn ${TAG#v}"
+          glasstarn doctor
+          glasstarn uninstall
+          # On Windows the program removes itself just after the command ends.
+          for _ in $(seq 1 30); do hash -r; command -v glasstarn > /dev/null || break; sleep 2; done
+          hash -r; if command -v glasstarn; then echo "glasstarn is still installed"; exit 1; fi
+          # Back again, for the steps below.
+          npm_config_cache="$RUNNER_TEMP/npm-cache-3" npx --yes --package="$package" glasstarn setup
+          glasstarn --version | grep -x "glasstarn ${TAG#v}"
+      - name: Every user workflow in a real browser
+        run: |
+          exe=glasstarn; if [ "$RUNNER_OS" = Windows ]; then exe=glasstarn.exe; fi
+          export GLASSTARN_BIN="$(npm root -g)/glasstarn/native/${{ matrix.platform }}/$exe"
+          test -f "$GLASSTARN_BIN"
+          case "$RUNNER_OS" in
+            Windows) export CHROME="C:\Program Files\Google\Chrome\Application\chrome.exe" ;;
+            macOS) export CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" ;;
+            *) export CHROME="$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)" ;;
+          esac
+          if [ -z "$CHROME" ] || [ ! -e "$CHROME" ]; then
+            echo "::warning::No Chrome on this runner; browser journeys skipped here"
+            exit 0
+          fi
+          node tests/journeys/journeys.mjs
       - name: Excel reads like CSV
         run: |
           a=$(glasstarn analyze testdata/journeys/claims.xlsx --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);console.log(r.summary.cases,r.summary.events,r.summary.variants)})')
