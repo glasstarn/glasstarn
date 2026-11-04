@@ -13,6 +13,7 @@ function initializeImport() {
   initializeValues();
   initializeFilterChips();
   watchForAnswers();
+  startHeartbeat();
   const choose = document.querySelector("#choose-log");
   const input = document.querySelector("#file-input");
   const openProject = document.querySelector("#open-project");

@@ -108,7 +108,7 @@ pub(crate) fn command(args: &[String]) -> Result<ExitCode, String> {
     }
     if connected > 0 {
         println!(
-            "\nNext: restart your agent, then type /glasstarn in Claude Code or $glasstarn\nin Codex, or just ask, for example \"why are our claims slow?\"."
+            "\nNext: restart your agent, then just ask, for example \"why are our claims slow?\"."
         );
     } else {
         println!("\nInstall Codex or Claude Code, then run `glasstarn setup` again.");

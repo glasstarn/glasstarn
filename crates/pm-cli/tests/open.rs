@@ -580,3 +580,169 @@ fn an_answer_can_say_what_the_page_shows() {
         assert!(!record(show).status.success(), "{why} was accepted");
     }
 }
+
+// Inside a project, "All projects" lists it too. Renaming it there keeps the
+// page; deleting it there closes that page and sends the person to the list,
+// instead of leaving them on a page that has stopped.
+#[test]
+fn a_project_renamed_or_deleted_from_its_own_page_leaves_the_person_on_the_list() {
+    let home = tempfile::tempdir().unwrap();
+    let run = |args: &[&str]| {
+        let out = Command::new(env!("CARGO_BIN_EXE_glasstarn"))
+            .args(args)
+            .env("HOME", home.path())
+            .env("GLASSTARN_NO_BROWSER", "1")
+            .env("GLASSTARN_NO_UPDATE_CHECK", "1")
+            .output()
+            .unwrap();
+        assert!(
+            out.status.success(),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        serde_json::from_slice::<serde_json::Value>(&out.stdout).unwrap()
+    };
+    let made = run(&["demo", "sales-pipeline", "--json"]);
+    let id = made["project"]["id"].as_str().unwrap().to_owned();
+    let hub = run(&["open"]);
+    let port_of = |url: &str| {
+        url.trim_start_matches("http://127.0.0.1:")
+            .split(['/', '?'])
+            .next()
+            .unwrap()
+            .to_owned()
+    };
+    let hub_port = port_of(hub["url"].as_str().unwrap());
+    let call = |port: &str, method: &str, route: &str, body: Option<String>| {
+        let mut args = vec![
+            "-s".to_owned(),
+            "-X".to_owned(),
+            method.to_owned(),
+            "-H".to_owned(),
+            format!("Origin: http://127.0.0.1:{port}"),
+            "-H".to_owned(),
+            "Content-Type: application/json".to_owned(),
+        ];
+        if let Some(body) = body {
+            args.extend(["--data".to_owned(), body]);
+        }
+        args.push(format!("http://127.0.0.1:{port}{route}"));
+        let out = Command::new("curl").args(&args).output().unwrap();
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    };
+    // The project's own page, as opened from the list.
+    let opened: serde_json::Value = serde_json::from_str(&call(
+        &hub_port,
+        "POST",
+        "/api/workspaces/open",
+        Some(format!(r#"{{"id":"{id}"}}"#)),
+    ))
+    .unwrap();
+    let page_port = port_of(opened["url"].as_str().unwrap());
+    assert_ne!(page_port, hub_port);
+    // An open tab's heartbeat answers.
+    assert!(call(&page_port, "GET", "/api/heartbeat", None).contains("ok"));
+    // Renamed from its own page: done, and the page keeps working.
+    let renamed = call(
+        &page_port,
+        "POST",
+        "/api/workspaces/rename",
+        Some(format!(r#"{{"id":"{id}","name":"Deals review"}}"#)),
+    );
+    assert!(renamed.contains("Deals review"), "{renamed}");
+    assert!(call(&page_port, "GET", "/api/heartbeat", None).contains("ok"));
+    // Deleted from its own page: it goes to the Trash, and the reply names the
+    // project list to go to.
+    let deleted: serde_json::Value = serde_json::from_str(&call(
+        &page_port,
+        "POST",
+        "/api/workspaces/delete",
+        Some(format!(r#"{{"id":"{id}"}}"#)),
+    ))
+    .unwrap();
+    assert_eq!(
+        deleted["list_url"],
+        format!("http://127.0.0.1:{hub_port}/"),
+        "{deleted}"
+    );
+    let moved_to = std::path::PathBuf::from(deleted["moved_to"].as_str().unwrap());
+    assert!(moved_to.join("workspace.json").is_file(), "{deleted}");
+    // The list still answers and no longer has the project.
+    let list = call(&hub_port, "GET", "/api/workspaces", None);
+    assert!(!list.contains(&id), "{list}");
+    let _ = Command::new("pkill")
+        .args(["-f", &home.path().to_string_lossy()])
+        .status();
+}
+
+// An open tab keeps glasstarn running, however long the person looks without
+// clicking; it stops on its own only after the last tab has gone.
+#[test]
+fn an_open_tab_keeps_glasstarn_running_and_it_stops_after_the_tab_closes() {
+    use std::io::BufRead;
+    let dir = tempfile::tempdir().unwrap();
+    let mut serve = Command::new(env!("CARGO_BIN_EXE_glasstarn"))
+        .args([
+            "serve",
+            "--no-open",
+            "--workspace-dir",
+            dir.path().to_str().unwrap(),
+        ])
+        .env("GLASSTARN_IDLE_SECONDS", "3")
+        .env("GLASSTARN_NO_UPDATE_CHECK", "1")
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut first = String::new();
+    let mut output = std::io::BufReader::new(serve.stdout.take().unwrap());
+    while !first.starts_with("open ") {
+        first.clear();
+        assert!(
+            output.read_line(&mut first).unwrap() > 0,
+            "no address printed"
+        );
+    }
+    // Keep reading what it prints, as a terminal would.
+    std::thread::spawn(move || std::io::copy(&mut output, &mut std::io::sink()));
+    let url = first.trim().trim_start_matches("open ").to_owned();
+    let port = url
+        .trim_start_matches("http://127.0.0.1:")
+        .split(['/', '?', '#'])
+        .next()
+        .unwrap()
+        .to_owned();
+    let beat = || {
+        let out = Command::new("curl")
+            .args([
+                "-s",
+                "-H",
+                &format!("Origin: http://127.0.0.1:{port}"),
+                &format!("http://127.0.0.1:{port}/api/heartbeat"),
+            ])
+            .output()
+            .unwrap();
+        String::from_utf8_lossy(&out.stdout).into_owned()
+    };
+    // A tab open for three times the idle limit: still running.
+    let started = std::time::Instant::now();
+    while started.elapsed().as_secs() < 9 {
+        assert!(beat().contains("ok"), "stopped while a tab was open");
+        assert!(
+            serve.try_wait().unwrap().is_none(),
+            "stopped while a tab was open"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(1000));
+    }
+    // The tab is closed: it stops by itself.
+    let closed = std::time::Instant::now();
+    loop {
+        if serve.try_wait().unwrap().is_some() {
+            break;
+        }
+        assert!(
+            closed.elapsed().as_secs() < 20,
+            "still running 20 seconds after the tab closed"
+        );
+        std::thread::sleep(std::time::Duration::from_millis(200));
+    }
+}

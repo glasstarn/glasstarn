@@ -448,14 +448,37 @@ function watchForAnswers() {
       }
       reportWatchFailures = 0;
     } catch (_error) {
-      // Twice in a row with no answer: glasstarn has stopped (it stops after
-      // a while unused). Say how to get it back rather than fail silently.
-      if (++reportWatchFailures >= 2) showServiceStopped();
+      // Twice in a row with no answer: glasstarn is not running any more.
+      // Say how to get it back rather than fail silently.
+      if (!reportWatchStopped && ++reportWatchFailures >= 2) showServiceStopped();
     }
   }, 5000);
 }
 
 let reportWatchFailures = 0;
+// Set when this page is leaving on purpose (its project was deleted), so the
+// note about glasstarn not running never shows for that.
+let reportWatchStopped = false;
+
+// Every glasstarn tab, shown or in the background, tells glasstarn it is
+// still open about every half minute, so glasstarn keeps running while it is
+// in use and stops a while after the last tab closes.
+let heartbeat = null;
+let heartbeatFailures = 0;
+function startHeartbeat() {
+  clearInterval(heartbeat);
+  const beat = async () => {
+    try {
+      const response = await fetch('/api/heartbeat', { headers: { Authorization: `Bearer ${launchToken}` }, cache: 'no-store' });
+      if (!response.ok) throw new Error(String(response.status));
+      heartbeatFailures = 0;
+    } catch (_error) {
+      if (!reportWatchStopped && ++heartbeatFailures >= 2) showServiceStopped();
+    }
+  };
+  void beat();
+  heartbeat = setInterval(beat, 30000);
+}
 // Agent models this page has already taken on, so it asks only once.
 const adoptedModels = new Set();
 let knownModelSha = null;
@@ -479,7 +502,7 @@ function showServiceStopped() {
   const note = reportElement('div', undefined, 'service-stopped');
   note.id = 'service-stopped';
   note.setAttribute('role', 'alert');
-  note.append(reportElement('strong', 'This glasstarn page has closed.'), reportElement('span', ' It stops after a while unused. Ask your agent to show the results again, or run glasstarn in Terminal.'));
+  note.append(reportElement('strong', 'glasstarn isn’t running.'), reportElement('span', ' Ask your agent to open it again, or run glasstarn in Terminal.'));
   document.body.append(note);
 }
 

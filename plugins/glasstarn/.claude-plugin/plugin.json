@@ -1,7 +1,7 @@
 {
   "name": "glasstarn",
   "description": "Ask how your work really flows. glasstarn reads your process history on your own computer and your agent explains the evidence.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Tropical Glacier LLC"
   },

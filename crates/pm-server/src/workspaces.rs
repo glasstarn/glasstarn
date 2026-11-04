@@ -19,6 +19,9 @@ pub(super) struct WorkspaceHub {
     /// can be renamed or deleted after it was opened in this browser.
     pages: Mutex<BTreeMap<String, ProjectPage>>,
     pub(super) shutdown: Arc<AtomicBool>,
+    /// The project list's own address, where a page whose project is
+    /// deleted sends the person.
+    home: String,
 }
 
 impl WorkspaceHub {
@@ -46,12 +49,14 @@ impl Server {
         let root = root.canonicalize().map_err(issue)?;
         let mut server = Self::bind_with_agent(port, policy.clone()).map_err(issue)?;
         server.workspace_hub_owner = true;
+        let home = format!("http://{}/", server.address);
         server.workspace_hub = Some(Arc::new(WorkspaceHub {
             root,
             default_policy: policy,
             sessions: Mutex::new(BTreeMap::new()),
             pages: Mutex::new(BTreeMap::new()),
             shutdown: Arc::new(AtomicBool::new(false)),
+            home,
         }));
         Ok(server)
     }
@@ -226,11 +231,43 @@ impl Server {
                     return Err("invalid project identifier".into());
                 }
                 let mut sessions = hub.sessions.lock().map_err(issue)?;
+                // Asked from the project's own page (its "All projects" list):
+                // this page is the one to close. It lets go of the project now,
+                // answers, then stops; the person is sent to the project list.
+                let own_page =
+                    std::thread::current().name() == Some(&format!("project-{}", command.id));
+                let mut closing_own_page = false;
                 // Opened earlier from this page: stop its page, which frees it.
-                if let Some((stop, handle)) = hub.pages.lock().map_err(issue)?.remove(&command.id) {
+                let running = hub.pages.lock().map_err(issue)?.remove(&command.id);
+                if let Some((stop, handle)) = running {
                     stop.store(true, Ordering::Release);
-                    let _ = handle.join();
-                    sessions.remove(&command.id);
+                    if own_page && !request.target.ends_with("/rename") {
+                        *self.workspace_folder.lock().map_err(issue)? = None;
+                        closing_own_page = true;
+                        drop(handle);
+                    } else if own_page {
+                        // Renaming keeps the page: put it back, still running,
+                        // and rename through the project it already holds.
+                        stop.store(false, Ordering::Release);
+                        hub.pages
+                            .lock()
+                            .map_err(issue)?
+                            .insert(command.id.clone(), (stop, handle));
+                        let name = command.name.clone().unwrap_or_default();
+                        let name = name.trim();
+                        if name.is_empty() || name.len() > 200 {
+                            return Err("use a project name of 1–200 bytes".into());
+                        }
+                        let mut held = self.workspace_folder.lock().map_err(issue)?;
+                        let folder = held.as_mut().ok_or("project not found")?;
+                        folder.rename(name).map_err(issue)?;
+                        return Ok(json!({"project":workspace_info(folder)}));
+                    } else {
+                        let _ = handle.join();
+                    }
+                    if closing_own_page || !own_page {
+                        sessions.remove(&command.id);
+                    }
                 }
                 let place = pm_project::folders::all_roots(&hub.root)
                     .into_iter()
@@ -255,7 +292,9 @@ impl Server {
                 drop(folder);
                 sessions.remove(&command.id);
                 let trashed = pm_project::folders::move_to_trash(&place, &label).map_err(issue)?;
-                Ok(json!({"deleted":command.id,"moved_to":trashed}))
+                Ok(
+                    json!({"deleted":command.id,"moved_to":trashed,"list_url":closing_own_page.then(|| hub.home.clone())}),
+                )
             }
             ("POST", "/api/workspace/save") => self.save_workspace(),
             ("GET", "/api/workspace/views") => {

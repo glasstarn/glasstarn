@@ -89,6 +89,15 @@ pub fn build_id() -> &'static str {
 /// tells a page still showing from one whose tab was closed.
 static PAGE_SEEN: AtomicU64 = AtomicU64::new(0);
 
+/// Whether any glasstarn tab has ever sent its heartbeat to this process.
+static TAB_SEEN: AtomicBool = AtomicBool::new(false);
+
+/// True once a browser tab has kept this glasstarn running: from then on it
+/// stops soon after the last tab closes, instead of hours later.
+pub fn tab_seen() -> bool {
+    TAB_SEEN.load(Ordering::Relaxed)
+}
+
 /// Seconds since an open page last checked in, if one ever has.
 pub fn page_seen_seconds_ago() -> Option<u64> {
     let seen = PAGE_SEEN.load(Ordering::Relaxed);
@@ -237,6 +246,11 @@ impl Server {
         if path == "/api/workspace/investigation" {
             PAGE_SEEN.store(now_seconds(), Ordering::Relaxed);
         }
+        // Every open tab, shown or in the background, sends this about every
+        // half minute: glasstarn keeps running while any tab is open.
+        if path == "/api/heartbeat" {
+            TAB_SEEN.store(true, Ordering::Relaxed);
+        }
         let authorized = if path == "/api/mcp" {
             self.mcp_policy
                 .lock()
@@ -306,6 +320,9 @@ impl Server {
             ),
             ("GET", "/favicon.svg") => {
                 write_response(&mut stream, 200, "OK", "image/svg+xml", FAVICON)
+            }
+            ("GET", "/api/heartbeat") => {
+                write_json(&mut stream, 200, "OK", &serde_json::json!({"status":"ok"}))
             }
             ("GET", "/api/health") => write_json(
                 &mut stream,

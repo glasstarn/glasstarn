@@ -18,7 +18,7 @@ the macOS keychain:
 
 ```sh
 SIGNING_IDENTITY="Developer ID Application: Example (TEAMID)" \
-APP_VERSION=1.0.0 BUILD_NUMBER=1 \
+APP_VERSION=1.0.1 BUILD_NUMBER=1 \
 packaging/macos/build-app.sh
 ```
 

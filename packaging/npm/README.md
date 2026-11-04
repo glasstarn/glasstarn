@@ -8,7 +8,7 @@ install scripts, no dependencies, nothing downloaded.
 Install and connect agents the way a person would:
 
 ```sh
-npm install -g dist/npm/glasstarn-1.0.0.tgz
+npm install -g dist/npm/glasstarn-1.0.1.tgz
 glasstarn setup
 ```
 

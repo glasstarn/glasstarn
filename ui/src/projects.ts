@@ -103,7 +103,13 @@ async function deleteProject(project) {
   const sure = typeof window.confirm === "function" && window.confirm(`Delete “${project.name}”? It moves to the Trash, where you can still get it back.`);
   if (!sure) return;
   try {
-    await workspaceApi("/api/workspaces/delete", { id: project.id });
+    const deleted = await workspaceApi("/api/workspaces/delete", { id: project.id });
+    // Deleted from its own page: that page closes, so go to the project list.
+    if (deleted.list_url) {
+      reportWatchStopped = true;
+      window.location.assign(`${deleted.list_url}?trashed=${encodeURIComponent(project.name)}`);
+      return;
+    }
     await refreshWorkspaces();
     workspaceStatus(`“${project.name}” is in the Trash.`);
   } catch (error) { workspaceStatus(error.message, true); }
@@ -136,6 +142,11 @@ async function openWorkspace(create, newTab = false) {
 async function initializeWorkspaces() {
   document.querySelector("#workspace-panel").hidden = false;
   const data = await refreshWorkspaces();
+  const trashed = new URLSearchParams(window.location.search).get("trashed");
+  if (trashed) {
+    workspaceStatus(`“${trashed}” is in the Trash.`);
+    history.replaceState(null, "", window.location.pathname);
+  }
   currentWorkspace = data.current;
   document.body.dataset.investigationPurpose = auditRequested(currentWorkspace) ? "audit" : "improvement";
   document.body.dataset.projectState = currentWorkspace ? "open" : "chooser";

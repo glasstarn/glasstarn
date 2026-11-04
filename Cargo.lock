@@ -807,7 +807,7 @@ checksum = "19f132c84eca552bf34cab8ec81f1c1dcc229b811638f9d283dceabe58c5569e"
 
 [[package]]
 name = "pm-bench"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "peak_alloc",
@@ -821,7 +821,7 @@ dependencies = [
 
 [[package]]
 name = "pm-cli"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "csv",
@@ -841,7 +841,7 @@ dependencies = [
 
 [[package]]
 name = "pm-core"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "hashbrown 0.17.1",
  "serde",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "pm-ingest"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "arrow-array",
  "arrow-schema",
@@ -871,7 +871,7 @@ dependencies = [
 
 [[package]]
 name = "pm-mcp"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "hmac",
  "pm-core",
@@ -887,7 +887,7 @@ dependencies = [
 
 [[package]]
 name = "pm-project"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "atomic-write-file",
  "chrono",
@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "pm-query"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "csv",
@@ -922,7 +922,7 @@ dependencies = [
 
 [[package]]
 name = "pm-server"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "pm-core",
  "pm-ingest",
@@ -939,7 +939,7 @@ dependencies = [
 
 [[package]]
 name = "pm-testgen"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "pm-core",

@@ -906,9 +906,12 @@ fn serve_command(args: &[String]) -> Result<ExitCode, String> {
             Err(error) => eprintln!("could not open a browser automatically: {error}"),
         }
     }
-    // A page nobody uses stops after two hours (GLASSTARN_IDLE_MINUTES, 0 for
-    // never), so pages from past days do not pile up in the background. The
-    // agent or `glasstarn` starts a fresh one when it is needed.
+    // glasstarn keeps running while any of its tabs is open (each tab sends a
+    // heartbeat). Once tabs have been open, it stops 15 minutes after the
+    // last one closes; a page nobody ever opened stops after two hours
+    // (GLASSTARN_IDLE_MINUTES, 0 for never). So nobody sees it stop while
+    // they use it, and pages from past days do not pile up. The agent or
+    // `glasstarn` starts a fresh one when it is needed.
     pm_server::set_update_available(update::available());
     let stop = Arc::new(AtomicBool::new(false));
     let idle_limit = std::env::var("GLASSTARN_IDLE_SECONDS")
@@ -926,8 +929,13 @@ fn serve_command(args: &[String]) -> Result<ExitCode, String> {
         pm_server::idle_seconds();
         std::thread::spawn(move || {
             loop {
-                std::thread::sleep(std::time::Duration::from_secs(idle_limit.clamp(1, 60)));
-                if pm_server::idle_seconds() >= idle_limit {
+                std::thread::sleep(std::time::Duration::from_secs(idle_limit.clamp(1, 30)));
+                let limit = if pm_server::tab_seen() {
+                    idle_limit.min(15 * 60)
+                } else {
+                    idle_limit
+                };
+                if pm_server::idle_seconds() >= limit {
                     stop.store(true, std::sync::atomic::Ordering::Release);
                     break;
                 }
