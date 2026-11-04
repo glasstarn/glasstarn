@@ -4915,7 +4915,10 @@ mod tests {
         let suffix = format!(
             "{}-{}",
             std::process::id(),
-            std::thread::current().name().unwrap_or("automation")
+            std::thread::current()
+                .name()
+                .unwrap_or("automation")
+                .replace("::", "-")
         );
         let log_path = std::env::temp_dir().join(format!("pm-automation-{suffix}.csv"));
         let rules_path = std::env::temp_dir().join(format!("pm-automation-{suffix}.json"));
@@ -4946,7 +4949,10 @@ mod tests {
         let suffix = format!(
             "{}-{}",
             std::process::id(),
-            std::thread::current().name().unwrap_or("comparison")
+            std::thread::current()
+                .name()
+                .unwrap_or("comparison")
+                .replace("::", "-")
         );
         let log_path = std::env::temp_dir().join(format!("pm-comparison-{suffix}.csv"));
         std::fs::write(
@@ -5054,7 +5060,10 @@ mod tests {
         let suffix = format!(
             "{}-{}",
             std::process::id(),
-            std::thread::current().name().unwrap_or("period-comparison")
+            std::thread::current()
+                .name()
+                .unwrap_or("period-comparison")
+                .replace("::", "-")
         );
         let log_path = std::env::temp_dir().join(format!("pm-period-comparison-{suffix}.csv"));
         std::fs::write(
@@ -5132,7 +5141,10 @@ mod tests {
         let model_path = std::env::temp_dir().join(format!(
             "open-process-cli-model-{}-{}.json",
             std::process::id(),
-            std::thread::current().name().unwrap_or("test")
+            std::thread::current()
+                .name()
+                .unwrap_or("test")
+                .replace("::", "-")
         ));
         std::fs::write(&model_path, serde_json::to_vec(&model).unwrap()).unwrap();
         let result = conformance_command(&[
