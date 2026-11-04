@@ -1,0 +1,14 @@
+# Same line endings everywhere, so Windows checkouts match what the UI tests and builds expect.
+* text=auto eol=lf
+*.png binary
+*.xlsx binary
+*.sqlite binary
+*.parquet binary
+*.woff2 binary
+*.ico binary
+*.gz binary
+*.zip binary
+*.csv -text
+*.xls binary
+*.jsonocel -text
+*.xmlocel -text

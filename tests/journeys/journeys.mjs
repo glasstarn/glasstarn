@@ -60,7 +60,7 @@ const port = 9400 + Math.floor(Math.random() * 400);
 // Outside the scratch home, so stopping glasstarn's pages never stops Chrome.
 const profile = fs.mkdtempSync(path.join(os.tmpdir(), "journeys-browser-"));
 const chrome = spawn(chromePath, [
-  "--headless=new", `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run",
+  "--headless=new", ...(process.platform === "linux" ? ["--no-sandbox"] : []), `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`, "--no-first-run",
   "--no-default-browser-check", "--disable-background-timer-throttling", "--disable-renderer-backgrounding",
   "--disable-backgrounding-occluded-windows", "about:blank",
 ], { stdio: "ignore" });
