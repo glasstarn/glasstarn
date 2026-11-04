@@ -805,11 +805,22 @@ fn listening_process(port: u16) -> Option<String> {
     }
 }
 
+/// Quietly: this runs inside `glasstarn open`, whose output an agent reads
+/// as JSON, so the stop command must not print into it (taskkill does).
 fn stop_process(pid: &str) {
     #[cfg(unix)]
-    let _ = Command::new("kill").arg(pid).status();
+    let mut command = Command::new("kill");
+    #[cfg(unix)]
+    command.arg(pid);
     #[cfg(windows)]
-    let _ = Command::new("taskkill").args(["/PID", pid, "/F"]).status();
+    let mut command = Command::new("taskkill");
+    #[cfg(windows)]
+    command.args(["/PID", pid, "/F"]);
+    let _ = command
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .status();
 }
 
 fn serve_command(args: &[String]) -> Result<ExitCode, String> {

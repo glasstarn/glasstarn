@@ -453,17 +453,15 @@ fn projects_can_be_renamed_and_deleted_to_the_trash() {
     }
     assert!(deleted.contains("moved_to"), "{deleted}");
     assert!(!home.path().join(".glasstarn/projects").join(&id).exists());
-    let trash = if cfg!(target_os = "macos") {
-        home.path().join(".Trash")
-    } else {
-        home.path().join(".local/share/Trash/files")
-    };
+    // Moved, not erased: the project is wherever the reply says it went
+    // (the Trash on a Mac or Linux desktop, a recoverable folder elsewhere).
+    let moved: serde_json::Value = serde_json::from_str(&deleted).unwrap();
+    let moved_to = std::path::PathBuf::from(moved["moved_to"].as_str().unwrap());
     assert!(
-        trash
-            .join("Deals review (glasstarn project)")
-            .join("workspace.json")
-            .is_file()
+        moved_to.ends_with("Deals review (glasstarn project)"),
+        "{deleted}"
     );
+    assert!(moved_to.join("workspace.json").is_file(), "{deleted}");
 }
 
 #[test]
