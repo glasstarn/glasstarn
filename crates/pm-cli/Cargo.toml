@@ -29,7 +29,8 @@ flate2 = "1.1.9"
 sha2 = "0.10"
 
 [lints.rust]
-unsafe_code = "forbid"
+# One Windows call in main.rs needs it; everything else stays safe code.
+unsafe_code = "deny"
 
 [dev-dependencies]
 pm-testgen = { path = "../pm-testgen" }

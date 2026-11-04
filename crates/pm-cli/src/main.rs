@@ -644,6 +644,8 @@ fn open_command(args: &[String]) -> Result<ExitCode, String> {
         const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
         command.creation_flags(DETACHED_PROCESS | CREATE_NEW_PROCESS_GROUP);
     }
+    #[cfg(windows)]
+    keep_own_output_out_of_children();
     let mut child = command
         .spawn()
         .map_err(|e| format!("cannot start glasstarn: {e}"))?;
@@ -939,6 +941,39 @@ fn browser_command(url: &str) -> (&'static str, Vec<String>) {
 #[cfg(all(unix, not(target_os = "macos")))]
 fn browser_command(url: &str) -> (&'static str, Vec<String>) {
     ("xdg-open", vec![url.to_owned()])
+}
+
+/// Windows hands every inheritable handle to a new process, including this
+/// command's own output. The page server would then hold the agent's output
+/// pipe open, and the agent would wait for `glasstarn open` until the page
+/// stopped. Marking our own input and output not inheritable prevents that;
+/// the server still gets its log file, which is passed to it explicitly.
+#[cfg(windows)]
+#[allow(unsafe_code)]
+fn keep_own_output_out_of_children() {
+    use std::os::windows::io::AsRawHandle;
+    #[link(name = "kernel32")]
+    unsafe extern "system" {
+        fn SetHandleInformation(
+            handle: std::os::windows::io::RawHandle,
+            mask: u32,
+            flags: u32,
+        ) -> i32;
+    }
+    const HANDLE_FLAG_INHERIT: u32 = 1;
+    for handle in [
+        std::io::stdin().as_raw_handle(),
+        std::io::stdout().as_raw_handle(),
+        std::io::stderr().as_raw_handle(),
+    ] {
+        if !handle.is_null() {
+            // SAFETY: the handle is this process's own standard handle, or
+            // an invalid value the call rejects; only its inherit flag changes.
+            unsafe {
+                SetHandleInformation(handle, HANDLE_FLAG_INHERIT, 0);
+            }
+        }
+    }
 }
 
 fn launch_browser(url: &str) -> Result<(), String> {

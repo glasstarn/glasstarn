@@ -98,6 +98,7 @@ jobs:
     name: Test the package on ${{ matrix.platform }}
     needs: package
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -151,6 +152,10 @@ jobs:
           p2p="$(id $root/purchase-to-pay)"
           glasstarn workspace show "$p2p" --workspace-dir "$root/purchase-to-pay" > /dev/null
           glasstarn workspace analyze "$p2p" --workspace-dir "$root/purchase-to-pay" > /dev/null
+          # The results page starts, and `open` returns instead of holding the
+          # caller's output open (an agent waits for this command to finish).
+          $(command -v timeout > /dev/null && echo timeout 120) glasstarn open --workspace-dir "$root/purchase-to-pay" --project "$p2p" > open.json
+          node -e 'const r=JSON.parse(require("fs").readFileSync("open.json","utf8"));if(!String(r.url).startsWith("http://127.0.0.1:"))process.exit(1);console.log(r.url)'
       - name: Excel reads like CSV
         run: |
           a=$(glasstarn analyze testdata/journeys/claims.xlsx --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);console.log(r.summary.cases,r.summary.events,r.summary.variants)})')
