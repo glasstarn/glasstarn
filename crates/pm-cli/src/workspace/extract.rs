@@ -129,7 +129,7 @@ pub(crate) fn command(args: &[String]) -> Result<ExitCode, String> {
                 None => Vec::new(),
             };
             let mut found = pm_project::discover::salesforce(
-                Path::new("sf"),
+                &pm_project::extract::salesforce_cli(),
                 &org,
                 api_version,
                 &objects,

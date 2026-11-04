@@ -27,6 +27,25 @@ use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
+/// The Salesforce CLI as the system starts it. On Windows its installer
+/// adds `sf.cmd`, which is only found under that full name.
+pub fn salesforce_cli() -> std::path::PathBuf {
+    std::path::PathBuf::from(if cfg!(windows) { "sf.cmd" } else { "sf" })
+}
+
+#[cfg(test)]
+mod salesforce_cli_name {
+    #[test]
+    fn is_sf_cmd_on_windows_and_sf_elsewhere() {
+        let name = super::salesforce_cli();
+        if cfg!(windows) {
+            assert_eq!(name, std::path::PathBuf::from("sf.cmd"));
+        } else {
+            assert_eq!(name, std::path::PathBuf::from("sf"));
+        }
+    }
+}
+
 const SPEC_LIMIT: usize = 64 * 1024;
 
 /// Item identifiers per query. Each Salesforce ID adds about 21 characters,

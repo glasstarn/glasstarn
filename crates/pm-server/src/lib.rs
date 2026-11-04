@@ -154,7 +154,7 @@ impl Server {
             workspace_hub_owner: false,
             workspace_hub: None,
             workspace_folder: Arc::new(Mutex::new(None)),
-            salesforce_cli: PathBuf::from("sf"),
+            salesforce_cli: pm_project::extract::salesforce_cli(),
             listener,
             address,
             token,
