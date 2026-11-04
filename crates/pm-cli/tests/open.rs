@@ -84,10 +84,8 @@ fn an_sop_check_runs_while_the_page_is_open_and_the_page_gets_the_model() {
     let check = dir.path().join("check.json");
     std::fs::write(
         &check,
-        format!(
-            r#"{{"type":"conformance","model":"{}","algorithm":"token","limit":5}}"#,
-            model.display()
-        ),
+        serde_json::json!({"type":"conformance","model":model,"algorithm":"token","limit":5})
+            .to_string(),
     )
     .unwrap();
     let checked = glasstarn(&[

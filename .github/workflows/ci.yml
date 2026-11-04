@@ -31,7 +31,7 @@ jobs:
         run: cargo clippy --all-targets --all-features
 
       - name: Tests
-        run: cargo test --all-features
+        run: cargo test --all-features --no-fail-fast
 
       - uses: actions/setup-node@v4
         with:
