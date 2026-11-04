@@ -277,6 +277,7 @@ fn npx_setup_installs_a_copy_that_survives_the_npx_cache_being_cleared() {
     assert!(String::from_utf8_lossy(&version.stdout).starts_with("glasstarn "));
 }
 
+#[cfg(unix)]
 fn copy(from: &std::path::Path, to: &std::path::Path) {
     std::fs::create_dir_all(to).unwrap();
     for entry in std::fs::read_dir(from).unwrap().flatten() {
