@@ -1,0 +1,53 @@
+{
+  "id": "sap-cloud-customers",
+  "note": "Customers from SAP S/4HANA Public Cloud data views.",
+  "tables": [
+    {
+      "name": "Customer",
+      "noun": "customers",
+      "label": "Customers",
+      "export": "Customers that appear on the sales orders or invoices.",
+      "required": [
+        "Customer",
+        "CustomerName"
+      ],
+      "fields": [
+        "Country"
+      ],
+      "object": "customer",
+      "key": [
+        "Customer"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-customer",
+      "table": "Customer",
+      "columns": [
+        "Customer"
+      ],
+      "label": "customers listed once"
+    }
+  ],
+  "checks": [],
+  "recipe": {
+    "objects": [
+      {
+        "id": "customer",
+        "input": "Customer",
+        "namespace": "sap",
+        "object_type": "customer",
+        "key": [
+          "Customer"
+        ],
+        "attributes": [
+          {
+            "column": "CustomerName",
+            "name": "customer name"
+          }
+        ]
+      }
+    ]
+  }
+}

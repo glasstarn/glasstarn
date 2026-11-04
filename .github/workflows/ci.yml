@@ -1,0 +1,194 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  test:
+    name: Test and lint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Formatting
+        run: cargo fmt --all --check
+
+      - name: Lints
+        run: cargo clippy --all-targets --all-features
+
+      - name: Tests
+        run: cargo test --all-features
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Browser state regression tests
+        run: node --test ui/tests/*.test.cjs
+
+  minimum-rust:
+    name: Builds on the minimum Rust version (rust-version in Cargo.toml)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88
+      - uses: Swatinem/rust-cache@v2
+      - name: Build and test on Rust 1.88
+        run: cargo test --workspace --all-targets --locked
+
+  dependencies:
+    name: Dependency licences and advisories
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Policy in deny.toml: permissive licences only, crates.io only, no
+      # yanked crates or known vulnerabilities.
+      - uses: EmbarkStudios/cargo-deny-action@v2
+
+  benchmark:
+    name: Benchmark gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build benchmark harness
+        run: cargo build --release -p pm-bench
+
+      # Performance is this project's central claim, so a regression is a
+      # build failure rather than something noticed later.
+      #
+      # The harness measures `pm_query::analyze_filtered` — the same path
+      # `glasstarn analyze` runs. An earlier version benchmarked a parallel
+      # implementation, which proved nothing about the product.
+      #
+      # The threshold is deliberately loose: shared CI runners are noisy, and
+      # a gate that cries wolf gets disabled. The baseline is recorded on a
+      # developer machine, so the first CI run must refresh it against the
+      # runner rather than comparing across different hardware.
+      - name: Run benchmark
+        run: ./target/release/pm-bench --events 1000000 --json > benchmark.json
+
+      - name: Run object-centric benchmark shapes
+        run: |
+          ./target/release/pm-bench --ocel --ocel-shape lifecycle --events 100000 --json > benchmark-ocel-lifecycle.json
+          ./target/release/pm-bench --ocel --ocel-shape interaction --events 100000 --json > benchmark-ocel-interaction.json
+
+      - name: Check against baseline
+        run: |
+          python3 - <<'PY'
+          import json, sys, pathlib
+
+          # Wide, because the recorded baseline may come from different
+          # hardware than the runner. Narrow this to ~1.15 once a baseline has
+          # been recorded on the runner itself.
+          TOLERANCE = 1.40
+          run = json.loads(pathlib.Path("benchmark.json").read_text())[0]
+          baseline_path = pathlib.Path("benches/baseline.json")
+
+          phases = {p["phase"]: p for p in run["phases"] if p["phase"] != "generate log"}
+          total_ms = sum(p["millis"] for p in phases.values())
+          peak_mb = max(p["peak_mb"] for p in phases.values())
+          per_million = total_ms / run["events"] * 1_000_000
+
+          print(f"events      {run['events']:,}")
+          print(f"pipeline    {total_ms:,.0f} ms  ({per_million:,.0f} ms per 1M events)")
+          print(f"peak heap   {peak_mb:,.0f} MB")
+
+          if not baseline_path.exists():
+              print("\nNo baseline recorded; skipping the gate.")
+              sys.exit(0)
+
+          baseline = json.loads(baseline_path.read_text())
+          failures = []
+          if per_million > baseline["per_million_ms"] * TOLERANCE:
+              failures.append(
+                  f"time regressed: {per_million:,.0f} ms/1M vs baseline "
+                  f"{baseline['per_million_ms']:,.0f} ms/1M"
+              )
+          if peak_mb > baseline["peak_mb"] * TOLERANCE:
+              failures.append(
+                  f"memory regressed: {peak_mb:,.0f} MB vs baseline {baseline['peak_mb']:,.0f} MB"
+              )
+
+          if failures:
+              print("\nBenchmark gate failed:")
+              for f in failures:
+                  print(f"  - {f}")
+              print(
+                  "\nIf this regression is intentional, update benches/baseline.json "
+                  "and say why in the commit message."
+              )
+              sys.exit(1)
+
+          print("\nWithin tolerance of the baseline.")
+          PY
+
+      - name: Check object-centric benchmark shapes
+        run: |
+          python3 - <<'PY'
+          import json, pathlib, sys
+
+          TOLERANCE = 2.00
+          baseline = json.loads(pathlib.Path("benches/ocel-baseline.json").read_text())
+          failures = []
+          for shape in ("lifecycle", "interaction"):
+              path = pathlib.Path(f"benchmark-ocel-{shape}.json")
+              run = json.loads(path.read_text())[0]
+              expected = baseline[shape]
+
+              if run["kind"] != "object_centric" or run["shape"] != shape:
+                  failures.append(f"{shape}: wrong benchmark identity")
+              if run["events"] != baseline["events"]:
+                  failures.append(f"{shape}: expected {baseline['events']} events, got {run['events']}")
+              for field in ("event_object_relations", "object_object_relations"):
+                  if run[field] != expected[field]:
+                      failures.append(f"{shape}: {field} did not reconcile")
+              if run["per_million_events_millis"] > expected["per_million_events_ms"] * TOLERANCE:
+                  failures.append(
+                      f"{shape}: time regressed to {run['per_million_events_millis']:.0f} ms/1M "
+                      f"from {expected['per_million_events_ms']:.0f} ms/1M"
+                  )
+              if run["peak_rust_heap_mb"] > expected["peak_rust_heap_mb"] * TOLERANCE:
+                  failures.append(
+                      f"{shape}: Rust heap regressed to {run['peak_rust_heap_mb']:.0f} MB "
+                      f"from {expected['peak_rust_heap_mb']:.0f} MB"
+                  )
+              print(
+                  f"{shape:11} {run['events']:,} events · "
+                  f"{run['event_object_relations'] + run['object_object_relations']:,} relationships · "
+                  f"{run['per_million_events_millis']:.0f} ms/1M · "
+                  f"{run['peak_rust_heap_mb']:.0f} MB Rust heap"
+              )
+
+          if failures:
+              print("\nObject-centric benchmark gate failed:")
+              for failure in failures:
+                  print(f"  - {failure}")
+              sys.exit(1)
+          PY
+
+      - name: Upload benchmark result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark
+          path: |
+            benchmark.json
+            benchmark-ocel-lifecycle.json
+            benchmark-ocel-interaction.json

@@ -1,0 +1,6 @@
+{
+  "type": "cohorts",
+  "attribute": "channel",
+  "left": "Standard",
+  "right": "Manual review"
+}

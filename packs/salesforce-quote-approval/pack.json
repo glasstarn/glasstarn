@@ -1,0 +1,498 @@
+{
+  "id": "salesforce-quote-approval",
+  "version": 1,
+  "name": "Quotes and approvals (Salesforce)",
+  "system": "Salesforce Sales Cloud",
+  "process": "quote to order",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Salesforce's standard Quote object, approval processes (ProcessInstance) and orders. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Covers standard quotes; quotes of the Salesforce CPQ managed package (SBQQ__Quote__c) are not yet covered.",
+  "case_object_type": "quote",
+  "size_check": {
+    "ask": "How many quotes were created in the period?",
+    "unit": "quote",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "include": [
+    "salesforce-opportunities"
+  ],
+  "tables": [
+    {
+      "name": "Quote",
+      "noun": "quotes",
+      "date_label": "the quote was created",
+      "label": "Salesforce quotes",
+      "export": "Quotes created in the period: Id, QuoteNumber, OpportunityId, CreatedDate, Status, ExpirationDate, GrandTotal, Discount, IsSyncing and the company's own fields.",
+      "required": [
+        "Id",
+        "OpportunityId",
+        "CreatedDate",
+        "Status"
+      ],
+      "fields": [
+        "QuoteNumber",
+        "ExpirationDate",
+        "GrandTotal",
+        "Discount",
+        "IsSyncing"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_quote",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "ProcessInstance",
+      "label": "Approval requests",
+      "export": "Approval requests whose target is one of those quotes (ProcessInstance): Id, TargetObjectId, Status, CreatedDate and CompletedDate.",
+      "required": [
+        "Id",
+        "TargetObjectId",
+        "Status",
+        "CreatedDate"
+      ],
+      "fields": [
+        "CompletedDate",
+        "ProcessDefinitionId"
+      ],
+      "date_field": "CreatedDate"
+    },
+    {
+      "name": "ProcessInstanceStep",
+      "label": "Approval steps",
+      "export": "Approval steps created in the period (ProcessInstanceStep): Id, ProcessInstanceId, StepStatus, CreatedDate and ActorId. No comments. Steps of approvals on other objects are skipped.",
+      "required": [
+        "Id",
+        "ProcessInstanceId",
+        "StepStatus",
+        "CreatedDate"
+      ],
+      "fields": [
+        "ActorId",
+        "OriginalActorId"
+      ],
+      "date_field": "CreatedDate"
+    },
+    {
+      "name": "Order",
+      "label": "Salesforce orders",
+      "export": "Orders created from those quotes: Id, QuoteId, OpportunityId, CreatedDate and Status.",
+      "required": [
+        "Id",
+        "QuoteId",
+        "CreatedDate"
+      ],
+      "fields": [
+        "OpportunityId",
+        "Status",
+        "OrderNumber"
+      ],
+      "date_field": "CreatedDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-quote",
+      "table": "Quote",
+      "columns": [
+        "Id"
+      ],
+      "label": "quotes listed once"
+    },
+    {
+      "id": "one-sf-approval-request",
+      "table": "ProcessInstance",
+      "columns": [
+        "Id"
+      ],
+      "label": "approval requests listed once"
+    },
+    {
+      "id": "one-sf-approval-step",
+      "table": "ProcessInstanceStep",
+      "columns": [
+        "Id"
+      ],
+      "label": "approval steps listed once"
+    },
+    {
+      "id": "one-sf-order",
+      "table": "Order",
+      "columns": [
+        "Id"
+      ],
+      "label": "orders listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "approval-requests-have-quotes",
+      "label": "approval requests whose quote is in the export",
+      "from": {
+        "table": "ProcessInstance",
+        "columns": [
+          "TargetObjectId"
+        ]
+      },
+      "to": {
+        "table": "Quote",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "orders-have-quotes",
+      "label": "orders whose quote is in the export",
+      "from": {
+        "table": "Order",
+        "columns": [
+          "QuoteId"
+        ],
+        "where": [
+          {
+            "column": "QuoteId",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Quote",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "sf_quote",
+        "input": "Quote",
+        "namespace": "salesforce",
+        "object_type": "quote",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          },
+          {
+            "column": "GrandTotal",
+            "name": "grand total"
+          },
+          {
+            "column": "Discount",
+            "name": "discount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_quote_created",
+        "input": "Quote",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create quote"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "GrandTotal",
+            "name": "grand total"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "quote"
+          },
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_quote_submitted",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Started"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Submit quote for approval"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_quote_approved",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Approved"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve quote"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_quote_rejected",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Rejected"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject quote"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_quote_recalled",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Removed"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Recall approval request"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_order_from_quote",
+        "input": "Order",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "QuoteId",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create order"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OrderNumber",
+            "name": "order number"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "QuoteId"
+            ],
+            "qualifier": "quote"
+          },
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "sf_quote_for_opportunity",
+        "input": "Quote",
+        "source": {
+          "object": "sf_quote",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "quote"
+        },
+        "target": {
+          "object": "sf_opportunity",
+          "columns": [
+            "OpportunityId"
+          ],
+          "qualifier": "opportunity",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ]
+  }
+}

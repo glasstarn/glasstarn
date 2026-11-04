@@ -1,0 +1,415 @@
+{
+  "id": "salesforce-order-management",
+  "version": 1,
+  "name": "Orders (Salesforce)",
+  "system": "Salesforce Sales Cloud",
+  "process": "order management",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Salesforce's standard Order and OrderItem objects and order field history. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Status steps need field history tracking on the order status; history starts when tracking is switched on.",
+  "case_object_type": "order",
+  "size_check": {
+    "ask": "How many orders were created in the period?",
+    "unit": "order",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "tables": [
+    {
+      "name": "Order",
+      "noun": "orders",
+      "date_label": "the order was created",
+      "label": "Salesforce orders",
+      "export": "Orders created in the period: Id, OrderNumber, AccountId, OpportunityId, QuoteId, CreatedDate, EffectiveDate, Status, ActivatedDate, TotalAmount, IsReductionOrder, OriginalOrderId and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "Status",
+        "ActivatedDate",
+        "IsReductionOrder"
+      ],
+      "fields": [
+        "OrderNumber",
+        "AccountId",
+        "OpportunityId",
+        "QuoteId",
+        "EffectiveDate",
+        "TotalAmount",
+        "OriginalOrderId",
+        "StatusCode"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_order",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "OrderHistory",
+      "label": "Salesforce order field history",
+      "export": "Field history of those orders (OrderHistory): Id, OrderId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "OrderId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "Order",
+      "needs_tracked": [
+        "Status"
+      ]
+    },
+    {
+      "name": "OrderItem",
+      "noun": "order products",
+      "label": "Order products",
+      "export": "The products on those orders (OrderItem): Id, OrderId, Product2Id, Quantity, UnitPrice, TotalPrice, ServiceDate and CreatedDate.",
+      "required": [
+        "Id",
+        "OrderId",
+        "Product2Id",
+        "Quantity",
+        "CreatedDate"
+      ],
+      "fields": [
+        "UnitPrice",
+        "TotalPrice",
+        "ServiceDate"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_order_item",
+      "key": [
+        "Id"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-order",
+      "table": "Order",
+      "columns": [
+        "Id"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-sf-order-history-row",
+      "table": "OrderHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "history rows listed once"
+    },
+    {
+      "id": "one-sf-order-item",
+      "table": "OrderItem",
+      "columns": [
+        "Id"
+      ],
+      "label": "order products listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "order-history-has-orders",
+      "label": "order history rows whose order is in the export",
+      "from": {
+        "table": "OrderHistory",
+        "columns": [
+          "OrderId"
+        ]
+      },
+      "to": {
+        "table": "Order",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "order-items-have-orders",
+      "label": "order products whose order is in the export",
+      "from": {
+        "table": "OrderItem",
+        "columns": [
+          "OrderId"
+        ]
+      },
+      "to": {
+        "table": "Order",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sf_order",
+        "input": "Order",
+        "namespace": "salesforce",
+        "object_type": "order",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          },
+          {
+            "column": "TotalAmount",
+            "name": "total amount"
+          },
+          {
+            "column": "IsReductionOrder",
+            "name": "reduction order"
+          }
+        ]
+      },
+      {
+        "id": "sf_order_item",
+        "input": "OrderItem",
+        "namespace": "salesforce",
+        "object_type": "order product",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Product2Id",
+            "name": "product"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "UnitPrice",
+            "name": "unit price"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_order_created",
+        "input": "Order",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "IsReductionOrder",
+            "not_in": [
+              "true"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create order"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "TotalAmount",
+            "name": "total amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_order",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "sf_reduction_order_created",
+        "input": "Order",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "IsReductionOrder",
+            "in": [
+              "true"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create reduction order"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "TotalAmount",
+            "name": "total amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_order",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "sf_order",
+            "columns": [
+              "OriginalOrderId"
+            ],
+            "qualifier": "reduces",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_order_status_changed",
+        "input": "OrderHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Status"
+            ]
+          },
+          {
+            "column": "NewValue",
+            "not_in": [
+              "Activated"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_order",
+            "columns": [
+              "OrderId"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "sf_order_activated",
+        "input": "Order",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Activate order"
+        },
+        "timestamp": "ActivatedDate",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "sf_order",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "sf_order_product_added",
+        "input": "OrderItem",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Add order product"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "Product2Id",
+            "name": "product"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_order_item",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "order product"
+          },
+          {
+            "object": "sf_order",
+            "columns": [
+              "OrderId"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "sf_order_item_on_order",
+        "input": "OrderItem",
+        "source": {
+          "object": "sf_order_item",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "order product"
+        },
+        "target": {
+          "object": "sf_order",
+          "columns": [
+            "OrderId"
+          ],
+          "qualifier": "on order"
+        }
+      }
+    ]
+  }
+}

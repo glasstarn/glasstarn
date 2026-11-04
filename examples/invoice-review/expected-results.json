@@ -1,0 +1,19 @@
+{
+  "synthetic": true,
+  "cases": 120,
+  "events": 510,
+  "activities": 5,
+  "overall_mean_throughput_days": 5,
+  "standard_cases": 80,
+  "standard_mean_throughput_days": 3,
+  "manual_review_cases": 40,
+  "manual_review_mean_throughput_days": 9,
+  "rework_cases": 20,
+  "missing_approval_cases": 10,
+  "expected_nonconforming_cases": 30,
+  "status_only_rows": 120,
+  "limitations": [
+    "Elapsed time does not establish why delays occur.",
+    "A missing recorded approval does not establish that no approval happened outside this log."
+  ]
+}

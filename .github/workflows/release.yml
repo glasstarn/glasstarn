@@ -1,0 +1,181 @@
+name: Release
+
+# Builds glasstarn for every supported computer, assembles the one npm package
+# that `npx glasstarn setup` installs, tests that exact package on all five
+# platforms, and attaches it to a draft GitHub Release for the tag. Nothing is
+# published here: the Publish workflow later publishes this same tested file.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag, for example v1.0.0 (created on this commit if missing)"
+        required: true
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+  TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: darwin-arm64, runner: macos-15, target: aarch64-apple-darwin, exe: glasstarn }
+          - { platform: darwin-x64, runner: macos-15-intel, target: x86_64-apple-darwin, exe: glasstarn }
+          - { platform: linux-x64, runner: ubuntu-22.04, target: x86_64-unknown-linux-gnu, exe: glasstarn }
+          - { platform: linux-arm64, runner: ubuntu-22.04-arm, target: aarch64-unknown-linux-gnu, exe: glasstarn }
+          - { platform: win32-x64, runner: windows-latest, target: x86_64-pc-windows-msvc, exe: glasstarn.exe }
+    steps:
+      - uses: actions/checkout@v4
+      - name: The tag matches the package version
+        shell: bash
+        run: |
+          version=$(node -p "require('./packaging/npm/package.json').version")
+          test "v$version" = "$TAG" || { echo "Tag $TAG does not match package version $version"; exit 1; }
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
+      - name: Build
+        run: cargo build --release --locked -p pm-cli --target ${{ matrix.target }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-${{ matrix.platform }}
+          path: target/${{ matrix.target }}/release/${{ matrix.exe }}
+          if-no-files-found: error
+
+  package:
+    name: Assemble the npm package
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: native-*
+          path: artifacts
+      - name: Assemble
+        run: |
+          stage=$(mktemp -d)
+          cp -R packaging/npm/package.json packaging/npm/bin LICENSE THIRD_PARTY_NOTICES.txt "$stage/"
+          cp packaging/npm/PACKAGE_README.md "$stage/README.md"
+          cp ui/fonts/OFL.txt "$stage/FONTS-OFL.txt"
+          mkdir -p "$stage/plugin"
+          cp -R plugins/glasstarn plugins/.agents plugins/.claude-plugin "$stage/plugin/"
+          for platform in darwin-arm64 darwin-x64 linux-x64 linux-arm64 win32-x64; do
+            test -d "artifacts/native-$platform" || { echo "missing $platform"; exit 1; }
+            mkdir -p "$stage/native/$platform"
+            cp artifacts/native-$platform/* "$stage/native/$platform/"
+            chmod +x "$stage/native/$platform"/*
+          done
+          find "$stage" -name .DS_Store -delete
+          (cd "$stage" && npm pack --pack-destination "$GITHUB_WORKSPACE")
+          sha256sum glasstarn-*.tgz > glasstarn.sha256
+          cat glasstarn.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-package
+          path: |
+            glasstarn-*.tgz
+            glasstarn.sha256
+          if-no-files-found: error
+
+  verify:
+    name: Test the package on ${{ matrix.platform }}
+    needs: package
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { platform: darwin-arm64, runner: macos-15 }
+          - { platform: darwin-x64, runner: macos-15-intel }
+          - { platform: linux-x64, runner: ubuntu-22.04 }
+          - { platform: linux-arm64, runner: ubuntu-22.04-arm }
+          - { platform: win32-x64, runner: windows-latest }
+    env:
+      GLASSTARN_NO_BROWSER: "1"
+      GLASSTARN_NO_UPDATE_CHECK: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+      - name: Install through npx, as a person would
+        run: |
+          prefix="$RUNNER_TEMP/prefix"; cache="$RUNNER_TEMP/npm-cache"
+          echo "npm_config_prefix=$prefix" >> "$GITHUB_ENV"
+          if [ "$RUNNER_OS" = Windows ]; then echo "$prefix" >> "$GITHUB_PATH"; else echo "$prefix/bin" >> "$GITHUB_PATH"; fi
+          package="$PWD/$(ls glasstarn-*.tgz)"
+          if [ "$RUNNER_OS" = Windows ]; then package=$(cygpath -w "$package"); fi
+          npm_config_prefix="$prefix" npm_config_cache="$cache" npx --yes --package="$package" glasstarn setup
+          # The installed command must not depend on npm's temporary cache.
+          rm -rf "$cache"
+      - name: Version and doctor
+        run: |
+          glasstarn --version | grep -x "glasstarn ${TAG#v}"
+          glasstarn doctor
+      - name: Demos, reopen and export
+        run: |
+          root="$RUNNER_TEMP/work/glasstarn"
+          for demo in purchase-to-pay order-to-cash sales-pipeline connected; do
+            glasstarn demo "$demo" --workspace-dir "$root/$demo" --json > /dev/null
+          done
+          count() { glasstarn workspace export "$1" --workspace-dir "$2" ${3:+--type "$3"} | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);console.log(r.items)})'; }
+          id() { ls "$1"; }
+          test "$(count "$(id $root/purchase-to-pay)" "$root/purchase-to-pay")" = 1500
+          test "$(count "$(id $root/order-to-cash)" "$root/order-to-cash")" = 1200
+          test "$(count "$(id $root/sales-pipeline)" "$root/sales-pipeline")" = 1600
+          test "$(count "$(id $root/connected)" "$root/connected" invoices)" = 1605
+          # Reopen: the saved project answers again.
+          p2p="$(id $root/purchase-to-pay)"
+          glasstarn workspace show "$p2p" --workspace-dir "$root/purchase-to-pay" > /dev/null
+          glasstarn workspace analyze "$p2p" --workspace-dir "$root/purchase-to-pay" > /dev/null
+      - name: Excel reads like CSV
+        run: |
+          a=$(glasstarn analyze testdata/journeys/claims.xlsx --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);console.log(r.summary.cases,r.summary.events,r.summary.variants)})')
+          b=$(glasstarn analyze testdata/journeys/claims.csv --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const r=JSON.parse(s);console.log(r.summary.cases,r.summary.events,r.summary.variants)})')
+          echo "xlsx: $a  csv: $b"
+          test "$a" = "$b" && test "$a" = "1200 12036 52"
+
+  release:
+    name: Draft GitHub Release
+    needs: verify
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: npm-package
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          name: glasstarn ${{ env.TAG }}
+          body_path: packaging/release-notes.md
+          files: |
+            glasstarn-*.tgz
+            glasstarn.sha256

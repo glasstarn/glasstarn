@@ -1,0 +1,27 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-02-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "Case",
+      "fields": ["Id", "CreatedDate", "Origin", "Priority"],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "CaseHistory",
+      "fields": ["Id", "CaseId", "CreatedDate", "Field", "OldValue", "NewValue"],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "CaseId",
+      "parent": "Case",
+      "filters": [{"field": "Field", "equals": "Status"}],
+      "history_gaps": ["History tracking and retention have not yet been verified in this tenant."]
+    }
+  ]
+}

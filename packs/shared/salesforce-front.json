@@ -1,0 +1,283 @@
+{
+  "id": "salesforce-front",
+  "note": "Quotes and the link to the SAP sales order (through the field in which the company keeps the SAP order number), on top of the Salesforce opportunities part. Needs a sales part that defines sales_order and sales_order_lines.",
+  "tables": [
+    {
+      "name": "Opportunity",
+      "noun": "opportunities",
+      "date_label": "the opportunity was created",
+      "label": "Salesforce opportunities",
+      "export": "Opportunities for the period: Id, Name, AccountId, CreatedDate, StageName, IsClosed, IsWon, CloseDate, Amount and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "StageName",
+        "IsClosed",
+        "IsWon",
+        "CloseDate",
+        "Amount",
+        "{setting:salesforce_sap_order_field}"
+      ],
+      "fields": [
+        "Name",
+        "AccountId",
+        "LeadSource",
+        "OwnerId",
+        "Probability",
+        "Type"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_opportunity",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "Quote",
+      "noun": "quotes",
+      "date_label": "the quote was created",
+      "label": "Salesforce quotes",
+      "export": "Quotes of those opportunities: Id, OpportunityId, Name, CreatedDate and Status.",
+      "required": [
+        "Id",
+        "OpportunityId",
+        "CreatedDate",
+        "Status"
+      ],
+      "fields": [
+        "Name"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_quote",
+      "key": [
+        "Id"
+      ],
+      "optional": true
+    }
+  ],
+  "settings": [
+    {
+      "id": "salesforce_sap_order_field",
+      "question": "Which Salesforce field holds the SAP sales order number of a won opportunity? Give its API name, for example SAP_Order_Number__c.",
+      "example": "SAP_Order_Number__c"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-quote",
+      "table": "Quote",
+      "columns": [
+        "Id"
+      ],
+      "label": "quotes listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "quotes-have-sf-opportunities",
+      "label": "quotes whose opportunity is in the export",
+      "from": {
+        "table": "Quote",
+        "columns": [
+          "OpportunityId"
+        ]
+      },
+      "to": {
+        "table": "Opportunity",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "events": [
+      {
+        "id": "sf_quote_created",
+        "input": "Quote",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create quote"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_quote",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "quote_of_sf_opportunity",
+        "input": "Quote",
+        "source": {
+          "object": "sf_quote",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "quote"
+        },
+        "target": {
+          "object": "sf_opportunity",
+          "columns": [
+            "OpportunityId"
+          ],
+          "qualifier": "for opportunity"
+        }
+      },
+      {
+        "id": "sf_opportunity_order",
+        "input": "Opportunity",
+        "source": {
+          "object": "sf_opportunity",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "opportunity"
+        },
+        "target": {
+          "object": "sales_order",
+          "columns": [
+            "{setting:salesforce_sap_order_field}"
+          ],
+          "qualifier": "became order",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "sf_quote_created_opportunity",
+        "event": "sf_quote_created",
+        "through": "sf_quote",
+        "relationship": "quote_of_sf_opportunity",
+        "qualifier": "opportunity"
+      },
+      {
+        "id": "sf_opportunity_created_order",
+        "event": "sf_opportunity_created",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_stage_reached_order",
+        "event": "sf_stage_reached",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_opportunity_won_order",
+        "event": "sf_opportunity_won",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_opportunity_lost_order",
+        "event": "sf_opportunity_lost",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_amount_changed_order",
+        "event": "sf_amount_changed",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_close_date_moved_order",
+        "event": "sf_close_date_moved",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_quote_created_order",
+        "event": "sf_quote_created",
+        "through": "sf_opportunity",
+        "relationship": "sf_opportunity_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "sf_opportunity_created_lines",
+        "event": "sf_opportunity_created",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "sf_stage_reached_lines",
+        "event": "sf_stage_reached",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "sf_opportunity_won_lines",
+        "event": "sf_opportunity_won",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "sf_opportunity_lost_lines",
+        "event": "sf_opportunity_lost",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "sf_amount_changed_lines",
+        "event": "sf_amount_changed",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "sf_close_date_moved_lines",
+        "event": "sf_close_date_moved",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "sf_quote_created_lines",
+        "event": "sf_quote_created",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      }
+    ],
+    "objects": [
+      {
+        "id": "sf_quote",
+        "input": "Quote",
+        "namespace": "salesforce",
+        "object_type": "quote",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ]
+      }
+    ]
+  }
+}

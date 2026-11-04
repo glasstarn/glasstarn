@@ -1,0 +1,11 @@
+{
+  "name": "glasstarn",
+  "owner": { "name": "Tropical Glacier LLC" },
+  "plugins": [
+    {
+      "name": "glasstarn",
+      "source": "./glasstarn",
+      "description": "Ask how your work really flows. glasstarn reads your process history on your own computer and your agent explains the evidence."
+    }
+  ]
+}

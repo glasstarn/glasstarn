@@ -1,0 +1,834 @@
+{
+  "id": "sap-record-to-report",
+  "version": 2,
+  "name": "Journal entries and month-end close (SAP ECC and S/4HANA)",
+  "system": "SAP ECC or SAP S/4HANA",
+  "process": "record to report",
+  "status": "untested",
+  "note": "Base journal checks, build and four source-history comparisons passed on a scoped SAP S/4HANA 2025 FPS01 trial, including reversal clearing and changes. Optional workflow is not yet tested: no matching FIPP references were available. Workflow completion is not evidence of approval. Period closing is not covered; see the pack README.",
+  "case_object_type": "journal entry",
+  "size_check": {
+    "ask": "How many accounting documents were entered or parked in the period for the company code?",
+    "unit": "journal entry",
+    "steps_per_unit": 3
+  },
+  "custom_prefixes": [
+    "Z*",
+    "YY*"
+  ],
+  "include": [
+    "sap-clock"
+  ],
+  "tables": [
+    {
+      "name": "BKPF",
+      "noun": "journal entries",
+      "date_label": "the document was entered",
+      "label": "Accounting document headers",
+      "export": "Accounting documents of the company code entered in the period (filter BUKRS and CPUDT), all document types, including reversals and parked documents (BSTAT V).",
+      "required": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "BLART",
+        "BUDAT",
+        "CPUDT",
+        "CPUTM",
+        "USNAM",
+        "MONAT",
+        "XREVERSAL",
+        "STBLG",
+        "STJAH"
+      ],
+      "fields": [
+        "BLDAT",
+        "TCODE",
+        "AWTYP",
+        "BSTAT",
+        "WAERS"
+      ],
+      "date_field": "CPUDT",
+      "object": "journal_entry",
+      "key": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR"
+      ],
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "BSAS",
+      "label": "Cleared G/L items",
+      "export": "Cleared line items on G/L accounts managed on an open-item basis (for example GR/IR and bank clearing accounts) for those documents.",
+      "required": [
+        "BUKRS",
+        "HKONT",
+        "AUGDT",
+        "AUGBL",
+        "ZUONR",
+        "GJAHR",
+        "BELNR",
+        "BUZEI"
+      ],
+      "fields": [
+        "DMBTR",
+        "SHKZG"
+      ],
+      "date_field": "AUGDT",
+      "optional": true
+    },
+    {
+      "name": "VBKPF",
+      "label": "Parked document headers",
+      "export": "Headers of documents parked in the period (VBKPF): BUKRS, BELNR, GJAHR, CPUDT, CPUTM and USNAM (who parked it).",
+      "required": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "CPUDT",
+        "CPUTM",
+        "USNAM"
+      ],
+      "fields": [
+        "BLART",
+        "BUDAT",
+        "BSTAT"
+      ],
+      "date_field": "CPUDT",
+      "optional": true
+    },
+    {
+      "name": "SWWWIHEAD",
+      "label": "Workflow work items",
+      "export": "Completed dialog workflow work items for the exported FIPP documents, including WI_AED_TIMESTAMP (UTC completion timestamp), WI_STAT, WI_TYPE and task/agent. Completion is not proof of an approval outcome.",
+      "required": [
+        "WI_ID",
+        "WI_TYPE",
+        "WI_STAT",
+        "WI_AED",
+        "WI_AED_TIMESTAMP"
+      ],
+      "fields": [
+        "WI_RH_TASK",
+        "WI_AAGENT",
+        "WI_CD",
+        "WI_CT"
+      ],
+      "date_field": "WI_AED",
+      "optional": true
+    },
+    {
+      "name": "SWW_CONTOB",
+      "label": "Work item objects",
+      "export": "FIPP document references for those work items: WI_ID, OBJTYPE and OBJKEY (company code, document number and fiscal year). Keep unrelated object types identifiable; only FIPP references participate in journal mapping.",
+      "required": [
+        "WI_ID",
+        "OBJTYPE",
+        "OBJKEY"
+      ],
+      "fields": [],
+      "optional": true
+    },
+    {
+      "name": "CDHDR",
+      "label": "Change log headers",
+      "export": "Change headers for object class BELEG (accounting documents) of those documents, from the period to the export date.",
+      "required": [
+        "OBJECTCLAS",
+        "OBJECTID",
+        "CHANGENR",
+        "USERNAME",
+        "UDATE",
+        "UTIME"
+      ],
+      "fields": [],
+      "date_field": "UDATE",
+      "optional": true
+    },
+    {
+      "name": "CDPOS",
+      "label": "Change log items",
+      "export": "The changed fields of those change headers, for tables BKPF and BSEG.",
+      "required": [
+        "OBJECTCLAS",
+        "OBJECTID",
+        "CHANGENR",
+        "TABNAME",
+        "TABKEY",
+        "FNAME",
+        "VALUE_NEW",
+        "VALUE_OLD"
+      ],
+      "fields": [],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-journal-entry",
+      "table": "BKPF",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR"
+      ],
+      "label": "journal entries listed once"
+    },
+    {
+      "id": "one-cleared-item",
+      "table": "BSAS",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "BUZEI"
+      ],
+      "label": "cleared items listed once"
+    },
+    {
+      "id": "one-parked-document",
+      "table": "VBKPF",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR"
+      ],
+      "label": "parked documents listed once"
+    },
+    {
+      "id": "one-work-item",
+      "table": "SWWWIHEAD",
+      "columns": [
+        "WI_ID"
+      ],
+      "label": "work items listed once"
+    },
+    {
+      "id": "one-work-item-object",
+      "table": "SWW_CONTOB",
+      "columns": [
+        "WI_ID"
+      ],
+      "label": "work item objects listed once",
+      "where": [
+        {
+          "column": "OBJTYPE",
+          "in": [
+            "FIPP"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-change-header",
+      "table": "CDHDR",
+      "columns": [
+        "OBJECTCLAS",
+        "OBJECTID",
+        "CHANGENR"
+      ],
+      "label": "change headers listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "reversals-have-originals",
+      "label": "reversals whose reversed document is in the export",
+      "from": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "STBLG",
+          "STJAH"
+        ],
+        "where": [
+          {
+            "column": "XREVERSAL",
+            "in": [
+              "2"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} reversals reverse a document entered before the period. Export those documents too, or keep the reversals without their original?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them; the original is outside the period"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the earlier documents"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "cleared-items-have-documents",
+      "label": "cleared items whose document is in the export",
+      "from": {
+        "table": "BSAS",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "parked-documents-are-exported",
+      "label": "parked documents whose header is in the export",
+      "from": {
+        "table": "VBKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "work-items-have-objects",
+      "label": "work items whose document link is in the export",
+      "from": {
+        "table": "SWWWIHEAD",
+        "columns": [
+          "WI_ID"
+        ],
+        "where": [
+          {
+            "column": "WI_TYPE",
+            "in": [
+              "W"
+            ]
+          },
+          {
+            "column": "WI_STAT",
+            "in": [
+              "COMPLETED"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SWW_CONTOB",
+        "columns": [
+          "WI_ID"
+        ],
+        "where": [
+          {
+            "column": "OBJTYPE",
+            "in": [
+              "FIPP"
+            ]
+          }
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "work-item-objects-have-documents",
+      "label": "work items whose document is in the export",
+      "from": {
+        "table": "SWW_CONTOB",
+        "columns": [
+          {
+            "column": "OBJKEY",
+            "start": 0,
+            "length": 4
+          },
+          {
+            "column": "OBJKEY",
+            "start": 4,
+            "length": 10
+          },
+          {
+            "column": "OBJKEY",
+            "start": 14,
+            "length": 4
+          }
+        ],
+        "where": [
+          {
+            "column": "OBJTYPE",
+            "in": [
+              "FIPP"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "change-items-have-headers",
+      "label": "changed fields whose change header is in the export",
+      "from": {
+        "table": "CDPOS",
+        "columns": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR"
+        ]
+      },
+      "to": {
+        "table": "CDHDR",
+        "columns": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "journal_entry",
+        "input": "BKPF",
+        "namespace": "sap",
+        "object_type": "journal entry",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "attributes": [
+          {
+            "column": "BUKRS",
+            "name": "company code"
+          },
+          {
+            "column": "BLART",
+            "name": "document type"
+          },
+          {
+            "column": "MONAT",
+            "name": "period"
+          },
+          {
+            "column": "BUDAT",
+            "name": "posting date"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "journal_entry_parked",
+        "input": "VBKPF",
+        "namespace": "sap",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Park journal entry"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "offset": "{setting:offset}",
+          "time": "CPUTM"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "journal_entry",
+            "columns": [
+              "BUKRS",
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "journal entry"
+          }
+        ]
+      },
+      {
+        "id": "journal_workflow_completed",
+        "input": "SWWWIHEAD",
+        "namespace": "sap",
+        "key": [
+          "WI_ID"
+        ],
+        "where": [
+          {
+            "column": "WI_TYPE",
+            "in": [
+              "W"
+            ]
+          },
+          {
+            "column": "WI_STAT",
+            "in": [
+              "COMPLETED"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Complete journal workflow task"
+        },
+        "lookup": {
+          "input": "SWW_CONTOB",
+          "key": [
+            "WI_ID"
+          ],
+          "matching": [
+            "WI_ID"
+          ],
+          "columns": [
+            "OBJKEY"
+          ],
+          "where": [
+            {
+              "column": "OBJTYPE",
+              "in": [
+                "FIPP"
+              ]
+            }
+          ]
+        },
+        "timestamp": {
+          "date": "WI_AED_TIMESTAMP",
+          "offset": "+00:00"
+        },
+        "attributes": [
+          {
+            "column": "WI_AAGENT",
+            "name": "resource"
+          },
+          {
+            "column": "WI_RH_TASK",
+            "name": "task"
+          }
+        ],
+        "objects": [
+          {
+            "object": "journal_entry",
+            "columns": [
+              {
+                "column": "OBJKEY",
+                "start": 0,
+                "length": 4
+              },
+              {
+                "column": "OBJKEY",
+                "start": 4,
+                "length": 10
+              },
+              {
+                "column": "OBJKEY",
+                "start": 14,
+                "length": 4
+              }
+            ],
+            "qualifier": "journal entry"
+          }
+        ]
+      },
+      {
+        "id": "journal_entry_entered",
+        "input": "BKPF",
+        "namespace": "sap",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "XREVERSAL",
+            "not_in": [
+              "2"
+            ]
+          },
+          {
+            "column": "BSTAT",
+            "not_in": [
+              "V"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Post journal entry"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "offset": "{setting:offset}",
+          "time": "CPUTM"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          },
+          {
+            "column": "TCODE",
+            "name": "transaction"
+          },
+          {
+            "column": "BLART",
+            "name": "document type"
+          },
+          {
+            "column": "BUDAT",
+            "name": "posting date"
+          },
+          {
+            "column": "MONAT",
+            "name": "period"
+          }
+        ],
+        "objects": [
+          {
+            "object": "journal_entry",
+            "columns": [
+              "BUKRS",
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "journal entry"
+          }
+        ]
+      },
+      {
+        "id": "journal_entry_reversed",
+        "input": "BKPF",
+        "namespace": "sap",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "XREVERSAL",
+            "in": [
+              "2"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reverse journal entry"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "offset": "{setting:offset}",
+          "time": "CPUTM"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          },
+          {
+            "column": "BELNR",
+            "name": "reversal document"
+          },
+          {
+            "column": "BUDAT",
+            "name": "posting date"
+          }
+        ],
+        "objects": [
+          {
+            "object": "journal_entry",
+            "columns": [
+              "BUKRS",
+              "STBLG",
+              "STJAH"
+            ],
+            "qualifier": "reverses",
+            "allow_unmatched": true
+          },
+          {
+            "object": "journal_entry",
+            "columns": [
+              "BUKRS",
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "reversal document"
+          }
+        ]
+      },
+      {
+        "id": "journal_entry_changed",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "BELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "BKPF",
+              "BSEG"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change journal entry"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "FNAME",
+            "name": "field"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "journal_entry",
+            "columns": [
+              {
+                "column": "OBJECTID",
+                "start": 3,
+                "length": 4
+              },
+              {
+                "column": "OBJECTID",
+                "start": 7,
+                "length": 10
+              },
+              {
+                "column": "OBJECTID",
+                "start": 17,
+                "length": 4
+              }
+            ],
+            "qualifier": "journal entry"
+          }
+        ]
+      },
+      {
+        "id": "item_cleared",
+        "input": "BSAS",
+        "namespace": "sap",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR",
+          "BUZEI"
+        ],
+        "activity": {
+          "value": "Clear item"
+        },
+        "timestamp": {
+          "date": "AUGDT",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "HKONT",
+            "name": "account"
+          },
+          {
+            "column": "AUGBL",
+            "name": "clearing document"
+          }
+        ],
+        "objects": [
+          {
+            "object": "journal_entry",
+            "columns": [
+              "BUKRS",
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "journal entry"
+          }
+        ]
+      }
+    ]
+  }
+}

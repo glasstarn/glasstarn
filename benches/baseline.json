@@ -1,0 +1,9 @@
+{
+  "recorded": "2026-08-08",
+  "measured_on": "Apple M3 Pro, 12 cores, 18 GB, macOS 26.5.2",
+  "note": "Measured locally. The CI runner is slower and noisier; the gate refreshes this on first CI run. Update deliberately, with a reason, when a regression is accepted.",
+  "path": "pm_query::analyze_filtered \u2014 the same path `glasstarn analyze` runs",
+  "events": 833641,
+  "per_million_ms": 1207.9,
+  "peak_mb": 110.3
+}

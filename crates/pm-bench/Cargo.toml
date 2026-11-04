@@ -1,0 +1,24 @@
+[package]
+name = "pm-bench"
+description = "Benchmark harness. Performance is the strategic claim, so it is measured, not asserted."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+publish = false
+
+[[bin]]
+name = "pm-bench"
+path = "src/main.rs"
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-ingest = { path = "../pm-ingest" }
+pm-query = { path = "../pm-query" }
+pm-testgen = { path = "../pm-testgen" }
+serde_json.workspace = true
+peak_alloc = "0.2"
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+rusqlite = { version = "0.32.1", features = ["bundled"] }

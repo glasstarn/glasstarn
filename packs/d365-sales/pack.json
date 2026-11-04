@@ -1,0 +1,378 @@
+{
+  "id": "d365-sales",
+  "version": 1,
+  "name": "Lead to opportunity (Dynamics 365 Sales)",
+  "system": "Microsoft Dynamics 365 Sales (Dataverse)",
+  "process": "lead to opportunity",
+  "status": "tested",
+  "note": "Confirmed on a live Dynamics 365 Sales demo environment with qualified leads to won/lost opportunities, a disqualified lead, an open lead, a direct open opportunity, and saved phone, draft email and appointment activities. Independently reconciled 13 events and 15 object links to source rows and timestamps. Closure dates are date-only and do not establish exact closure instants; stage and reopen history are outside this snapshot recipe.",
+  "case_object_type": "opportunity",
+  "size_check": {
+    "ask": "How many opportunities were created in the period?",
+    "unit": "opportunity",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "*_*"
+  ],
+  "tables": [
+    {
+      "name": "lead",
+      "noun": "leads",
+      "label": "Leads",
+      "export": "Leads created in the period: leadid, createdon, statecode and statuscode (labels), leadsourcecode and modifiedon. No names or contact details. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels.",
+      "required": [
+        "leadid",
+        "createdon",
+        "statecode"
+      ],
+      "fields": [
+        "statuscode",
+        "leadsourcecode",
+        "modifiedon"
+      ],
+      "date_field": "createdon",
+      "object": "dv_lead",
+      "key": [
+        "leadid"
+      ],
+      "optional": true
+    },
+    {
+      "name": "opportunity",
+      "noun": "opportunities",
+      "date_label": "the opportunity was created",
+      "label": "Opportunities",
+      "export": "Opportunities created in the period: opportunityid, createdon, originatingleadid, statecode and statuscode (labels), estimatedvalue, actualvalue and actualclosedate. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels. Preserve actualclosedate as a calendar date when that is what Dataverse supplies; midnight in the prepared log represents the date, not an observed decision time.",
+      "required": [
+        "opportunityid",
+        "createdon",
+        "originatingleadid",
+        "statecode",
+        "actualclosedate"
+      ],
+      "fields": [
+        "statuscode",
+        "estimatedvalue",
+        "actualvalue",
+        "stepname"
+      ],
+      "date_field": "createdon",
+      "object": "dv_opportunity",
+      "key": [
+        "opportunityid"
+      ]
+    },
+    {
+      "name": "activitypointer",
+      "label": "Activities",
+      "export": "Activities (phone calls, emails, appointments, tasks) regarding those records: activityid, regardingobjectid, activitytypecode (label), createdon and actualend. No subjects or bodies. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels. Include only the supported Phone Call, Email, Appointment and Task types; exclude Opportunity Close, whose outcome is already read from opportunity. An activity creation event does not prove sending, attendance or completion.",
+      "required": [
+        "activityid",
+        "regardingobjectid",
+        "activitytypecode",
+        "createdon"
+      ],
+      "fields": [
+        "actualend",
+        "statecode",
+        "ownerid"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-lead",
+      "table": "lead",
+      "columns": [
+        "leadid"
+      ],
+      "label": "leads listed once"
+    },
+    {
+      "id": "one-opportunity",
+      "table": "opportunity",
+      "columns": [
+        "opportunityid"
+      ],
+      "label": "opportunities listed once"
+    },
+    {
+      "id": "one-activity",
+      "table": "activitypointer",
+      "columns": [
+        "activityid"
+      ],
+      "label": "activities listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "opportunities-have-leads",
+      "label": "opportunities whose lead is in the export",
+      "from": {
+        "table": "opportunity",
+        "columns": [
+          "originatingleadid"
+        ],
+        "where": [
+          {
+            "column": "originatingleadid",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "lead",
+        "columns": [
+          "leadid"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.9,
+      "question": {
+        "text": "{missing} of {total} opportunities came from leads created before the period. Keep them without the lead, or re-export with older leads?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without the lead"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with older leads"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "dv_lead",
+        "input": "lead",
+        "namespace": "dataverse",
+        "object_type": "lead",
+        "key": [
+          "leadid"
+        ],
+        "attributes": [
+          {
+            "column": "leadsourcecode",
+            "name": "lead source"
+          },
+          {
+            "column": "statecode",
+            "name": "status"
+          }
+        ]
+      },
+      {
+        "id": "dv_opportunity",
+        "input": "opportunity",
+        "namespace": "dataverse",
+        "object_type": "opportunity",
+        "key": [
+          "opportunityid"
+        ],
+        "attributes": [
+          {
+            "column": "estimatedvalue",
+            "name": "estimated value"
+          },
+          {
+            "column": "statecode",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "dv_lead_created",
+        "input": "lead",
+        "namespace": "dataverse",
+        "key": [
+          "leadid"
+        ],
+        "activity": {
+          "value": "Create lead"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_lead",
+            "columns": [
+              "leadid"
+            ],
+            "qualifier": "lead"
+          }
+        ]
+      },
+      {
+        "id": "dv_lead_disqualified",
+        "input": "lead",
+        "namespace": "dataverse",
+        "key": [
+          "leadid"
+        ],
+        "where": [
+          {
+            "column": "statecode",
+            "in": [
+              "Disqualified"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Disqualify lead"
+        },
+        "timestamp": "modifiedon",
+        "objects": [
+          {
+            "object": "dv_lead",
+            "columns": [
+              "leadid"
+            ],
+            "qualifier": "lead"
+          }
+        ]
+      },
+      {
+        "id": "dv_opportunity_created",
+        "input": "opportunity",
+        "namespace": "dataverse",
+        "key": [
+          "opportunityid"
+        ],
+        "activity": {
+          "value": "Create opportunity"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_opportunity",
+            "columns": [
+              "opportunityid"
+            ],
+            "qualifier": "opportunity"
+          },
+          {
+            "object": "dv_lead",
+            "columns": [
+              "originatingleadid"
+            ],
+            "qualifier": "lead",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "dv_opportunity_won",
+        "input": "opportunity",
+        "namespace": "dataverse",
+        "key": [
+          "opportunityid"
+        ],
+        "where": [
+          {
+            "column": "statecode",
+            "in": [
+              "Won"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Win opportunity"
+        },
+        "timestamp": "actualclosedate",
+        "attributes": [
+          {
+            "column": "actualvalue",
+            "name": "value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "dv_opportunity",
+            "columns": [
+              "opportunityid"
+            ],
+            "qualifier": "opportunity"
+          }
+        ]
+      },
+      {
+        "id": "dv_opportunity_lost",
+        "input": "opportunity",
+        "namespace": "dataverse",
+        "key": [
+          "opportunityid"
+        ],
+        "where": [
+          {
+            "column": "statecode",
+            "in": [
+              "Lost"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Lose opportunity"
+        },
+        "timestamp": "actualclosedate",
+        "objects": [
+          {
+            "object": "dv_opportunity",
+            "columns": [
+              "opportunityid"
+            ],
+            "qualifier": "opportunity"
+          }
+        ]
+      },
+      {
+        "id": "dv_activity",
+        "input": "activitypointer",
+        "namespace": "dataverse",
+        "key": [
+          "activityid"
+        ],
+        "activity": {
+          "column": "activitytypecode",
+          "prefix": "Activity: "
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_opportunity",
+            "columns": [
+              "regardingobjectid"
+            ],
+            "qualifier": "opportunity"
+          }
+        ]
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "opportunity",
+      "label": "Dynamics 365 opportunity ID",
+      "object": "dv_opportunity",
+      "table": "opportunity",
+      "key": [
+        "opportunityid"
+      ],
+      "example": "6a1f0c2e-\u2026",
+      "carry": []
+    }
+  ]
+}

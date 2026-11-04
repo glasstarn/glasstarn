@@ -1,0 +1,266 @@
+{
+  "id": "d365-field-service",
+  "version": 1,
+  "name": "Work orders and visits (Dynamics 365 Field Service)",
+  "system": "Microsoft Dynamics 365 Field Service (Dataverse)",
+  "process": "field service",
+  "status": "tested",
+  "note": "Live validation covered an unbooked work order and a second order with two bookings: one scheduled, started, completed, restarted and completed again; another scheduled then canceled. Eleven events, four objects and twenty links matched independent raw source timestamps, IDs, hashes and rows. Cancellation did not cancel the work order. No claim of complete work-order audit history, posting or two completed physical visits.",
+  "case_object_type": "work order",
+  "size_check": {
+    "ask": "How many work orders were created in the period?",
+    "unit": "work order",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "*_*"
+  ],
+  "tables": [
+    {
+      "name": "msdyn_workorder",
+      "noun": "work orders",
+      "label": "Work orders",
+      "export": "Work orders in scope: msdyn_workorderid, createdon, msdyn_name, msdyn_systemstatus (label), msdyn_timeclosed. Use original UTC timestamps from Dataverse; no customer names, addresses or descriptions. Closed On is the latest closure, not a full closure history.",
+      "required": [
+        "msdyn_workorderid",
+        "createdon"
+      ],
+      "fields": [
+        "msdyn_name",
+        "msdyn_systemstatus",
+        "msdyn_timeclosed"
+      ],
+      "date_field": "createdon",
+      "object": "dv_work_order",
+      "key": [
+        "msdyn_workorderid"
+      ]
+    },
+    {
+      "name": "bookableresourcebooking",
+      "label": "Work-order bookings",
+      "export": "Only bookings related to those work orders: bookableresourcebookingid, createdon, msdyn_workorder, resource. Rename Dataverse lookup properties _msdyn_workorder_value and _resource_value to those logical names, preserving GUIDs. Exclude unrelated project/service bookings. Export creation time, not planned start/end as actual execution.",
+      "required": [
+        "bookableresourcebookingid",
+        "createdon",
+        "msdyn_workorder"
+      ],
+      "fields": [
+        "resource"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    },
+    {
+      "name": "msdyn_bookingtimestamp",
+      "label": "Booking status history",
+      "export": "All Booking Timestamps for the exported bookings, including earlier visits and repeated statuses: msdyn_bookingtimestampid, msdyn_booking, msdyn_systemstatus (label), msdyn_timestamptime, msdyn_timestampsource (label). Rename _msdyn_booking_value to msdyn_booking. Use Timestamp Time, not createdon or the current booking status. Preserve UTC instants and all distinct timestamp IDs.",
+      "required": [
+        "msdyn_bookingtimestampid",
+        "msdyn_booking",
+        "msdyn_systemstatus",
+        "msdyn_timestamptime"
+      ],
+      "fields": [
+        "msdyn_timestampsource"
+      ],
+      "date_field": "msdyn_timestamptime",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-work-order",
+      "table": "msdyn_workorder",
+      "columns": [
+        "msdyn_workorderid"
+      ],
+      "label": "work orders listed once"
+    },
+    {
+      "id": "one-booking",
+      "table": "bookableresourcebooking",
+      "columns": [
+        "bookableresourcebookingid"
+      ],
+      "label": "bookings listed once"
+    },
+    {
+      "id": "one-booking-timestamp",
+      "table": "msdyn_bookingtimestamp",
+      "columns": [
+        "msdyn_bookingtimestampid"
+      ],
+      "label": "booking timestamps listed once"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "dv_work_order",
+        "input": "msdyn_workorder",
+        "namespace": "dataverse",
+        "object_type": "work order",
+        "key": [
+          "msdyn_workorderid"
+        ],
+        "attributes": [
+          {
+            "column": "msdyn_systemstatus",
+            "name": "current status"
+          }
+        ]
+      },
+      {
+        "id": "dv_booking",
+        "input": "bookableresourcebooking",
+        "namespace": "dataverse",
+        "object_type": "booking",
+        "key": [
+          "bookableresourcebookingid"
+        ],
+        "attributes": [
+          {
+            "column": "resource",
+            "name": "resource"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "dv_work_order_created",
+        "input": "msdyn_workorder",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_workorderid"
+        ],
+        "activity": {
+          "value": "Create work order"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_work_order",
+            "columns": [
+              "msdyn_workorderid"
+            ],
+            "qualifier": "work order"
+          }
+        ]
+      },
+      {
+        "id": "dv_work_order_closed",
+        "input": "msdyn_workorder",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_workorderid"
+        ],
+        "activity": {
+          "value": "Close work order (latest)"
+        },
+        "timestamp": "msdyn_timeclosed",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "dv_work_order",
+            "columns": [
+              "msdyn_workorderid"
+            ],
+            "qualifier": "work order"
+          }
+        ]
+      },
+      {
+        "id": "dv_booking_created",
+        "input": "bookableresourcebooking",
+        "namespace": "dataverse",
+        "key": [
+          "bookableresourcebookingid"
+        ],
+        "activity": {
+          "value": "Create booking"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_work_order",
+            "columns": [
+              "msdyn_workorder"
+            ],
+            "qualifier": "work order"
+          },
+          {
+            "object": "dv_booking",
+            "columns": [
+              "bookableresourcebookingid"
+            ],
+            "qualifier": "booking"
+          }
+        ]
+      },
+      {
+        "id": "dv_booking_status",
+        "input": "msdyn_bookingtimestamp",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_bookingtimestampid"
+        ],
+        "activity": {
+          "column": "msdyn_systemstatus",
+          "prefix": "Booking status: "
+        },
+        "timestamp": "msdyn_timestamptime",
+        "lookup": {
+          "input": "bookableresourcebooking",
+          "key": [
+            "bookableresourcebookingid"
+          ],
+          "matching": [
+            "msdyn_booking"
+          ],
+          "columns": [
+            "msdyn_workorder"
+          ]
+        },
+        "attributes": [
+          {
+            "column": "msdyn_timestampsource",
+            "name": "timestamp source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "dv_work_order",
+            "columns": [
+              "msdyn_workorder"
+            ],
+            "qualifier": "work order"
+          },
+          {
+            "object": "dv_booking",
+            "columns": [
+              "msdyn_booking"
+            ],
+            "qualifier": "booking"
+          }
+        ]
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "work-order",
+      "label": "Dynamics 365 work order GUID",
+      "object": "dv_work_order",
+      "table": "msdyn_workorder",
+      "key": [
+        "msdyn_workorderid"
+      ],
+      "example": "6a1f0c2e-\u2026",
+      "carry": []
+    }
+  ]
+}

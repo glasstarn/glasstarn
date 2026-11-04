@@ -1,0 +1,850 @@
+{
+  "id": "jde-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (JD Edwards EnterpriseOne)",
+  "system": "JD Edwards EnterpriseOne",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the JD Edwards EnterpriseOne tables. Not yet confirmed on a real system; tested only on made-up tables in the standard layout. Status steps need the detail ledger (F43199, F42199), which records a row for each status change only where the company switched it on.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were entered in the period for the company?",
+    "unit": "purchase order line",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "What time zone are JD Edwards dates and times recorded in (the server's or the company's)? JD Edwards stores them without a time zone. Give it as an offset from UTC, for example -06:00.",
+      "example": "-06:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "F4301",
+      "noun": "purchase orders",
+      "date_label": "the order was entered",
+      "label": "Purchase order headers",
+      "export": "Purchase orders (order type OP) entered in the period for the company: PHDOCO, PHDCTO, PHKCOO, PHAN8, PHTRDJ and PHUSER. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "PHDOCO",
+        "PHDCTO",
+        "PHKCOO",
+        "PHAN8",
+        "PHTRDJ"
+      ],
+      "fields": [
+        "PHUSER",
+        "PHMCU"
+      ],
+      "date_field": "PHTRDJ",
+      "object": "jde_po",
+      "key": [
+        "PHDOCO",
+        "PHDCTO",
+        "PHKCOO"
+      ],
+      "scope_field": "PHKCOO"
+    },
+    {
+      "name": "F4311",
+      "noun": "purchase order lines",
+      "label": "Purchase order lines",
+      "export": "The lines of those orders: PDDOCO, PDDCTO, PDKCOO, PDLNID, PDLITM, PDUORG, PDNXTR and PDLTTR.",
+      "required": [
+        "PDDOCO",
+        "PDDCTO",
+        "PDKCOO",
+        "PDLNID",
+        "PDUORG",
+        "PDNXTR",
+        "PDLTTR"
+      ],
+      "fields": [
+        "PDLITM",
+        "PDPRRC"
+      ],
+      "object": "jde_po_line",
+      "key": [
+        "PDDOCO",
+        "PDDCTO",
+        "PDKCOO",
+        "PDLNID"
+      ]
+    },
+    {
+      "name": "F43199",
+      "label": "Purchase order detail ledger",
+      "export": "Status changes of those lines (F43199): OLDOCO, OLDCTO, OLKCOO, OLLNID, OLLTTR, OLNXTR, OLUPMJ, OLTDAY and OLUSER. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "OLDOCO",
+        "OLDCTO",
+        "OLKCOO",
+        "OLLNID",
+        "OLLTTR",
+        "OLUPMJ",
+        "OLTDAY"
+      ],
+      "fields": [
+        "OLNXTR",
+        "OLUSER"
+      ],
+      "date_field": "OLUPMJ",
+      "optional": true
+    },
+    {
+      "name": "F43121",
+      "label": "Receipts and matches",
+      "export": "Receipt and voucher match records of those lines (F43121): PRMATC (1 receipt, 2 voucher match), PRDOCO, PRDCTO, PRKCOO, PRLNID, PRDOC, PRDCT, PRKCO, PRRCDJ, PRUREC and PRUPMJ. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "PRMATC",
+        "PRDOCO",
+        "PRDCTO",
+        "PRKCOO",
+        "PRLNID",
+        "PRDOC",
+        "PRDCT",
+        "PRKCO",
+        "PRRCDJ",
+        "PRUPMJ"
+      ],
+      "fields": [
+        "PRUREC",
+        "PRTDAY"
+      ],
+      "date_field": "PRRCDJ"
+    },
+    {
+      "name": "F0411",
+      "noun": "vouchers",
+      "label": "Vouchers (accounts payable)",
+      "export": "Supplier vouchers for those orders, first pay item (RPSFX 001): RPDOC, RPDCT, RPKCO, RPSFX, RPPO, RPPDCT, RPPKCO, RPDIVJ, RPDGJ, RPPST and RPAG. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "RPDOC",
+        "RPDCT",
+        "RPKCO",
+        "RPSFX",
+        "RPPO",
+        "RPPDCT",
+        "RPPKCO",
+        "RPDGJ",
+        "RPPST"
+      ],
+      "fields": [
+        "RPDIVJ",
+        "RPAG",
+        "RPAN8"
+      ],
+      "date_field": "RPDGJ",
+      "object": "jde_voucher",
+      "key": [
+        "RPDOC",
+        "RPDCT",
+        "RPKCO"
+      ]
+    },
+    {
+      "name": "F0414",
+      "label": "Payment details",
+      "export": "Payments of those vouchers (F0414): RNPYID, RNRC5, RNDOC, RNDCT, RNKCO, RNSFX and RNPAAP.",
+      "required": [
+        "RNPYID",
+        "RNRC5",
+        "RNDOC",
+        "RNDCT",
+        "RNKCO",
+        "RNSFX"
+      ],
+      "fields": [
+        "RNPAAP"
+      ],
+      "optional": true
+    },
+    {
+      "name": "F0413",
+      "label": "Payment headers",
+      "export": "The payments themselves (F0413): RMPYID, RMDOCM (payment number), RMDMTJ (payment date) and RMVDGJ (void date). Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "RMPYID",
+        "RMDOCM",
+        "RMDMTJ"
+      ],
+      "fields": [
+        "RMVDGJ",
+        "RMPYIN"
+      ],
+      "date_field": "RMDMTJ",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-po",
+      "table": "F4301",
+      "columns": [
+        "PHDOCO",
+        "PHDCTO",
+        "PHKCOO"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-po-line",
+      "table": "F4311",
+      "columns": [
+        "PDDOCO",
+        "PDDCTO",
+        "PDKCOO",
+        "PDLNID"
+      ],
+      "label": "order lines listed once"
+    },
+    {
+      "id": "one-voucher",
+      "table": "F0411",
+      "columns": [
+        "RPDOC",
+        "RPDCT",
+        "RPKCO"
+      ],
+      "label": "vouchers listed once",
+      "where": [
+        {
+          "column": "RPSFX",
+          "in": [
+            "001"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-payment-detail",
+      "table": "F0414",
+      "columns": [
+        "RNPYID",
+        "RNRC5"
+      ],
+      "label": "payment details listed once"
+    },
+    {
+      "id": "one-payment",
+      "table": "F0413",
+      "columns": [
+        "RMPYID"
+      ],
+      "label": "payments listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "F4311",
+        "columns": [
+          "PDDOCO",
+          "PDDCTO",
+          "PDKCOO"
+        ]
+      },
+      "to": {
+        "table": "F4301",
+        "columns": [
+          "PHDOCO",
+          "PHDCTO",
+          "PHKCOO"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipts-have-lines",
+      "label": "receipts and matches whose order line is in the export",
+      "from": {
+        "table": "F43121",
+        "columns": [
+          "PRDOCO",
+          "PRDCTO",
+          "PRKCOO",
+          "PRLNID"
+        ]
+      },
+      "to": {
+        "table": "F4311",
+        "columns": [
+          "PDDOCO",
+          "PDDCTO",
+          "PDKCOO",
+          "PDLNID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "ledger-has-lines",
+      "label": "status changes whose order line is in the export",
+      "from": {
+        "table": "F43199",
+        "columns": [
+          "OLDOCO",
+          "OLDCTO",
+          "OLKCOO",
+          "OLLNID"
+        ]
+      },
+      "to": {
+        "table": "F4311",
+        "columns": [
+          "PDDOCO",
+          "PDDCTO",
+          "PDKCOO",
+          "PDLNID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "vouchers-have-orders",
+      "label": "vouchers whose order is in the export",
+      "from": {
+        "table": "F0411",
+        "columns": [
+          "RPPO",
+          "RPPDCT",
+          "RPPKCO"
+        ],
+        "where": [
+          {
+            "column": "RPSFX",
+            "in": [
+              "001"
+            ]
+          },
+          {
+            "column": "RPPO",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "F4301",
+        "columns": [
+          "PHDOCO",
+          "PHDCTO",
+          "PHKCOO"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} vouchers are for orders entered before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "payments-have-vouchers",
+      "label": "payment details whose voucher is in the export",
+      "from": {
+        "table": "F0414",
+        "columns": [
+          "RNDOC",
+          "RNDCT",
+          "RNKCO"
+        ]
+      },
+      "to": {
+        "table": "F0411",
+        "columns": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "payment-details-have-payments",
+      "label": "payment details whose payment is in the export",
+      "from": {
+        "table": "F0414",
+        "columns": [
+          "RNPYID"
+        ]
+      },
+      "to": {
+        "table": "F0413",
+        "columns": [
+          "RMPYID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "jde_po",
+        "input": "F4301",
+        "namespace": "jde",
+        "object_type": "purchase order",
+        "key": [
+          "PHDOCO",
+          "PHDCTO",
+          "PHKCOO"
+        ],
+        "attributes": [
+          {
+            "column": "PHAN8",
+            "name": "supplier"
+          },
+          {
+            "column": "PHKCOO",
+            "name": "company"
+          }
+        ]
+      },
+      {
+        "id": "jde_po_line",
+        "input": "F4311",
+        "namespace": "jde",
+        "object_type": "purchase order line",
+        "key": [
+          "PDDOCO",
+          "PDDCTO",
+          "PDKCOO",
+          "PDLNID"
+        ],
+        "attributes": [
+          {
+            "column": "PDLITM",
+            "name": "item"
+          },
+          {
+            "column": "PDUORG",
+            "name": "quantity"
+          },
+          {
+            "column": "PDPRRC",
+            "name": "unit cost"
+          }
+        ]
+      },
+      {
+        "id": "jde_voucher",
+        "input": "F0411",
+        "namespace": "jde",
+        "object_type": "voucher",
+        "key": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ],
+        "attributes": [
+          {
+            "column": "RPAG",
+            "name": "amount"
+          }
+        ],
+        "where": [
+          {
+            "column": "RPSFX",
+            "in": [
+              "001"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "jde_po_entered",
+        "input": "F4301",
+        "namespace": "jde",
+        "key": [
+          "PHDOCO",
+          "PHDCTO",
+          "PHKCOO"
+        ],
+        "activity": {
+          "value": "Enter purchase order"
+        },
+        "timestamp": {
+          "date": "PHTRDJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "PHUSER",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_po",
+            "columns": [
+              "PHDOCO",
+              "PHDCTO",
+              "PHKCOO"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "jde_po_status",
+        "input": "F43199",
+        "namespace": "jde",
+        "key": [
+          "OLDOCO",
+          "OLDCTO",
+          "OLKCOO",
+          "OLLNID",
+          "OLLTTR",
+          "OLUPMJ",
+          "OLTDAY"
+        ],
+        "activity": {
+          "column": "OLLTTR",
+          "prefix": "Status "
+        },
+        "timestamp": {
+          "date": "OLUPMJ",
+          "offset": "{setting:offset}",
+          "time": "OLTDAY"
+        },
+        "attributes": [
+          {
+            "column": "OLUSER",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_po_line",
+            "columns": [
+              "OLDOCO",
+              "OLDCTO",
+              "OLKCOO",
+              "OLLNID"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "jde_goods_received",
+        "input": "F43121",
+        "namespace": "jde",
+        "key": [
+          "PRDOC",
+          "PRDCT",
+          "PRKCO",
+          "PRDOCO",
+          "PRLNID"
+        ],
+        "where": [
+          {
+            "column": "PRMATC",
+            "in": [
+              "1"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive goods"
+        },
+        "timestamp": {
+          "date": "PRRCDJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "PRUREC",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_po_line",
+            "columns": [
+              "PRDOCO",
+              "PRDCTO",
+              "PRKCOO",
+              "PRLNID"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "jde_voucher_matched",
+        "input": "F43121",
+        "namespace": "jde",
+        "key": [
+          "PRDOC",
+          "PRDCT",
+          "PRKCO",
+          "PRDOCO",
+          "PRLNID"
+        ],
+        "where": [
+          {
+            "column": "PRMATC",
+            "in": [
+              "2"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Match voucher to receipt"
+        },
+        "timestamp": {
+          "date": "PRUPMJ",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "jde_po_line",
+            "columns": [
+              "PRDOCO",
+              "PRDCTO",
+              "PRKCOO",
+              "PRLNID"
+            ],
+            "qualifier": "purchase order line"
+          },
+          {
+            "object": "jde_voucher",
+            "columns": [
+              "PRDOC",
+              "PRDCT",
+              "PRKCO"
+            ],
+            "qualifier": "voucher"
+          }
+        ]
+      },
+      {
+        "id": "jde_voucher_entered",
+        "input": "F0411",
+        "namespace": "jde",
+        "key": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ],
+        "where": [
+          {
+            "column": "RPSFX",
+            "in": [
+              "001"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Enter voucher"
+        },
+        "timestamp": {
+          "date": "RPDGJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "RPAG",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_voucher",
+            "columns": [
+              "RPDOC",
+              "RPDCT",
+              "RPKCO"
+            ],
+            "qualifier": "voucher"
+          }
+        ]
+      },
+      {
+        "id": "jde_voucher_paid",
+        "input": "F0414",
+        "namespace": "jde",
+        "key": [
+          "RNPYID",
+          "RNRC5"
+        ],
+        "activity": {
+          "value": "Pay voucher"
+        },
+        "lookup": {
+          "input": "F0413",
+          "key": [
+            "RMPYID"
+          ],
+          "matching": [
+            "RNPYID"
+          ],
+          "columns": [
+            "RMDMTJ",
+            "RMDOCM"
+          ]
+        },
+        "timestamp": {
+          "date": "RMDMTJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "RMDOCM",
+            "name": "payment number"
+          },
+          {
+            "column": "RNPAAP",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_voucher",
+            "columns": [
+              "RNDOC",
+              "RNDCT",
+              "RNKCO"
+            ],
+            "qualifier": "voucher"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "jde_po_has_line",
+        "input": "F4311",
+        "source": {
+          "object": "jde_po",
+          "columns": [
+            "PDDOCO",
+            "PDDCTO",
+            "PDKCOO"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "jde_po_line",
+          "columns": [
+            "PDDOCO",
+            "PDDCTO",
+            "PDKCOO",
+            "PDLNID"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "jde_voucher_for_po",
+        "input": "F0411",
+        "where": [
+          {
+            "column": "RPSFX",
+            "in": [
+              "001"
+            ]
+          },
+          {
+            "column": "RPPO",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "jde_voucher",
+          "columns": [
+            "RPDOC",
+            "RPDCT",
+            "RPKCO"
+          ],
+          "qualifier": "voucher"
+        },
+        "target": {
+          "object": "jde_po",
+          "columns": [
+            "RPPO",
+            "RPPDCT",
+            "RPPKCO"
+          ],
+          "qualifier": "purchase order",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "jde_po_entered_lines",
+        "event": "jde_po_entered",
+        "through": "jde_po",
+        "relationship": "jde_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "jde_voucher_entered_po",
+        "event": "jde_voucher_entered",
+        "through": "jde_voucher",
+        "relationship": "jde_voucher_for_po",
+        "qualifier": "purchase order"
+      },
+      {
+        "id": "jde_voucher_entered_lines",
+        "event": "jde_voucher_entered",
+        "through": "jde_po",
+        "relationship": "jde_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "jde_voucher_paid_po",
+        "event": "jde_voucher_paid",
+        "through": "jde_voucher",
+        "relationship": "jde_voucher_for_po",
+        "qualifier": "purchase order"
+      },
+      {
+        "id": "jde_voucher_paid_lines",
+        "event": "jde_voucher_paid",
+        "through": "jde_po",
+        "relationship": "jde_po_has_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "JD Edwards purchase order number",
+      "object": "jde_po",
+      "table": "F4301",
+      "key": [
+        "PHDOCO"
+      ],
+      "example": "4512",
+      "carry": [
+        "jde_po_has_line"
+      ]
+    }
+  ]
+}

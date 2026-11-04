@@ -1,0 +1,189 @@
+{
+  "id": "appian-record-events",
+  "version": 1,
+  "name": "Record events (Appian)",
+  "system": "Appian",
+  "process": "case management",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Appian record events, the event history Appian Process HQ reads: one table of records, one of their events and one of event types. Checked on a real Appian Community workspace on 2026-10-15; see the README. Each company names its own record type, event types and table names.",
+  "case_object_type": "record",
+  "size_check": {
+    "ask": "How many records (cases) were created in the period?",
+    "unit": "record",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "Record",
+      "noun": "records",
+      "date_label": "the record was created",
+      "label": "Records",
+      "export": "The records of the record type being studied (for example a case or request table), created in the period: id, createdOn, status and the company's own fields. Times as exported in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "id",
+        "createdOn"
+      ],
+      "fields": [
+        "status",
+        "createdBy",
+        "modifiedOn"
+      ],
+      "date_field": "createdOn",
+      "object": "appian_record",
+      "key": [
+        "id"
+      ]
+    },
+    {
+      "name": "RecordEvent",
+      "label": "Record events",
+      "export": "The record events of those records (the event history table configured for the record type): id, recordId, eventTypeId, timestamp and user. Times as exported in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "id",
+        "recordId",
+        "eventTypeId",
+        "timestamp",
+        "user"
+      ],
+      "fields": [
+        "details"
+      ],
+      "date_field": "timestamp"
+    },
+    {
+      "name": "RecordEventType",
+      "label": "Record event types",
+      "export": "The event type lookup table of that record type: id and value (the event's name).",
+      "required": [
+        "id",
+        "value"
+      ],
+      "fields": []
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-appian-record",
+      "table": "Record",
+      "columns": [
+        "id"
+      ],
+      "label": "records listed once"
+    },
+    {
+      "id": "one-appian-event",
+      "table": "RecordEvent",
+      "columns": [
+        "id"
+      ],
+      "label": "events listed once"
+    },
+    {
+      "id": "one-appian-event-type",
+      "table": "RecordEventType",
+      "columns": [
+        "id"
+      ],
+      "label": "event types listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "appian-events-have-records",
+      "label": "events whose record is in the export",
+      "from": {
+        "table": "RecordEvent",
+        "columns": [
+          "recordId"
+        ]
+      },
+      "to": {
+        "table": "Record",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "appian-events-have-types",
+      "label": "events whose type is in the export",
+      "from": {
+        "table": "RecordEvent",
+        "columns": [
+          "eventTypeId"
+        ]
+      },
+      "to": {
+        "table": "RecordEventType",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "appian_record",
+        "input": "Record",
+        "namespace": "appian",
+        "object_type": "record",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "status",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "appian_event",
+        "input": "RecordEvent",
+        "namespace": "appian",
+        "key": [
+          "id"
+        ],
+        "activity": {
+          "column": "value"
+        },
+        "lookup": {
+          "input": "RecordEventType",
+          "key": [
+            "id"
+          ],
+          "matching": [
+            "eventTypeId"
+          ],
+          "columns": [
+            "value"
+          ]
+        },
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "appian_record",
+            "columns": [
+              "recordId"
+            ],
+            "qualifier": "record"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log>
+  <object-types>
+    <object-type name="order"><attributes><attribute name="status" type="string"/></attributes></object-type>
+    <object-type name="item"><attributes><attribute name="price" type="float"/></attributes></object-type>
+    <object-type name="package"><attributes/></object-type>
+  </object-types>
+  <event-types>
+    <event-type name="place order"><attributes><attribute name="item count" type="integer"/></attributes></event-type>
+    <event-type name="create package"><attributes/></event-type>
+    <event-type name="deliver package"><attributes><attribute name="successful" type="boolean"/></attributes></event-type>
+  </event-types>
+  <objects>
+    <object id="order-1" type="order">
+      <attributes>
+        <attribute name="status" time="1970-01-01T00:00:00Z">open</attribute>
+        <attribute name="status" time="1970-01-02T00:00:00Z">shipped</attribute>
+      </attributes>
+    </object>
+    <object id="item-1" type="item">
+      <attributes><attribute name="price" time="1970-01-01T00:00:00Z">10.5</attribute></attributes>
+      <objects>
+        <relationship object-id="order-1" qualifier="part of"/>
+        <relationship object-id="package-1" qualifier="packed in"/>
+      </objects>
+    </object>
+    <object id="item-2" type="item">
+      <attributes><attribute name="price" time="1970-01-01T00:00:00Z">20.0</attribute></attributes>
+      <objects><relationship object-id="order-1" qualifier="part of"/></objects>
+    </object>
+    <object id="package-1" type="package"/>
+  </objects>
+  <events>
+    <event id="e-place" type="place order" time="1970-01-01T00:00:00Z">
+      <attributes><attribute name="item count">2</attribute></attributes>
+      <objects>
+        <relationship object-id="order-1" qualifier="order"/>
+        <relationship object-id="item-1" qualifier="item"/>
+        <relationship object-id="item-2" qualifier="item"/>
+      </objects>
+    </event>
+    <event id="e-pack" type="create package" time="1970-01-02T00:00:00Z">
+      <attributes/>
+      <objects>
+        <relationship object-id="package-1" qualifier="result"/>
+        <relationship object-id="item-1" qualifier="packed item"/>
+        <relationship object-id="item-2" qualifier="packed item"/>
+      </objects>
+    </event>
+    <event id="e-deliver" type="deliver package" time="1970-01-03T00:00:00Z">
+      <attributes><attribute name="successful">1</attribute></attributes>
+      <objects><relationship object-id="package-1" qualifier="package"/></objects>
+    </event>
+  </events>
+</log>

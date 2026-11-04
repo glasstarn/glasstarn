@@ -1,0 +1,21 @@
+case_id,activity,timestamp
+APP-1,Submit Application,2026-07-01 09:00:00
+APP-1,Assess,2026-07-01 14:00:00
+APP-1,Accept,2026-07-02 09:00:00
+APP-1,Notify Applicant,2026-07-02 10:00:00
+APP-2,Submit Application,2026-07-01 10:00:00
+APP-2,Assess,2026-07-02 11:00:00
+APP-2,Reject,2026-07-02 15:00:00
+APP-2,Notify Applicant,2026-07-02 16:00:00
+APP-3,Submit Application,2026-07-02 08:00:00
+APP-3,Assess,2026-07-02 13:00:00
+APP-3,Accept,2026-07-03 09:00:00
+APP-3,Notify Applicant,2026-07-03 11:00:00
+APP-4,Submit Application,2026-07-02 09:00:00
+APP-4,Assess,2026-07-03 10:00:00
+APP-4,Reject,2026-07-03 14:00:00
+APP-4,Notify Applicant,2026-07-03 15:00:00
+APP-5,Submit Application,2026-07-03 08:00:00
+APP-5,Assess,2026-07-03 12:00:00
+APP-5,Accept,2026-07-04 09:00:00
+APP-5,Notify Applicant,2026-07-04 10:00:00

@@ -1,0 +1,1036 @@
+{
+  "id": "sap-plan-to-produce",
+  "version": 1,
+  "name": "Plan to produce (SAP ECC and S/4HANA)",
+  "system": "SAP ECC or SAP S/4HANA",
+  "process": "plan to produce",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on SAP S/4HANA 2025 FPS01 trial data: check, build and four order-history comparisons passed. Other SAP releases, customer customizations and unobserved branches still require validation.",
+  "case_object_type": "production order",
+  "size_check": {
+    "ask": "How many production orders were created in the period for the plant?",
+    "unit": "production order",
+    "steps_per_unit": 8
+  },
+  "custom_prefixes": [
+    "Z*",
+    "YY*"
+  ],
+  "include": [
+    "sap-clock"
+  ],
+  "tables": [
+    {
+      "name": "AUFK",
+      "label": "Order master data",
+      "export": "Production orders (AUTYP 10) created in the period for the company code (filter AUTYP, BUKRS and ERDAT).",
+      "required": [
+        "AUFNR",
+        "AUTYP",
+        "AUART",
+        "ERDAT",
+        "ERFZEIT",
+        "BUKRS"
+      ],
+      "fields": [
+        "WERKS",
+        "ERNAM",
+        "OBJNR"
+      ],
+      "date_field": "ERDAT",
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "AFKO",
+      "date_label": "the order is planned to start",
+      "label": "Production order headers",
+      "export": "Header data of those orders: AUFNR, PLNBEZ (material), GAMNG (quantity), GSTRP and GLTRP (planned start and finish), and the company's own fields.",
+      "required": [
+        "AUFNR",
+        "PLNBEZ",
+        "GAMNG",
+        "GSTRP",
+        "GLTRP"
+      ],
+      "fields": [
+        "DISPO",
+        "FEVOR",
+        "GMEIN",
+        "GSTRI",
+        "GETRI"
+      ],
+      "date_field": "GSTRP"
+    },
+    {
+      "name": "AFPO",
+      "noun": "production orders",
+      "label": "Production order items",
+      "export": "Items of those orders: AUFNR, POSNR, MATNR, PSMNG (quantity), DGLTP (planned finish), PLNUM (the planned order it was converted from, if any), KDAUF and KDPOS (the sales order line it is made for, if any).",
+      "required": [
+        "AUFNR",
+        "POSNR",
+        "MATNR",
+        "PSMNG",
+        "DGLTP",
+        "PLNUM",
+        "KDAUF",
+        "KDPOS"
+      ],
+      "fields": [
+        "WEMNG",
+        "LTRMI",
+        "DWERK"
+      ],
+      "object": "production_order",
+      "key": [
+        "AUFNR"
+      ]
+    },
+    {
+      "name": "AFRU",
+      "label": "Order confirmations",
+      "export": "Confirmations of those orders, including cancelled ones and cancellations (STOKZ, STZHL).",
+      "required": [
+        "RUECK",
+        "RMZHL",
+        "AUFNR",
+        "VORNR",
+        "ERSDA",
+        "ERZET",
+        "AUERU",
+        "STZHL"
+      ],
+      "fields": [
+        "ERNAM",
+        "LMNGA",
+        "XMNGA",
+        "STOKZ",
+        "BUDAT",
+        "ARBID"
+      ],
+      "date_field": "ERSDA"
+    },
+    {
+      "name": "MSEG",
+      "label": "Goods movements",
+      "export": "Material document items posted against those orders (AUFNR filled): component issues (261, 262) and goods receipts (101, 102).",
+      "required": [
+        "MBLNR",
+        "MJAHR",
+        "ZEILE",
+        "BWART",
+        "AUFNR",
+        "MATNR",
+        "MENGE",
+        "CPUDT_MKPF",
+        "CPUTM_MKPF"
+      ],
+      "fields": [
+        "WERKS",
+        "LGORT",
+        "MEINS",
+        "USNAM_MKPF"
+      ],
+      "date_field": "CPUDT_MKPF",
+      "optional": true
+    },
+    {
+      "name": "JCDS",
+      "label": "Status changes",
+      "export": "Status change documents of those orders (OBJNR = OR + order number), at least for statuses I0002 (released), I0045 (technically completed), I0046 (closed) and I0076 (deletion flag).",
+      "required": [
+        "OBJNR",
+        "STAT",
+        "CHGNR",
+        "UDATE",
+        "UTIME",
+        "INACT"
+      ],
+      "fields": [
+        "USNAM",
+        "CHIND"
+      ],
+      "date_field": "UDATE",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-order",
+      "table": "AUFK",
+      "columns": [
+        "AUFNR"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-production-order-header",
+      "table": "AFKO",
+      "columns": [
+        "AUFNR"
+      ],
+      "label": "order headers listed once"
+    },
+    {
+      "id": "one-production-order-item",
+      "table": "AFPO",
+      "columns": [
+        "AUFNR",
+        "POSNR"
+      ],
+      "label": "order items listed once"
+    },
+    {
+      "id": "one-confirmation",
+      "table": "AFRU",
+      "columns": [
+        "RUECK",
+        "RMZHL"
+      ],
+      "label": "confirmations listed once"
+    },
+    {
+      "id": "one-goods-movement",
+      "table": "MSEG",
+      "columns": [
+        "MBLNR",
+        "MJAHR",
+        "ZEILE"
+      ],
+      "label": "goods movements listed once"
+    },
+    {
+      "id": "one-status-change",
+      "table": "JCDS",
+      "columns": [
+        "OBJNR",
+        "STAT",
+        "CHGNR"
+      ],
+      "label": "status changes listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "orders-have-headers",
+      "label": "production orders whose header is in the export",
+      "from": {
+        "table": "AUFK",
+        "columns": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "AUTYP",
+            "in": [
+              "10"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "AFKO",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "headers-have-orders",
+      "label": "order headers whose order is in the export",
+      "from": {
+        "table": "AFKO",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "to": {
+        "table": "AUFK",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "orders-have-items",
+      "label": "production orders whose item is in the export",
+      "from": {
+        "table": "AFKO",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "to": {
+        "table": "AFPO",
+        "columns": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "POSNR",
+            "in": [
+              "0001"
+            ]
+          }
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "confirmations-have-orders",
+      "label": "confirmations whose order is in the export",
+      "from": {
+        "table": "AFRU",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "to": {
+        "table": "AFKO",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "movements-have-orders",
+      "label": "goods movements whose order is in the export",
+      "from": {
+        "table": "MSEG",
+        "columns": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "AFKO",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "statuses-have-orders",
+      "label": "status changes whose order is in the export",
+      "from": {
+        "table": "JCDS",
+        "columns": [
+          {
+            "column": "OBJNR",
+            "start": 2,
+            "length": 12
+          }
+        ]
+      },
+      "to": {
+        "table": "AFKO",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "production_order",
+        "input": "AFPO",
+        "namespace": "sap",
+        "object_type": "production order",
+        "key": [
+          "AUFNR"
+        ],
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "PSMNG",
+            "name": "quantity"
+          },
+          {
+            "column": "DGLTP",
+            "name": "planned finish"
+          },
+          {
+            "column": "PLNUM",
+            "name": "planned order"
+          },
+          {
+            "column": "KDAUF",
+            "name": "sales order"
+          },
+          {
+            "column": "KDPOS",
+            "name": "sales order item"
+          }
+        ],
+        "where": [
+          {
+            "column": "POSNR",
+            "in": [
+              "0001"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "production_order_created",
+        "input": "AUFK",
+        "namespace": "sap",
+        "key": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "AUTYP",
+            "in": [
+              "10"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create production order"
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERFZEIT"
+        },
+        "attributes": [
+          {
+            "column": "AUART",
+            "name": "order type"
+          },
+          {
+            "column": "WERKS",
+            "name": "plant"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "production_order_released",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0002"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Release order"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "components_issued",
+        "input": "MSEG",
+        "namespace": "sap",
+        "key": [
+          "MBLNR",
+          "MJAHR",
+          "ZEILE"
+        ],
+        "where": [
+          {
+            "column": "BWART",
+            "in": [
+              "261"
+            ]
+          },
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Issue components"
+        },
+        "timestamp": {
+          "date": "CPUDT_MKPF",
+          "offset": "{setting:offset}",
+          "time": "CPUTM_MKPF"
+        },
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "MENGE",
+            "name": "quantity"
+          },
+          {
+            "column": "USNAM_MKPF",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "component_issue_reversed",
+        "input": "MSEG",
+        "namespace": "sap",
+        "key": [
+          "MBLNR",
+          "MJAHR",
+          "ZEILE"
+        ],
+        "where": [
+          {
+            "column": "BWART",
+            "in": [
+              "262"
+            ]
+          },
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reverse component issue"
+        },
+        "timestamp": {
+          "date": "CPUDT_MKPF",
+          "offset": "{setting:offset}",
+          "time": "CPUTM_MKPF"
+        },
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "MENGE",
+            "name": "quantity"
+          },
+          {
+            "column": "USNAM_MKPF",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "operation_confirmed",
+        "input": "AFRU",
+        "namespace": "sap",
+        "key": [
+          "RUECK",
+          "RMZHL"
+        ],
+        "where": [
+          {
+            "column": "AUERU",
+            "in": [
+              ""
+            ]
+          },
+          {
+            "column": "STZHL",
+            "in": [
+              "",
+              "00000000"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Confirm operation (partial)"
+        },
+        "timestamp": {
+          "date": "ERSDA",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "attributes": [
+          {
+            "column": "VORNR",
+            "name": "operation"
+          },
+          {
+            "column": "LMNGA",
+            "name": "yield"
+          },
+          {
+            "column": "XMNGA",
+            "name": "scrap"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "operation_finished",
+        "input": "AFRU",
+        "namespace": "sap",
+        "key": [
+          "RUECK",
+          "RMZHL"
+        ],
+        "where": [
+          {
+            "column": "AUERU",
+            "in": [
+              "X"
+            ]
+          },
+          {
+            "column": "STZHL",
+            "in": [
+              "",
+              "00000000"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Confirm operation (final)"
+        },
+        "timestamp": {
+          "date": "ERSDA",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "attributes": [
+          {
+            "column": "VORNR",
+            "name": "operation"
+          },
+          {
+            "column": "LMNGA",
+            "name": "yield"
+          },
+          {
+            "column": "XMNGA",
+            "name": "scrap"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "confirmation_cancelled",
+        "input": "AFRU",
+        "namespace": "sap",
+        "key": [
+          "RUECK",
+          "RMZHL"
+        ],
+        "where": [
+          {
+            "column": "STZHL",
+            "not_in": [
+              "",
+              "00000000"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel confirmation"
+        },
+        "timestamp": {
+          "date": "ERSDA",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "attributes": [
+          {
+            "column": "VORNR",
+            "name": "operation"
+          },
+          {
+            "column": "LMNGA",
+            "name": "yield"
+          },
+          {
+            "column": "XMNGA",
+            "name": "scrap"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "finished_goods_received",
+        "input": "MSEG",
+        "namespace": "sap",
+        "key": [
+          "MBLNR",
+          "MJAHR",
+          "ZEILE"
+        ],
+        "where": [
+          {
+            "column": "BWART",
+            "in": [
+              "101"
+            ]
+          },
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive finished goods"
+        },
+        "timestamp": {
+          "date": "CPUDT_MKPF",
+          "offset": "{setting:offset}",
+          "time": "CPUTM_MKPF"
+        },
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "MENGE",
+            "name": "quantity"
+          },
+          {
+            "column": "USNAM_MKPF",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "goods_receipt_reversed",
+        "input": "MSEG",
+        "namespace": "sap",
+        "key": [
+          "MBLNR",
+          "MJAHR",
+          "ZEILE"
+        ],
+        "where": [
+          {
+            "column": "BWART",
+            "in": [
+              "102"
+            ]
+          },
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reverse goods receipt"
+        },
+        "timestamp": {
+          "date": "CPUDT_MKPF",
+          "offset": "{setting:offset}",
+          "time": "CPUTM_MKPF"
+        },
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "MENGE",
+            "name": "quantity"
+          },
+          {
+            "column": "USNAM_MKPF",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "production_order_completed",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0045"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Complete order technically"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "production_order_closed",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0046"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Close order"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "production_order_deletion_flagged",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0076"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Flag order for deletion"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "production_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      }
+    ]
+  }
+}

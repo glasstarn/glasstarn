@@ -1,0 +1,617 @@
+{
+  "id": "salesforce-cpq-quote-to-renewal",
+  "version": 1,
+  "name": "Quote to renewal (Salesforce CPQ)",
+  "system": "Salesforce CPQ (Salesforce Revenue Cloud managed package)",
+  "process": "quote to renewal",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of the Salesforce CPQ managed package objects (SBQQ namespace) and their links to orders, contracts and renewal opportunities. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Quote status steps need field history tracking on SBQQ__Status__c; approvals made with Advanced Approvals appear as those status changes.",
+  "case_object_type": "quote",
+  "size_check": {
+    "ask": "How many CPQ quotes were created in the period?",
+    "unit": "quote",
+    "steps_per_unit": 7
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "include": [
+    "salesforce-opportunities"
+  ],
+  "tables": [
+    {
+      "name": "Opportunity",
+      "noun": "opportunities",
+      "date_label": "the opportunity was created",
+      "label": "Salesforce opportunities",
+      "export": "Opportunities for the period: Id, Name, AccountId, CreatedDate, StageName, IsClosed, IsWon, CloseDate, Amount, SBQQ__RenewedContract__c (the contract a renewal renews) and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "StageName",
+        "IsClosed",
+        "IsWon",
+        "CloseDate",
+        "Amount"
+      ],
+      "fields": [
+        "Name",
+        "AccountId",
+        "LeadSource",
+        "OwnerId",
+        "Probability",
+        "Type",
+        "SBQQ__RenewedContract__c"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_opportunity",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "SBQQ__Quote__c",
+      "noun": "quotes",
+      "date_label": "the quote was created",
+      "label": "CPQ quotes",
+      "export": "CPQ quotes created in the period: Id, Name, SBQQ__Opportunity2__c, CreatedDate, SBQQ__Status__c, SBQQ__Primary__c, SBQQ__NetAmount__c, SBQQ__Ordered__c and the company's own fields.",
+      "required": [
+        "Id",
+        "SBQQ__Opportunity2__c",
+        "CreatedDate",
+        "SBQQ__Status__c",
+        "SBQQ__Primary__c"
+      ],
+      "fields": [
+        "Name",
+        "SBQQ__NetAmount__c",
+        "SBQQ__Ordered__c",
+        "SBQQ__Type__c"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_cpq_quote",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "SBQQ__Quote__History",
+      "label": "CPQ quote field history",
+      "export": "Field history of those quotes (SBQQ__Quote__History): Id, ParentId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "ParentId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "SBQQ__Quote__c",
+      "needs_tracked": [
+        "SBQQ__Status__c"
+      ]
+    },
+    {
+      "name": "Order",
+      "label": "Orders",
+      "export": "Orders created from those quotes: Id, SBQQ__Quote__c, CreatedDate, Status and ActivatedDate.",
+      "required": [
+        "Id",
+        "SBQQ__Quote__c",
+        "CreatedDate",
+        "ActivatedDate"
+      ],
+      "fields": [
+        "Status",
+        "OrderNumber",
+        "TotalAmount"
+      ],
+      "date_field": "CreatedDate",
+      "optional": true
+    },
+    {
+      "name": "Contract",
+      "noun": "contracts",
+      "label": "Contracts",
+      "export": "Contracts created from those quotes or orders: Id, SBQQ__Quote__c, SBQQ__Order__c, CreatedDate, StartDate, EndDate, ActivatedDate and Status.",
+      "required": [
+        "Id",
+        "SBQQ__Quote__c",
+        "CreatedDate",
+        "StartDate",
+        "EndDate",
+        "ActivatedDate"
+      ],
+      "fields": [
+        "SBQQ__Order__c",
+        "Status",
+        "ContractNumber",
+        "SBQQ__RenewalOpportunity__c"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_cpq_contract",
+      "key": [
+        "Id"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-cpq-quote",
+      "table": "SBQQ__Quote__c",
+      "columns": [
+        "Id"
+      ],
+      "label": "quotes listed once"
+    },
+    {
+      "id": "one-cpq-quote-history-row",
+      "table": "SBQQ__Quote__History",
+      "columns": [
+        "Id"
+      ],
+      "label": "quote history rows listed once"
+    },
+    {
+      "id": "one-cpq-order",
+      "table": "Order",
+      "columns": [
+        "Id"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-cpq-contract",
+      "table": "Contract",
+      "columns": [
+        "Id"
+      ],
+      "label": "contracts listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "cpq-history-has-quotes",
+      "label": "quote history rows whose quote is in the export",
+      "from": {
+        "table": "SBQQ__Quote__History",
+        "columns": [
+          "ParentId"
+        ]
+      },
+      "to": {
+        "table": "SBQQ__Quote__c",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "cpq-orders-have-quotes",
+      "label": "orders whose quote is in the export",
+      "from": {
+        "table": "Order",
+        "columns": [
+          "SBQQ__Quote__c"
+        ],
+        "where": [
+          {
+            "column": "SBQQ__Quote__c",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SBQQ__Quote__c",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "cpq-contracts-have-quotes",
+      "label": "contracts whose quote is in the export",
+      "from": {
+        "table": "Contract",
+        "columns": [
+          "SBQQ__Quote__c"
+        ],
+        "where": [
+          {
+            "column": "SBQQ__Quote__c",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SBQQ__Quote__c",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "sf_cpq_quote",
+        "input": "SBQQ__Quote__c",
+        "namespace": "salesforce",
+        "object_type": "quote",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "SBQQ__Status__c",
+            "name": "status"
+          },
+          {
+            "column": "SBQQ__Primary__c",
+            "name": "primary"
+          },
+          {
+            "column": "SBQQ__NetAmount__c",
+            "name": "net amount"
+          }
+        ]
+      },
+      {
+        "id": "sf_cpq_contract",
+        "input": "Contract",
+        "namespace": "salesforce",
+        "object_type": "contract",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "StartDate",
+            "name": "start date"
+          },
+          {
+            "column": "EndDate",
+            "name": "end date"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_cpq_quote_created",
+        "input": "SBQQ__Quote__c",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create quote"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "SBQQ__NetAmount__c",
+            "name": "net amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_cpq_quote",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "quote"
+          },
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "SBQQ__Opportunity2__c"
+            ],
+            "qualifier": "opportunity",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_cpq_quote_status_changed",
+        "input": "SBQQ__Quote__History",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "SBQQ__Status__c"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue",
+          "prefix": "Quote: "
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_cpq_quote",
+            "columns": [
+              "ParentId"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_cpq_order_created",
+        "input": "Order",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "SBQQ__Quote__c",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create order"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "TotalAmount",
+            "name": "total amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_cpq_quote",
+            "columns": [
+              "SBQQ__Quote__c"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_cpq_order_activated",
+        "input": "Order",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "SBQQ__Quote__c",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Activate order"
+        },
+        "timestamp": "ActivatedDate",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "sf_cpq_quote",
+            "columns": [
+              "SBQQ__Quote__c"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "sf_cpq_contract_created",
+        "input": "Contract",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create contract"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_cpq_contract",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "contract"
+          },
+          {
+            "object": "sf_cpq_quote",
+            "columns": [
+              "SBQQ__Quote__c"
+            ],
+            "qualifier": "quote",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_cpq_contract_activated",
+        "input": "Contract",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Activate contract"
+        },
+        "timestamp": "ActivatedDate",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "sf_cpq_contract",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "contract"
+          },
+          {
+            "object": "sf_cpq_quote",
+            "columns": [
+              "SBQQ__Quote__c"
+            ],
+            "qualifier": "quote",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "sf_cpq_quote_for_opportunity",
+        "input": "SBQQ__Quote__c",
+        "source": {
+          "object": "sf_cpq_quote",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "quote"
+        },
+        "target": {
+          "object": "sf_opportunity",
+          "columns": [
+            "SBQQ__Opportunity2__c"
+          ],
+          "qualifier": "opportunity",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "sf_cpq_contract_from_quote",
+        "input": "Contract",
+        "source": {
+          "object": "sf_cpq_contract",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "contract"
+        },
+        "target": {
+          "object": "sf_cpq_quote",
+          "columns": [
+            "SBQQ__Quote__c"
+          ],
+          "qualifier": "from quote",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "sf_cpq_renewal_of_contract",
+        "input": "Opportunity",
+        "source": {
+          "object": "sf_opportunity",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "renewal"
+        },
+        "target": {
+          "object": "sf_cpq_contract",
+          "columns": [
+            "SBQQ__RenewedContract__c"
+          ],
+          "qualifier": "renews",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "sf_opportunity_created_contract",
+        "event": "sf_opportunity_created",
+        "through": "sf_opportunity",
+        "relationship": "sf_cpq_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_stage_reached_contract",
+        "event": "sf_stage_reached",
+        "through": "sf_opportunity",
+        "relationship": "sf_cpq_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_opportunity_won_contract",
+        "event": "sf_opportunity_won",
+        "through": "sf_opportunity",
+        "relationship": "sf_cpq_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_opportunity_lost_contract",
+        "event": "sf_opportunity_lost",
+        "through": "sf_opportunity",
+        "relationship": "sf_cpq_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_opportunity_created_quote",
+        "event": "sf_opportunity_created",
+        "through": "sf_cpq_contract",
+        "relationship": "sf_cpq_contract_from_quote",
+        "qualifier": "renews quote"
+      },
+      {
+        "id": "sf_stage_reached_quote",
+        "event": "sf_stage_reached",
+        "through": "sf_cpq_contract",
+        "relationship": "sf_cpq_contract_from_quote",
+        "qualifier": "renews quote"
+      },
+      {
+        "id": "sf_opportunity_won_quote",
+        "event": "sf_opportunity_won",
+        "through": "sf_cpq_contract",
+        "relationship": "sf_cpq_contract_from_quote",
+        "qualifier": "renews quote"
+      },
+      {
+        "id": "sf_opportunity_lost_quote",
+        "event": "sf_opportunity_lost",
+        "through": "sf_cpq_contract",
+        "relationship": "sf_cpq_contract_from_quote",
+        "qualifier": "renews quote"
+      }
+    ]
+  }
+}

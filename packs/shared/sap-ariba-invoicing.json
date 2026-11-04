@@ -1,0 +1,327 @@
+{
+  "id": "sap-ariba-invoicing",
+  "note": "Supplier invoices received, reconciled and approved in SAP Ariba, from an Ariba invoice report. Needs the Ariba buying part and a payables part that defines the invoice object and invoice_order_lines.",
+  "tables": [
+    {
+      "name": "AribaInvoice",
+      "noun": "Ariba invoices",
+      "date_label": "the invoice was received",
+      "label": "Ariba invoices",
+      "export": "An Ariba invoice report for the period: Invoice ID, Supplier Invoice Number, Order ID, ERP Order ID, ERP Invoice ID and ERP Fiscal Year (the SAP invoice it became), Submitted Date, Exception Resolved Date, Approved Date, Rejected Date and Status, dates with their time.",
+      "required": [
+        "Invoice ID",
+        "Order ID",
+        "ERP Order ID",
+        "ERP Invoice ID",
+        "ERP Fiscal Year",
+        "Submitted Date",
+        "Exception Resolved Date",
+        "Approved Date",
+        "Rejected Date"
+      ],
+      "fields": [
+        "Supplier Invoice Number",
+        "Status"
+      ],
+      "date_field": "Submitted Date",
+      "object": "ariba_invoice",
+      "key": [
+        "Invoice ID"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ariba-invoice",
+      "table": "AribaInvoice",
+      "columns": [
+        "Invoice ID"
+      ],
+      "label": "Ariba invoices listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "ariba-invoices-have-orders",
+      "label": "Ariba invoices whose Ariba order is in the export",
+      "from": {
+        "table": "AribaInvoice",
+        "columns": [
+          "Order ID"
+        ]
+      },
+      "to": {
+        "table": "AribaOrder",
+        "columns": [
+          "Order ID"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} Ariba invoices ({missing_share}) refer to Ariba orders that are not in the export, usually orders from before the period. Should the Ariba order report cover earlier months too?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Yes, export earlier orders as well"
+          },
+          {
+            "id": "keep",
+            "label": "No, keep the invoices without their order"
+          }
+        ],
+        "recommended": "widen"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "ariba_invoice",
+        "input": "AribaInvoice",
+        "namespace": "ariba",
+        "object_type": "Ariba invoice",
+        "key": [
+          "Invoice ID"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "Ariba status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ariba_invoice_received",
+        "input": "AribaInvoice",
+        "namespace": "ariba",
+        "key": [
+          "Invoice ID"
+        ],
+        "activity": {
+          "value": "Receive invoice in Ariba"
+        },
+        "timestamp": {
+          "date": "Submitted Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "objects": [
+          {
+            "object": "ariba_invoice",
+            "columns": [
+              "Invoice ID"
+            ],
+            "qualifier": "Ariba invoice"
+          }
+        ]
+      },
+      {
+        "id": "ariba_invoice_exception_resolved",
+        "input": "AribaInvoice",
+        "namespace": "ariba",
+        "key": [
+          "Invoice ID"
+        ],
+        "activity": {
+          "value": "Resolve invoice exception"
+        },
+        "timestamp": {
+          "date": "Exception Resolved Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "objects": [
+          {
+            "object": "ariba_invoice",
+            "columns": [
+              "Invoice ID"
+            ],
+            "qualifier": "Ariba invoice"
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "ariba_invoice_approved",
+        "input": "AribaInvoice",
+        "namespace": "ariba",
+        "key": [
+          "Invoice ID"
+        ],
+        "activity": {
+          "value": "Approve invoice"
+        },
+        "timestamp": {
+          "date": "Approved Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "objects": [
+          {
+            "object": "ariba_invoice",
+            "columns": [
+              "Invoice ID"
+            ],
+            "qualifier": "Ariba invoice"
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "ariba_invoice_rejected",
+        "input": "AribaInvoice",
+        "namespace": "ariba",
+        "key": [
+          "Invoice ID"
+        ],
+        "activity": {
+          "value": "Reject invoice"
+        },
+        "timestamp": {
+          "date": "Rejected Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "objects": [
+          {
+            "object": "ariba_invoice",
+            "columns": [
+              "Invoice ID"
+            ],
+            "qualifier": "Ariba invoice"
+          }
+        ],
+        "optional_timestamp": true
+      }
+    ],
+    "relationships": [
+      {
+        "id": "ariba_invoice_order",
+        "input": "AribaInvoice",
+        "source": {
+          "object": "ariba_invoice",
+          "columns": [
+            "Invoice ID"
+          ],
+          "qualifier": "Ariba invoice"
+        },
+        "target": {
+          "object": "order",
+          "columns": [
+            "ERP Order ID"
+          ],
+          "qualifier": "for order",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "ariba_invoice_sap",
+        "input": "AribaInvoice",
+        "source": {
+          "object": "ariba_invoice",
+          "columns": [
+            "Invoice ID"
+          ],
+          "qualifier": "Ariba invoice"
+        },
+        "target": {
+          "object": "invoice",
+          "columns": [
+            "ERP Invoice ID",
+            "ERP Fiscal Year"
+          ],
+          "qualifier": "posted as",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "ariba_invoice_received_order",
+        "event": "ariba_invoice_received",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_invoice_received_sap_invoice",
+        "event": "ariba_invoice_received",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_sap",
+        "qualifier": "supplier invoice"
+      },
+      {
+        "id": "ariba_invoice_received_lines",
+        "event": "ariba_invoice_received",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_invoice_exception_resolved_order",
+        "event": "ariba_invoice_exception_resolved",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_invoice_exception_resolved_sap_invoice",
+        "event": "ariba_invoice_exception_resolved",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_sap",
+        "qualifier": "supplier invoice"
+      },
+      {
+        "id": "ariba_invoice_exception_resolved_lines",
+        "event": "ariba_invoice_exception_resolved",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_invoice_approved_order",
+        "event": "ariba_invoice_approved",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_invoice_approved_sap_invoice",
+        "event": "ariba_invoice_approved",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_sap",
+        "qualifier": "supplier invoice"
+      },
+      {
+        "id": "ariba_invoice_approved_lines",
+        "event": "ariba_invoice_approved",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_invoice_rejected_order",
+        "event": "ariba_invoice_rejected",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_invoice_rejected_sap_invoice",
+        "event": "ariba_invoice_rejected",
+        "through": "ariba_invoice",
+        "relationship": "ariba_invoice_sap",
+        "qualifier": "supplier invoice"
+      },
+      {
+        "id": "ariba_invoice_rejected_lines",
+        "event": "ariba_invoice_rejected",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

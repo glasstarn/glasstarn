@@ -1,0 +1,1208 @@
+Id,OpportunityId,CreatedDate,Field,OldValue,NewValue
+017H00001,006D0001,2026-02-02T10:45:00.000Z,StageName,Prospecting,Qualification
+017H00002,006D0001,2026-02-11T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00003,006D0001,2026-02-18T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00004,006D0001,2026-02-22T13:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00009,006D0003,2026-02-01T08:45:00.000Z,StageName,Prospecting,Qualification
+017H00010,006D0003,2026-02-10T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00011,006D0003,2026-02-14T08:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00012,006D0003,2026-02-21T10:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00013,006D0004,2026-01-14T12:30:00.000Z,StageName,Prospecting,Qualification
+017H00014,006D0004,2026-01-16T08:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00015,006D0004,2026-01-21T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00016,006D0004,2026-01-22T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00017,006D0005,2026-03-19T17:15:00.000Z,StageName,Prospecting,Qualification
+017H00018,006D0005,2026-03-21T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00019,006D0005,2026-03-30T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00020,006D0006,2026-02-04T08:45:00.000Z,StageName,Prospecting,Qualification
+017H00021,006D0006,2026-02-15T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00022,006D0006,2026-02-23T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00023,006D0006,2026-02-25T10:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00024,006D0007,2026-03-08T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00025,006D0007,2026-03-16T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00026,006D0007,2026-03-24T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00027,006D0007,2026-03-27T15:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00028,006D0008,2026-01-08T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00029,006D0008,2026-01-18T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00030,006D0008,2026-01-23T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00031,006D0008,2026-01-30T08:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00032,006D0009,2026-01-29T14:00:00.000Z,StageName,Prospecting,Qualification
+017H00033,006D0009,2026-02-01T17:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00034,006D0009,2026-02-04T08:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00035,006D0009,2026-02-06T17:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00036,006D0009,2026-02-17T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00037,006D0009,2026-02-23T14:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00042,006D0011,2026-02-13T16:15:00.000Z,StageName,Prospecting,Qualification
+017H00043,006D0011,2026-02-18T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00044,006D0011,2026-02-20T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00045,006D0011,2026-02-21T16:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00046,006D0012,2025-12-31T15:30:00.000Z,StageName,Prospecting,Qualification
+017H00047,006D0012,2026-01-04T15:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00048,006D0012,2026-01-07T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00049,006D0012,2026-01-18T17:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00050,006D0012,2026-01-30T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00051,006D0012,2026-02-08T08:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00052,006D0013,2026-02-27T17:15:00.000Z,StageName,Prospecting,Qualification
+017H00053,006D0013,2026-03-04T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00054,006D0013,2026-03-16T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00055,006D0013,2026-03-22T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00056,006D0014,2026-01-24T16:30:00.000Z,StageName,Prospecting,Qualification
+017H00057,006D0014,2026-01-26T17:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00058,006D0014,2026-02-07T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00059,006D0014,2026-02-15T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00060,006D0015,2026-03-07T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00061,006D0015,2026-03-15T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00062,006D0015,2026-03-17T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00063,006D0015,2026-03-21T10:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00064,006D0016,2026-02-12T08:45:00.000Z,StageName,Prospecting,Qualification
+017H00065,006D0016,2026-02-24T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00066,006D0016,2026-03-05T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00067,006D0016,2026-03-11T14:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00073,006D0019,2026-02-22T17:00:00.000Z,StageName,Prospecting,Qualification
+017H00074,006D0019,2026-03-04T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00075,006D0019,2026-03-07T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00076,006D0019,2026-03-09T13:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00081,006D0021,2025-12-11T17:15:00.000Z,StageName,Prospecting,Qualification
+017H00082,006D0021,2025-12-17T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00083,006D0021,2025-12-23T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00084,006D0021,2025-12-31T15:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00085,006D0021,2026-01-02T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00086,006D0021,2026-01-06T08:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00091,006D0023,2025-12-20T15:15:00.000Z,StageName,Prospecting,Qualification
+017H00092,006D0023,2025-12-31T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00093,006D0023,2026-01-09T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00094,006D0023,2026-01-19T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00095,006D0024,2026-03-07T16:15:00.000Z,StageName,Prospecting,Qualification
+017H00096,006D0024,2026-03-18T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00097,006D0024,2026-03-30T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00098,006D0025,2026-03-03T08:30:00.000Z,StageName,Prospecting,Qualification
+017H00099,006D0025,2026-03-05T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00100,006D0025,2026-03-15T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00101,006D0025,2026-03-23T10:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00106,006D0027,2026-02-22T13:00:00.000Z,StageName,Prospecting,Qualification
+017H00107,006D0027,2026-03-05T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00108,006D0027,2026-03-13T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00109,006D0027,2026-03-19T14:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00110,006D0029,2026-03-19T17:45:00.000Z,StageName,Prospecting,Qualification
+017H00119,006D0032,2026-01-29T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00120,006D0032,2026-02-04T10:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00121,006D0032,2026-02-07T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00122,006D0032,2026-02-09T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00123,006D0033,2026-03-18T12:00:00.000Z,StageName,Prospecting,Qualification
+017H00124,006D0033,2026-03-25T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00133,006D0036,2025-12-24T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00134,006D0036,2025-12-30T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00135,006D0036,2026-01-05T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00136,006D0036,2026-01-10T11:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00137,006D0038,2025-12-23T12:30:00.000Z,StageName,Prospecting,Qualification
+017H00138,006D0038,2025-12-27T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00139,006D0038,2025-12-30T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00140,006D0038,2026-01-09T11:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00141,006D0039,2026-01-18T12:00:00.000Z,StageName,Prospecting,Qualification
+017H00142,006D0039,2026-01-24T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00143,006D0039,2026-01-27T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00144,006D0039,2026-01-29T08:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00145,006D0040,2026-03-07T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00146,006D0040,2026-03-16T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00147,006D0040,2026-03-20T08:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00148,006D0040,2026-03-22T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00149,006D0041,2026-02-15T11:30:00.000Z,StageName,Prospecting,Qualification
+017H00150,006D0041,2026-02-23T08:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00151,006D0042,2026-03-01T14:30:00.000Z,StageName,Prospecting,Qualification
+017H00152,006D0042,2026-03-08T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00153,006D0042,2026-03-10T12:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00154,006D0042,2026-03-20T16:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00155,006D0043,2026-03-15T16:45:00.000Z,StageName,Prospecting,Qualification
+017H00156,006D0043,2026-03-18T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00157,006D0043,2026-03-27T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00158,006D0044,2026-03-14T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00159,006D0044,2026-03-22T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00170,006D0047,2026-03-17T09:15:00.000Z,StageName,Prospecting,Qualification
+017H00171,006D0047,2026-03-24T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00172,006D0047,2026-03-28T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00179,006D0050,2026-02-14T17:30:00.000Z,StageName,Prospecting,Qualification
+017H00180,006D0050,2026-02-21T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00181,006D0050,2026-03-04T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00182,006D0050,2026-03-08T08:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00188,006D0053,2026-02-28T14:15:00.000Z,StageName,Prospecting,Qualification
+017H00189,006D0053,2026-03-03T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00190,006D0053,2026-03-08T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00191,006D0053,2026-03-18T13:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00192,006D0054,2026-03-13T16:45:00.000Z,StageName,Prospecting,Qualification
+017H00193,006D0054,2026-03-24T17:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00194,006D0054,2026-03-27T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00203,006D0057,2026-02-11T08:00:00.000Z,StageName,Prospecting,Qualification
+017H00204,006D0057,2026-02-15T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00205,006D0057,2026-02-27T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00206,006D0057,2026-03-09T10:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00208,006D0059,2026-01-07T10:00:00.000Z,StageName,Prospecting,Qualification
+017H00209,006D0059,2026-01-10T15:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00210,006D0059,2026-01-18T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00211,006D0059,2026-01-25T14:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00212,006D0059,2026-02-01T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00213,006D0059,2026-02-02T14:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00214,006D0060,2026-02-24T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00215,006D0060,2026-03-06T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00216,006D0060,2026-03-13T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00217,006D0060,2026-03-15T17:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00218,006D0061,2026-02-26T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00219,006D0061,2026-03-01T17:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00220,006D0061,2026-03-09T10:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00221,006D0061,2026-03-19T13:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00226,006D0064,2025-12-24T16:15:00.000Z,StageName,Prospecting,Qualification
+017H00227,006D0064,2025-12-26T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00228,006D0064,2026-01-03T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00229,006D0064,2026-01-06T14:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00234,006D0066,2026-01-27T11:45:00.000Z,StageName,Prospecting,Qualification
+017H00235,006D0066,2026-01-29T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00236,006D0066,2026-02-01T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00237,006D0066,2026-02-06T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00238,006D0067,2025-12-17T15:00:00.000Z,StageName,Prospecting,Qualification
+017H00239,006D0067,2025-12-27T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00240,006D0067,2026-01-04T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00241,006D0067,2026-01-13T09:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00242,006D0068,2026-01-26T11:45:00.000Z,StageName,Prospecting,Qualification
+017H00243,006D0068,2026-02-06T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00244,006D0068,2026-02-08T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00245,006D0068,2026-02-19T15:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00246,006D0068,2026-03-03T08:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00247,006D0068,2026-03-05T09:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00252,006D0070,2026-01-05T11:00:00.000Z,StageName,Prospecting,Qualification
+017H00253,006D0070,2026-01-09T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00254,006D0070,2026-01-19T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00255,006D0070,2026-01-23T17:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00256,006D0071,2026-02-20T11:30:00.000Z,StageName,Prospecting,Qualification
+017H00257,006D0071,2026-02-26T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00258,006D0071,2026-03-01T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00259,006D0071,2026-03-10T14:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00260,006D0072,2026-03-30T15:30:00.000Z,StageName,Prospecting,Qualification
+017H00261,006D0073,2026-01-29T11:30:00.000Z,StageName,Prospecting,Qualification
+017H00262,006D0073,2026-02-07T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00263,006D0073,2026-02-11T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00264,006D0073,2026-02-18T17:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00265,006D0074,2025-12-19T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00266,006D0074,2025-12-25T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00267,006D0074,2025-12-31T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00268,006D0074,2026-01-10T15:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00269,006D0075,2026-01-27T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00270,006D0075,2026-01-30T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00271,006D0075,2026-02-01T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00272,006D0075,2026-02-11T08:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00273,006D0075,2026-02-20T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00274,006D0075,2026-02-26T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00275,006D0076,2026-02-11T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00276,006D0076,2026-02-17T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00277,006D0076,2026-02-25T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00278,006D0076,2026-03-02T12:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00279,006D0076,2026-03-07T16:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00280,006D0076,2026-03-08T09:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00281,006D0077,2025-12-22T09:30:00.000Z,StageName,Prospecting,Qualification
+017H00282,006D0077,2026-01-01T09:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00283,006D0077,2026-01-13T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00284,006D0077,2026-01-22T17:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00296,006D0081,2026-02-24T15:30:00.000Z,StageName,Prospecting,Qualification
+017H00297,006D0081,2026-03-04T14:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00298,006D0081,2026-03-09T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00299,006D0081,2026-03-13T12:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00304,006D0083,2026-02-15T17:45:00.000Z,StageName,Prospecting,Qualification
+017H00305,006D0083,2026-02-21T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00306,006D0083,2026-02-28T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00307,006D0083,2026-03-01T15:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00308,006D0084,2026-01-04T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00309,006D0084,2026-01-11T13:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00310,006D0084,2026-01-16T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00311,006D0084,2026-01-21T12:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00312,006D0085,2026-03-24T16:45:00.000Z,StageName,Prospecting,Qualification
+017H00313,006D0085,2026-03-29T12:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00314,006D0086,2025-12-17T16:00:00.000Z,StageName,Prospecting,Qualification
+017H00315,006D0086,2025-12-21T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00316,006D0086,2025-12-29T11:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00317,006D0086,2026-01-02T09:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00318,006D0088,2026-02-12T08:00:00.000Z,StageName,Prospecting,Qualification
+017H00319,006D0088,2026-02-20T13:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00320,006D0088,2026-03-02T08:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00321,006D0088,2026-03-04T15:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00322,006D0089,2026-03-02T08:00:00.000Z,StageName,Prospecting,Qualification
+017H00323,006D0089,2026-03-07T17:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00324,006D0089,2026-03-09T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00325,006D0089,2026-03-17T17:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00326,006D0089,2026-03-22T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00327,006D0089,2026-03-23T13:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00332,006D0091,2026-02-07T11:30:00.000Z,StageName,Prospecting,Qualification
+017H00333,006D0091,2026-02-18T12:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00334,006D0091,2026-02-25T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00335,006D0091,2026-03-04T13:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00336,006D0091,2026-03-15T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00337,006D0091,2026-03-18T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00338,006D0092,2026-03-23T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00339,006D0093,2026-01-23T17:30:00.000Z,StageName,Prospecting,Qualification
+017H00340,006D0093,2026-01-27T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00341,006D0093,2026-02-03T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00342,006D0093,2026-02-07T10:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00343,006D0094,2026-03-24T12:15:00.000Z,StageName,Prospecting,Qualification
+017H00344,006D0094,2026-03-28T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00353,006D0097,2026-02-17T14:00:00.000Z,StageName,Prospecting,Qualification
+017H00354,006D0097,2026-03-01T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00355,006D0097,2026-03-07T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00356,006D0097,2026-03-18T15:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00357,006D0097,2026-03-26T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00358,006D0098,2026-03-09T13:30:00.000Z,StageName,Prospecting,Qualification
+017H00359,006D0098,2026-03-11T09:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00360,006D0098,2026-03-16T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00361,006D0098,2026-03-19T14:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00362,006D0099,2026-01-23T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00363,006D0099,2026-02-03T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00364,006D0099,2026-02-06T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00365,006D0099,2026-02-10T10:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00366,006D0099,2026-02-14T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00367,006D0099,2026-02-15T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00372,006D0101,2025-11-24T09:00:00.000Z,StageName,Prospecting,Qualification
+017H00373,006D0101,2025-11-26T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00374,006D0101,2025-12-05T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00375,006D0101,2025-12-11T15:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00376,006D0101,2025-12-23T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00377,006D0101,2026-01-01T11:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00378,006D0102,2026-03-09T14:30:00.000Z,StageName,Prospecting,Qualification
+017H00379,006D0102,2026-03-14T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00380,006D0102,2026-03-17T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00381,006D0102,2026-03-22T15:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00388,006D0104,2026-01-26T13:00:00.000Z,StageName,Prospecting,Qualification
+017H00389,006D0104,2026-02-03T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00390,006D0104,2026-02-08T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00391,006D0104,2026-02-14T13:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00392,006D0105,2026-03-10T16:00:00.000Z,StageName,Prospecting,Qualification
+017H00393,006D0105,2026-03-19T15:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00394,006D0105,2026-03-25T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00395,006D0105,2026-03-26T10:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00396,006D0106,2026-01-13T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00397,006D0106,2026-01-25T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00398,006D0106,2026-02-04T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00399,006D0106,2026-02-13T12:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00404,006D0108,2025-12-11T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00405,006D0108,2025-12-16T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00406,006D0108,2025-12-20T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00407,006D0108,2026-01-01T14:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00408,006D0108,2026-01-08T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00409,006D0108,2026-01-12T17:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00414,006D0110,2026-03-18T16:30:00.000Z,StageName,Prospecting,Qualification
+017H00415,006D0110,2026-03-30T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00416,006D0111,2026-03-15T12:00:00.000Z,StageName,Prospecting,Qualification
+017H00417,006D0111,2026-03-18T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00418,006D0111,2026-03-22T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00419,006D0111,2026-03-25T16:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00420,006D0113,2025-12-02T10:00:00.000Z,StageName,Prospecting,Qualification
+017H00421,006D0113,2025-12-10T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00422,006D0113,2025-12-17T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00423,006D0113,2025-12-23T12:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00424,006D0113,2026-01-04T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00425,006D0113,2026-01-07T13:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00426,006D0114,2026-01-03T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00427,006D0114,2026-01-14T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00428,006D0114,2026-01-17T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00429,006D0114,2026-01-26T11:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00430,006D0115,2026-01-20T15:45:00.000Z,StageName,Prospecting,Qualification
+017H00431,006D0115,2026-01-22T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00432,006D0115,2026-01-31T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00433,006D0115,2026-02-08T11:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00434,006D0116,2026-01-20T09:15:00.000Z,StageName,Prospecting,Qualification
+017H00435,006D0116,2026-01-26T09:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00436,006D0117,2026-03-18T14:30:00.000Z,StageName,Prospecting,Qualification
+017H00437,006D0117,2026-03-26T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00438,006D0118,2025-12-11T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00439,006D0118,2025-12-23T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00440,006D0118,2025-12-29T08:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00441,006D0118,2026-01-06T17:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00442,006D0119,2026-02-16T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00443,006D0119,2026-02-22T09:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00444,006D0119,2026-02-27T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00445,006D0119,2026-03-03T15:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00446,006D0120,2026-01-29T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00447,006D0120,2026-02-05T10:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00448,006D0120,2026-02-15T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00449,006D0120,2026-02-23T09:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00450,006D0121,2026-02-28T09:30:00.000Z,StageName,Prospecting,Qualification
+017H00451,006D0121,2026-03-06T17:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00452,006D0121,2026-03-14T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00453,006D0121,2026-03-24T15:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00454,006D0121,2026-03-31T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00455,006D0122,2026-03-30T11:45:00.000Z,StageName,Prospecting,Qualification
+017H00460,006D0124,2026-01-11T09:00:00.000Z,StageName,Prospecting,Qualification
+017H00461,006D0124,2026-01-17T13:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00462,006D0124,2026-01-29T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00463,006D0124,2026-02-01T12:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00464,006D0125,2026-02-10T15:15:00.000Z,StageName,Prospecting,Qualification
+017H00465,006D0125,2026-02-14T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00466,006D0125,2026-02-24T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00467,006D0125,2026-03-06T15:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00468,006D0126,2026-03-23T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00477,006D0129,2026-02-25T09:45:00.000Z,StageName,Prospecting,Qualification
+017H00478,006D0129,2026-02-28T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00479,006D0129,2026-03-12T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00480,006D0129,2026-03-21T11:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00481,006D0130,2026-03-30T10:45:00.000Z,StageName,Prospecting,Qualification
+017H00482,006D0131,2026-01-12T09:00:00.000Z,StageName,Prospecting,Qualification
+017H00483,006D0131,2026-01-17T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00484,006D0131,2026-01-20T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00485,006D0131,2026-01-28T16:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00486,006D0132,2026-01-06T17:45:00.000Z,StageName,Prospecting,Qualification
+017H00487,006D0132,2026-01-13T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00488,006D0132,2026-01-17T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00489,006D0132,2026-01-23T15:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00490,006D0133,2026-03-05T15:30:00.000Z,StageName,Prospecting,Qualification
+017H00491,006D0133,2026-03-16T14:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00492,006D0133,2026-03-19T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00493,006D0133,2026-03-24T16:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00494,006D0134,2025-12-01T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00495,006D0134,2025-12-06T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00496,006D0134,2025-12-15T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00497,006D0134,2025-12-21T14:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00498,006D0134,2025-12-30T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00499,006D0134,2026-01-07T15:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00510,006D0138,2026-03-02T14:00:00.000Z,StageName,Prospecting,Qualification
+017H00511,006D0138,2026-03-07T14:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00512,006D0138,2026-03-13T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00513,006D0138,2026-03-23T16:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00520,006D0141,2025-12-05T16:00:00.000Z,StageName,Prospecting,Qualification
+017H00521,006D0141,2025-12-14T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00522,006D0141,2025-12-21T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00523,006D0141,2026-01-02T15:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00524,006D0141,2026-01-08T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00525,006D0141,2026-01-11T12:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00530,006D0144,2026-01-28T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00531,006D0144,2026-01-31T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00532,006D0144,2026-02-07T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00533,006D0144,2026-02-13T16:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00534,006D0145,2026-01-16T12:15:00.000Z,StageName,Prospecting,Qualification
+017H00535,006D0145,2026-01-27T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00536,006D0145,2026-02-08T17:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00537,006D0145,2026-02-18T17:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00538,006D0145,2026-02-28T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00539,006D0145,2026-03-10T14:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00540,006D0146,2026-03-30T12:00:00.000Z,StageName,Prospecting,Qualification
+017H00541,006D0147,2026-03-12T10:15:00.000Z,StageName,Prospecting,Qualification
+017H00542,006D0147,2026-03-19T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00543,006D0147,2026-03-31T17:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00562,006D0152,2026-01-06T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00563,006D0152,2026-01-15T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00564,006D0152,2026-01-26T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00565,006D0152,2026-01-31T13:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00566,006D0153,2026-03-05T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00567,006D0154,2026-02-15T17:30:00.000Z,StageName,Prospecting,Qualification
+017H00568,006D0154,2026-02-25T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00569,006D0154,2026-03-06T08:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00570,006D0154,2026-03-10T09:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00571,006D0155,2026-01-27T16:30:00.000Z,StageName,Prospecting,Qualification
+017H00572,006D0155,2026-02-03T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00573,006D0155,2026-02-15T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00574,006D0155,2026-02-23T17:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00587,006D0160,2026-01-18T08:30:00.000Z,StageName,Prospecting,Qualification
+017H00588,006D0160,2026-01-29T12:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00589,006D0160,2026-02-09T10:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00590,006D0160,2026-02-16T08:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00591,006D0161,2025-12-18T11:30:00.000Z,StageName,Prospecting,Qualification
+017H00592,006D0161,2025-12-26T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00593,006D0161,2026-01-05T08:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00594,006D0161,2026-01-08T16:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00595,006D0161,2026-01-11T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00596,006D0161,2026-01-12T08:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00597,006D0162,2025-12-13T14:15:00.000Z,StageName,Prospecting,Qualification
+017H00598,006D0162,2025-12-24T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00599,006D0162,2026-01-01T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00600,006D0162,2026-01-04T14:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00601,006D0163,2026-03-16T15:00:00.000Z,StageName,Prospecting,Qualification
+017H00602,006D0163,2026-03-24T13:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00607,006D0165,2026-03-18T08:15:00.000Z,StageName,Prospecting,Qualification
+017H00608,006D0165,2026-03-21T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00609,006D0165,2026-03-25T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00610,006D0165,2026-03-27T10:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00615,006D0169,2026-01-15T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00616,006D0169,2026-01-23T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00617,006D0169,2026-01-31T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00618,006D0169,2026-02-02T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00623,006D0171,2026-03-25T14:00:00.000Z,StageName,Prospecting,Qualification
+017H00624,006D0171,2026-03-28T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00625,006D0171,2026-03-31T12:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00626,006D0172,2025-12-08T10:00:00.000Z,StageName,Prospecting,Qualification
+017H00627,006D0172,2025-12-19T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00628,006D0172,2025-12-24T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00629,006D0172,2026-01-01T16:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00630,006D0172,2026-01-06T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00631,006D0172,2026-01-16T12:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00632,006D0173,2025-12-30T17:15:00.000Z,StageName,Prospecting,Qualification
+017H00633,006D0173,2026-01-04T17:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00634,006D0173,2026-01-10T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00635,006D0173,2026-01-20T08:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00636,006D0174,2026-03-04T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00637,006D0174,2026-03-15T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00638,006D0174,2026-03-20T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00639,006D0174,2026-03-23T17:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00640,006D0175,2026-03-12T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00641,006D0175,2026-03-24T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00642,006D0176,2026-03-07T17:30:00.000Z,StageName,Prospecting,Qualification
+017H00643,006D0176,2026-03-10T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00644,006D0176,2026-03-12T11:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00645,006D0176,2026-03-21T13:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00646,006D0177,2026-01-30T08:00:00.000Z,StageName,Prospecting,Qualification
+017H00647,006D0177,2026-02-01T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00648,006D0177,2026-02-04T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00649,006D0177,2026-02-11T09:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00650,006D0178,2026-01-04T09:00:00.000Z,StageName,Prospecting,Qualification
+017H00651,006D0178,2026-01-11T17:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00652,006D0178,2026-01-13T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00653,006D0178,2026-01-16T12:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00654,006D0179,2026-02-04T10:45:00.000Z,StageName,Prospecting,Qualification
+017H00655,006D0179,2026-02-12T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00656,006D0179,2026-02-20T11:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00657,006D0179,2026-02-21T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00658,006D0180,2026-02-02T16:30:00.000Z,StageName,Prospecting,Qualification
+017H00659,006D0180,2026-02-11T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00660,006D0180,2026-02-21T16:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00661,006D0180,2026-02-26T10:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00662,006D0181,2026-01-07T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00663,006D0181,2026-01-09T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00664,006D0181,2026-01-21T14:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00665,006D0181,2026-01-24T14:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00670,006D0183,2026-02-20T14:30:00.000Z,StageName,Prospecting,Qualification
+017H00671,006D0183,2026-02-28T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00672,006D0183,2026-03-02T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00673,006D0183,2026-03-06T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00686,006D0187,2026-02-20T16:45:00.000Z,StageName,Prospecting,Qualification
+017H00687,006D0187,2026-02-28T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00688,006D0187,2026-03-03T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00689,006D0187,2026-03-06T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00690,006D0188,2026-03-08T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00691,006D0188,2026-03-16T13:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00692,006D0188,2026-03-18T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00693,006D0188,2026-03-25T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00698,006D0190,2026-01-21T08:00:00.000Z,StageName,Prospecting,Qualification
+017H00699,006D0190,2026-01-30T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00700,006D0190,2026-02-07T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00701,006D0190,2026-02-10T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00702,006D0191,2026-03-06T15:30:00.000Z,StageName,Prospecting,Qualification
+017H00703,006D0191,2026-03-15T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00704,006D0191,2026-03-26T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00705,006D0191,2026-03-29T16:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00706,006D0192,2026-01-28T09:45:00.000Z,StageName,Prospecting,Qualification
+017H00707,006D0192,2026-02-02T13:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00708,006D0192,2026-02-07T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00709,006D0192,2026-02-15T13:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00710,006D0193,2025-12-27T10:00:00.000Z,StageName,Prospecting,Qualification
+017H00711,006D0193,2026-01-07T17:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00712,006D0193,2026-01-13T13:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00713,006D0193,2026-01-23T10:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00714,006D0194,2026-01-24T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00715,006D0194,2026-02-02T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00716,006D0194,2026-02-07T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00717,006D0194,2026-02-11T13:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00718,006D0195,2025-12-16T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00719,006D0195,2025-12-27T15:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00720,006D0195,2026-01-04T16:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00721,006D0195,2026-01-10T14:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00722,006D0196,2025-12-26T08:15:00.000Z,StageName,Prospecting,Qualification
+017H00723,006D0196,2026-01-04T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00724,006D0196,2026-01-16T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00725,006D0196,2026-01-20T15:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00726,006D0197,2026-03-03T14:15:00.000Z,StageName,Prospecting,Qualification
+017H00727,006D0197,2026-03-15T12:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00728,006D0197,2026-03-19T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00729,006D0197,2026-03-21T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00730,006D0198,2026-01-05T15:00:00.000Z,StageName,Prospecting,Qualification
+017H00731,006D0198,2026-01-14T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00732,006D0198,2026-01-24T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00733,006D0198,2026-01-29T13:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00734,006D0199,2026-02-21T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00735,006D0199,2026-02-23T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00736,006D0199,2026-03-07T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00737,006D0199,2026-03-14T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00744,006D0201,2025-12-29T09:00:00.000Z,StageName,Prospecting,Qualification
+017H00745,006D0201,2026-01-10T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00746,006D0201,2026-01-15T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00747,006D0201,2026-01-24T11:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00748,006D0202,2026-01-23T10:00:00.000Z,StageName,Prospecting,Qualification
+017H00749,006D0203,2026-01-16T16:30:00.000Z,StageName,Prospecting,Qualification
+017H00750,006D0203,2026-01-18T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00751,006D0203,2026-01-26T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00752,006D0203,2026-01-27T13:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00753,006D0204,2026-02-10T15:00:00.000Z,StageName,Prospecting,Qualification
+017H00754,006D0204,2026-02-15T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00755,006D0204,2026-02-18T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00756,006D0204,2026-02-19T17:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00757,006D0205,2026-01-10T17:15:00.000Z,StageName,Prospecting,Qualification
+017H00758,006D0205,2026-01-21T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00759,006D0205,2026-01-23T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00760,006D0205,2026-01-29T09:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00761,006D0206,2026-02-25T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00762,006D0206,2026-03-01T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00763,006D0206,2026-03-07T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00764,006D0206,2026-03-08T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00765,006D0207,2026-01-12T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00766,006D0207,2026-01-23T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00767,006D0207,2026-02-02T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00768,006D0207,2026-02-06T11:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00769,006D0208,2026-01-16T12:30:00.000Z,StageName,Prospecting,Qualification
+017H00770,006D0208,2026-01-19T10:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00771,006D0208,2026-01-21T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00772,006D0208,2026-01-22T10:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00773,006D0209,2026-01-02T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00774,006D0209,2026-01-13T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00775,006D0209,2026-01-23T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00776,006D0209,2026-01-28T16:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00777,006D0209,2026-02-09T14:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00778,006D0209,2026-02-16T11:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00779,006D0210,2026-01-15T16:00:00.000Z,StageName,Prospecting,Qualification
+017H00780,006D0210,2026-01-20T15:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00781,006D0210,2026-01-26T12:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00782,006D0210,2026-02-03T15:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00783,006D0211,2025-12-20T17:45:00.000Z,StageName,Prospecting,Qualification
+017H00784,006D0211,2026-01-01T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00785,006D0211,2026-01-11T10:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00786,006D0211,2026-01-13T15:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00791,006D0213,2026-02-22T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00792,006D0213,2026-02-26T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00793,006D0213,2026-03-05T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00794,006D0213,2026-03-11T14:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00795,006D0214,2025-12-23T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00796,006D0214,2026-01-03T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00797,006D0214,2026-01-13T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00798,006D0214,2026-01-15T13:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00803,006D0217,2025-12-14T15:00:00.000Z,StageName,Prospecting,Qualification
+017H00804,006D0217,2025-12-24T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00805,006D0217,2026-01-04T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00806,006D0217,2026-01-08T14:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00807,006D0218,2026-03-24T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00808,006D0218,2026-03-28T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00809,006D0219,2026-03-23T13:45:00.000Z,StageName,Prospecting,Qualification
+017H00810,006D0219,2026-03-27T09:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00811,006D0220,2026-02-19T12:15:00.000Z,StageName,Prospecting,Qualification
+017H00812,006D0220,2026-02-23T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00813,006D0220,2026-02-28T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00814,006D0220,2026-03-08T14:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00815,006D0221,2026-01-30T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00816,006D0221,2026-02-10T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00817,006D0221,2026-02-12T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00818,006D0221,2026-02-15T16:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00823,006D0224,2026-01-29T09:30:00.000Z,StageName,Prospecting,Qualification
+017H00824,006D0224,2026-02-08T14:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00825,006D0224,2026-02-14T11:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00826,006D0224,2026-02-17T09:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00831,006D0226,2026-01-14T15:00:00.000Z,StageName,Prospecting,Qualification
+017H00832,006D0226,2026-01-22T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00833,006D0226,2026-01-27T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00834,006D0226,2026-01-28T08:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00845,006D0229,2026-01-08T11:15:00.000Z,StageName,Prospecting,Qualification
+017H00846,006D0233,2026-03-12T17:45:00.000Z,StageName,Prospecting,Qualification
+017H00847,006D0233,2026-03-15T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00848,006D0233,2026-03-27T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00849,006D0234,2026-03-06T16:15:00.000Z,StageName,Prospecting,Qualification
+017H00850,006D0234,2026-03-10T12:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00851,006D0234,2026-03-21T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00852,006D0234,2026-03-24T11:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00853,006D0237,2026-01-10T15:45:00.000Z,StageName,Prospecting,Qualification
+017H00854,006D0237,2026-01-16T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00855,006D0237,2026-01-26T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00856,006D0237,2026-01-31T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00857,006D0238,2026-01-22T10:15:00.000Z,StageName,Prospecting,Qualification
+017H00858,006D0238,2026-01-25T14:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00859,006D0238,2026-01-27T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00860,006D0238,2026-02-04T12:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00861,006D0238,2026-02-08T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00862,006D0238,2026-02-18T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00863,006D0239,2025-12-12T12:30:00.000Z,StageName,Prospecting,Qualification
+017H00864,006D0239,2025-12-24T13:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00865,006D0239,2026-01-05T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00866,006D0239,2026-01-12T13:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00867,006D0239,2026-01-21T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00868,006D0239,2026-01-25T10:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00869,006D0240,2026-01-20T14:30:00.000Z,StageName,Prospecting,Qualification
+017H00870,006D0240,2026-01-25T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00871,006D0240,2026-02-04T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00872,006D0240,2026-02-10T09:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00873,006D0241,2026-03-26T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00881,006D0244,2026-03-22T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00882,006D0245,2026-01-12T10:45:00.000Z,StageName,Prospecting,Qualification
+017H00883,006D0245,2026-01-16T17:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00884,006D0245,2026-01-28T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00885,006D0245,2026-02-02T08:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00886,006D0245,2026-02-13T12:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00887,006D0245,2026-02-22T10:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00888,006D0247,2025-12-23T17:00:00.000Z,StageName,Prospecting,Qualification
+017H00889,006D0247,2025-12-29T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00890,006D0247,2026-01-09T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00891,006D0247,2026-01-10T16:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00896,006D0249,2025-12-19T12:15:00.000Z,StageName,Prospecting,Qualification
+017H00897,006D0249,2025-12-30T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00898,006D0249,2026-01-01T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00899,006D0249,2026-01-07T16:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00900,006D0250,2026-02-02T16:45:00.000Z,StageName,Prospecting,Qualification
+017H00901,006D0250,2026-02-12T12:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00902,006D0250,2026-02-22T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00903,006D0250,2026-03-03T16:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00904,006D0251,2026-02-01T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00905,006D0251,2026-02-12T10:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00906,006D0251,2026-02-21T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00907,006D0251,2026-03-01T16:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00908,006D0253,2025-12-22T15:45:00.000Z,StageName,Prospecting,Qualification
+017H00909,006D0253,2025-12-27T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00910,006D0253,2026-01-07T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00911,006D0253,2026-01-14T08:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00912,006D0254,2026-02-11T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00913,006D0254,2026-02-21T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00914,006D0254,2026-02-26T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00915,006D0254,2026-03-05T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00916,006D0255,2026-01-09T17:00:00.000Z,StageName,Prospecting,Qualification
+017H00917,006D0255,2026-01-21T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00918,006D0255,2026-01-31T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00919,006D0255,2026-02-09T14:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00924,006D0257,2026-03-06T12:45:00.000Z,StageName,Prospecting,Qualification
+017H00925,006D0257,2026-03-09T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00926,006D0257,2026-03-19T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00927,006D0257,2026-03-20T16:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00932,006D0259,2026-01-09T15:30:00.000Z,StageName,Prospecting,Qualification
+017H00933,006D0259,2026-01-12T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00934,006D0260,2026-03-06T08:15:00.000Z,StageName,Prospecting,Qualification
+017H00935,006D0260,2026-03-18T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00936,006D0260,2026-03-24T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00937,006D0260,2026-03-27T10:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00938,006D0261,2026-01-23T16:45:00.000Z,StageName,Prospecting,Qualification
+017H00939,006D0261,2026-01-30T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00940,006D0261,2026-02-09T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00941,006D0261,2026-02-17T10:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00942,006D0262,2026-03-20T14:15:00.000Z,StageName,Prospecting,Qualification
+017H00943,006D0262,2026-03-27T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00944,006D0264,2026-02-24T13:00:00.000Z,StageName,Prospecting,Qualification
+017H00945,006D0264,2026-03-02T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00946,006D0264,2026-03-09T11:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00947,006D0264,2026-03-14T16:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00948,006D0265,2026-02-23T10:45:00.000Z,StageName,Prospecting,Qualification
+017H00949,006D0265,2026-03-02T13:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00950,006D0265,2026-03-08T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00951,006D0265,2026-03-15T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00952,006D0266,2025-12-25T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00953,006D0266,2026-01-01T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00954,006D0266,2026-01-13T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00955,006D0266,2026-01-17T16:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00956,006D0267,2025-12-29T09:00:00.000Z,StageName,Prospecting,Qualification
+017H00957,006D0267,2026-01-06T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00958,006D0267,2026-01-18T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00959,006D0267,2026-01-27T08:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00964,006D0269,2025-12-30T10:30:00.000Z,StageName,Prospecting,Qualification
+017H00965,006D0269,2026-01-04T10:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00966,006D0269,2026-01-07T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00967,006D0269,2026-01-12T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00968,006D0270,2026-01-02T12:30:00.000Z,StageName,Prospecting,Qualification
+017H00969,006D0270,2026-01-10T17:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00970,006D0270,2026-01-12T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00971,006D0270,2026-01-21T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00972,006D0271,2026-03-29T14:45:00.000Z,StageName,Prospecting,Qualification
+017H00973,006D0272,2026-01-16T17:00:00.000Z,StageName,Prospecting,Qualification
+017H00974,006D0272,2026-01-19T08:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00975,006D0272,2026-01-28T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00976,006D0272,2026-02-01T17:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00978,006D0274,2026-01-06T16:15:00.000Z,StageName,Prospecting,Qualification
+017H00979,006D0274,2026-01-09T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00980,006D0274,2026-01-15T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00981,006D0274,2026-01-23T16:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00982,006D0275,2026-01-08T13:15:00.000Z,StageName,Prospecting,Qualification
+017H00983,006D0275,2026-01-16T17:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00984,006D0275,2026-01-27T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00985,006D0276,2026-02-18T09:45:00.000Z,StageName,Prospecting,Qualification
+017H00986,006D0276,2026-02-25T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00987,006D0276,2026-03-09T08:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00988,006D0276,2026-03-16T10:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00989,006D0277,2025-12-19T09:30:00.000Z,StageName,Prospecting,Qualification
+017H00990,006D0277,2025-12-21T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00991,006D0277,2025-12-26T16:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00992,006D0277,2025-12-29T16:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H00993,006D0277,2026-01-02T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00994,006D0277,2026-01-03T16:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H00995,006D0278,2026-03-08T14:15:00.000Z,StageName,Prospecting,Qualification
+017H00996,006D0278,2026-03-14T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H00997,006D0278,2026-03-22T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H00998,006D0278,2026-03-31T10:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H00999,006D0279,2026-02-28T11:15:00.000Z,StageName,Prospecting,Qualification
+017H01000,006D0279,2026-03-11T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01001,006D0279,2026-03-20T11:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01002,006D0279,2026-03-30T09:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01003,006D0280,2026-01-25T11:00:00.000Z,StageName,Prospecting,Qualification
+017H01004,006D0280,2026-02-05T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01005,006D0280,2026-02-09T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01006,006D0280,2026-02-15T09:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01007,006D0281,2026-01-22T14:15:00.000Z,StageName,Prospecting,Qualification
+017H01008,006D0281,2026-01-28T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01009,006D0281,2026-02-01T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01010,006D0281,2026-02-06T17:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01011,006D0282,2026-02-10T16:15:00.000Z,StageName,Prospecting,Qualification
+017H01012,006D0282,2026-02-14T14:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01013,006D0282,2026-02-22T12:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01014,006D0282,2026-02-26T09:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01015,006D0282,2026-03-05T08:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01016,006D0282,2026-03-06T12:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01017,006D0283,2025-12-11T17:00:00.000Z,StageName,Prospecting,Qualification
+017H01018,006D0283,2025-12-19T08:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01019,006D0283,2025-12-28T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01020,006D0283,2026-01-02T16:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01021,006D0284,2026-01-30T15:45:00.000Z,StageName,Prospecting,Qualification
+017H01022,006D0284,2026-02-01T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01023,006D0284,2026-02-08T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01024,006D0284,2026-02-17T17:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01029,006D0287,2026-02-20T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01030,006D0287,2026-02-22T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01031,006D0287,2026-03-06T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01032,006D0287,2026-03-11T14:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01033,006D0288,2026-02-09T09:00:00.000Z,StageName,Prospecting,Qualification
+017H01034,006D0288,2026-02-13T13:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01035,006D0288,2026-02-19T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01036,006D0288,2026-02-22T14:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01037,006D0289,2026-03-09T11:00:00.000Z,StageName,Prospecting,Qualification
+017H01038,006D0289,2026-03-15T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01039,006D0289,2026-03-26T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01040,006D0289,2026-03-29T15:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01045,006D0291,2026-03-15T12:00:00.000Z,StageName,Prospecting,Qualification
+017H01046,006D0291,2026-03-25T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01047,006D0292,2026-02-04T11:15:00.000Z,StageName,Prospecting,Qualification
+017H01048,006D0292,2026-02-12T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01049,006D0292,2026-02-19T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01050,006D0292,2026-02-23T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01051,006D0293,2025-12-27T15:15:00.000Z,StageName,Prospecting,Qualification
+017H01052,006D0293,2025-12-29T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01053,006D0293,2026-01-05T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01054,006D0293,2026-01-14T15:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01060,006D0296,2025-11-17T09:30:00.000Z,StageName,Prospecting,Qualification
+017H01061,006D0296,2025-11-29T12:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01062,006D0296,2025-12-10T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01063,006D0296,2025-12-21T08:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01064,006D0296,2025-12-23T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01065,006D0296,2026-01-02T12:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01070,006D0298,2026-01-18T08:30:00.000Z,StageName,Prospecting,Qualification
+017H01071,006D0298,2026-01-20T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01072,006D0298,2026-01-23T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01073,006D0298,2026-01-26T13:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01078,006D0300,2026-02-08T16:45:00.000Z,StageName,Prospecting,Qualification
+017H01079,006D0300,2026-02-18T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01080,006D0300,2026-02-21T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01081,006D0300,2026-03-02T10:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01082,006D0301,2026-01-06T14:30:00.000Z,StageName,Prospecting,Qualification
+017H01083,006D0301,2026-01-16T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01084,006D0301,2026-01-22T10:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01085,006D0301,2026-01-30T14:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01086,006D0301,2026-02-11T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01087,006D0301,2026-02-20T13:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01088,006D0302,2026-02-11T08:00:00.000Z,StageName,Prospecting,Qualification
+017H01089,006D0302,2026-02-23T13:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01090,006D0302,2026-03-06T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01091,006D0302,2026-03-16T08:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01092,006D0303,2026-01-19T09:15:00.000Z,StageName,Prospecting,Qualification
+017H01093,006D0305,2026-02-23T12:45:00.000Z,StageName,Prospecting,Qualification
+017H01094,006D0305,2026-02-28T10:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01095,006D0305,2026-03-06T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01096,006D0305,2026-03-16T08:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01097,006D0306,2025-12-28T17:15:00.000Z,StageName,Prospecting,Qualification
+017H01098,006D0306,2026-01-06T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01099,006D0306,2026-01-18T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01100,006D0306,2026-01-23T15:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01101,006D0307,2026-03-19T13:00:00.000Z,StageName,Prospecting,Qualification
+017H01102,006D0307,2026-03-26T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01107,006D0309,2026-01-13T13:00:00.000Z,StageName,Prospecting,Qualification
+017H01108,006D0309,2026-01-23T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01109,006D0309,2026-02-02T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01110,006D0309,2026-02-05T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01111,006D0310,2026-01-24T10:45:00.000Z,StageName,Prospecting,Qualification
+017H01112,006D0310,2026-01-26T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01113,006D0310,2026-02-04T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01114,006D0310,2026-02-14T12:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01115,006D0310,2026-02-25T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01116,006D0310,2026-03-05T15:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01121,006D0312,2025-12-22T14:15:00.000Z,StageName,Prospecting,Qualification
+017H01122,006D0312,2025-12-29T12:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01123,006D0312,2026-01-06T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01124,006D0312,2026-01-16T16:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01125,006D0313,2026-02-06T15:15:00.000Z,StageName,Prospecting,Qualification
+017H01126,006D0313,2026-02-16T15:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01127,006D0313,2026-02-20T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01128,006D0313,2026-02-24T16:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01129,006D0313,2026-02-28T14:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01130,006D0313,2026-03-05T16:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01131,006D0314,2026-03-04T09:00:00.000Z,StageName,Prospecting,Qualification
+017H01132,006D0314,2026-03-09T15:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01133,006D0314,2026-03-15T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01134,006D0314,2026-03-17T13:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01135,006D0315,2026-02-27T11:00:00.000Z,StageName,Prospecting,Qualification
+017H01136,006D0315,2026-03-01T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01137,006D0315,2026-03-11T08:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01138,006D0315,2026-03-18T09:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01143,006D0317,2026-02-14T17:30:00.000Z,StageName,Prospecting,Qualification
+017H01144,006D0317,2026-02-23T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01145,006D0317,2026-02-28T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01146,006D0317,2026-03-06T12:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01147,006D0318,2025-12-27T16:45:00.000Z,StageName,Prospecting,Qualification
+017H01148,006D0318,2025-12-29T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01149,006D0318,2026-01-05T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01150,006D0318,2026-01-07T14:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01151,006D0319,2026-01-12T09:30:00.000Z,StageName,Prospecting,Qualification
+017H01152,006D0319,2026-01-19T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01153,006D0319,2026-01-31T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01154,006D0319,2026-02-09T15:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01155,006D0320,2026-01-10T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01156,006D0320,2026-01-18T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01157,006D0320,2026-01-20T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01158,006D0320,2026-01-29T10:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01159,006D0320,2026-02-04T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01160,006D0320,2026-02-07T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01161,006D0321,2026-03-10T08:45:00.000Z,StageName,Prospecting,Qualification
+017H01162,006D0321,2026-03-18T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01163,006D0321,2026-03-21T11:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01164,006D0321,2026-03-28T09:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01165,006D0322,2026-03-09T11:30:00.000Z,StageName,Prospecting,Qualification
+017H01166,006D0322,2026-03-16T14:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01167,006D0322,2026-03-25T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01168,006D0322,2026-03-27T10:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01169,006D0323,2026-01-13T11:15:00.000Z,StageName,Prospecting,Qualification
+017H01170,006D0324,2026-01-24T11:15:00.000Z,StageName,Prospecting,Qualification
+017H01171,006D0324,2026-01-26T13:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01172,006D0324,2026-01-28T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01173,006D0324,2026-02-05T14:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01174,006D0325,2026-01-27T12:15:00.000Z,StageName,Prospecting,Qualification
+017H01175,006D0325,2026-02-03T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01176,006D0325,2026-02-09T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01177,006D0325,2026-02-12T10:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01178,006D0326,2025-12-25T13:15:00.000Z,StageName,Prospecting,Qualification
+017H01179,006D0326,2025-12-29T08:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01180,006D0326,2026-01-05T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01181,006D0326,2026-01-14T11:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01182,006D0327,2025-12-26T14:15:00.000Z,StageName,Prospecting,Qualification
+017H01183,006D0327,2026-01-07T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01184,006D0327,2026-01-09T08:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01185,006D0327,2026-01-14T14:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01186,006D0328,2026-01-06T16:45:00.000Z,StageName,Prospecting,Qualification
+017H01187,006D0328,2026-01-13T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01188,006D0328,2026-01-23T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01189,006D0328,2026-01-31T12:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01190,006D0328,2026-02-07T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01191,006D0328,2026-02-13T08:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01192,006D0330,2026-02-23T14:00:00.000Z,StageName,Prospecting,Qualification
+017H01193,006D0330,2026-02-28T14:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01194,006D0330,2026-03-12T11:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01195,006D0330,2026-03-18T10:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01196,006D0332,2026-02-17T16:45:00.000Z,StageName,Prospecting,Qualification
+017H01197,006D0332,2026-02-28T17:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01198,006D0332,2026-03-10T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01199,006D0332,2026-03-17T08:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01200,006D0333,2025-12-14T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01201,006D0333,2025-12-24T14:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01202,006D0333,2025-12-30T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01203,006D0333,2026-01-05T17:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01204,006D0334,2026-02-09T12:00:00.000Z,StageName,Prospecting,Qualification
+017H01205,006D0334,2026-02-18T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01206,006D0334,2026-02-23T11:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01207,006D0334,2026-02-28T16:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01208,006D0335,2026-01-02T17:45:00.000Z,StageName,Prospecting,Qualification
+017H01209,006D0335,2026-01-12T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01210,006D0335,2026-01-19T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01211,006D0335,2026-01-21T13:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01212,006D0335,2026-01-26T09:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01213,006D0335,2026-02-03T10:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01214,006D0336,2026-02-23T09:15:00.000Z,StageName,Prospecting,Qualification
+017H01215,006D0336,2026-02-28T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01216,006D0336,2026-03-11T08:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01217,006D0336,2026-03-15T12:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01218,006D0337,2026-03-19T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01219,006D0337,2026-03-24T14:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01220,006D0338,2026-01-07T08:45:00.000Z,StageName,Prospecting,Qualification
+017H01221,006D0338,2026-01-09T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01222,006D0338,2026-01-14T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01223,006D0338,2026-01-17T13:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01224,006D0339,2026-01-15T12:30:00.000Z,StageName,Prospecting,Qualification
+017H01225,006D0339,2026-01-25T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01226,006D0339,2026-02-01T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01227,006D0339,2026-02-11T13:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01228,006D0339,2026-02-21T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01229,006D0339,2026-02-28T14:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01234,006D0341,2026-03-04T14:30:00.000Z,StageName,Prospecting,Qualification
+017H01235,006D0341,2026-03-07T15:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01236,006D0341,2026-03-17T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01237,006D0341,2026-03-22T08:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01238,006D0342,2026-03-26T09:15:00.000Z,StageName,Prospecting,Qualification
+017H01243,006D0344,2026-01-15T16:00:00.000Z,StageName,Prospecting,Qualification
+017H01244,006D0344,2026-01-19T15:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01245,006D0344,2026-01-25T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01246,006D0344,2026-01-26T10:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01247,006D0345,2026-01-08T10:00:00.000Z,StageName,Prospecting,Qualification
+017H01248,006D0345,2026-01-18T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01249,006D0345,2026-01-24T14:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01250,006D0345,2026-01-28T10:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01251,006D0346,2026-02-08T10:00:00.000Z,StageName,Prospecting,Qualification
+017H01252,006D0346,2026-02-14T13:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01253,006D0346,2026-02-23T12:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01254,006D0346,2026-02-24T12:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01255,006D0347,2025-12-15T17:15:00.000Z,StageName,Prospecting,Qualification
+017H01256,006D0347,2025-12-18T10:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01257,006D0347,2025-12-29T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01258,006D0347,2026-01-05T09:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01259,006D0347,2026-01-13T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01260,006D0347,2026-01-17T08:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01261,006D0348,2026-01-21T11:00:00.000Z,StageName,Prospecting,Qualification
+017H01262,006D0348,2026-01-24T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01263,006D0348,2026-02-02T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01264,006D0348,2026-02-07T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01265,006D0350,2026-01-02T08:30:00.000Z,StageName,Prospecting,Qualification
+017H01266,006D0350,2026-01-07T08:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01267,006D0350,2026-01-10T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01268,006D0350,2026-01-14T15:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01269,006D0350,2026-01-25T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01270,006D0350,2026-01-28T08:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01271,006D0351,2026-03-18T09:30:00.000Z,StageName,Prospecting,Qualification
+017H01272,006D0351,2026-03-29T13:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01277,006D0353,2026-01-17T09:30:00.000Z,StageName,Prospecting,Qualification
+017H01278,006D0353,2026-01-25T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01279,006D0353,2026-02-04T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01280,006D0353,2026-02-10T14:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01281,006D0354,2025-12-29T10:30:00.000Z,StageName,Prospecting,Qualification
+017H01282,006D0354,2026-01-09T12:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01283,006D0354,2026-01-21T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01284,006D0354,2026-01-29T10:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01285,006D0355,2026-02-13T08:45:00.000Z,StageName,Prospecting,Qualification
+017H01286,006D0355,2026-02-19T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01287,006D0355,2026-02-22T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01288,006D0355,2026-02-24T10:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01289,006D0356,2025-12-16T09:30:00.000Z,StageName,Prospecting,Qualification
+017H01290,006D0356,2025-12-20T17:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01291,006D0356,2025-12-27T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01292,006D0356,2026-01-06T09:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01297,006D0358,2026-01-08T09:15:00.000Z,StageName,Prospecting,Qualification
+017H01298,006D0358,2026-01-17T10:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01299,006D0358,2026-01-19T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01300,006D0358,2026-01-28T13:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01301,006D0359,2026-03-05T12:45:00.000Z,StageName,Prospecting,Qualification
+017H01302,006D0359,2026-03-10T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01303,006D0359,2026-03-18T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01304,006D0359,2026-03-24T12:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01305,006D0360,2025-12-22T11:15:00.000Z,StageName,Prospecting,Qualification
+017H01306,006D0360,2025-12-24T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01307,006D0360,2026-01-03T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01308,006D0360,2026-01-05T09:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01309,006D0361,2025-12-21T15:15:00.000Z,StageName,Prospecting,Qualification
+017H01310,006D0361,2025-12-26T11:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01311,006D0361,2026-01-06T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01312,006D0361,2026-01-16T12:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01313,006D0361,2026-01-23T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01314,006D0361,2026-01-26T09:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01315,006D0362,2025-12-10T11:30:00.000Z,StageName,Prospecting,Qualification
+017H01316,006D0362,2025-12-20T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01317,006D0362,2026-01-01T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01318,006D0362,2026-01-09T16:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01319,006D0363,2026-01-03T11:45:00.000Z,StageName,Prospecting,Qualification
+017H01320,006D0363,2026-01-13T15:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01321,006D0363,2026-01-23T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01322,006D0363,2026-02-01T15:30:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01323,006D0363,2026-02-03T17:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01324,006D0363,2026-02-10T10:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01329,006D0365,2026-01-07T15:00:00.000Z,StageName,Prospecting,Qualification
+017H01330,006D0365,2026-01-12T12:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01331,006D0365,2026-01-20T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01332,006D0365,2026-01-28T15:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01333,006D0366,2026-02-06T17:00:00.000Z,StageName,Prospecting,Qualification
+017H01334,006D0366,2026-02-11T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01335,006D0366,2026-02-17T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01336,006D0366,2026-02-25T16:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01337,006D0367,2026-01-27T08:45:00.000Z,StageName,Prospecting,Qualification
+017H01338,006D0367,2026-02-04T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01339,006D0367,2026-02-08T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01340,006D0367,2026-02-17T08:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01341,006D0368,2026-03-12T16:00:00.000Z,StageName,Prospecting,Qualification
+017H01342,006D0368,2026-03-20T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01347,006D0370,2026-02-02T11:30:00.000Z,StageName,Prospecting,Qualification
+017H01348,006D0370,2026-02-05T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01349,006D0370,2026-02-07T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01350,006D0370,2026-02-13T09:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01351,006D0371,2026-02-03T15:30:00.000Z,StageName,Prospecting,Qualification
+017H01352,006D0371,2026-02-07T09:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01353,006D0371,2026-02-09T16:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01354,006D0371,2026-02-15T16:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01359,006D0373,2026-02-02T09:00:00.000Z,StageName,Prospecting,Qualification
+017H01360,006D0373,2026-02-05T09:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01361,006D0373,2026-02-08T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01362,006D0373,2026-02-11T09:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01367,006D0375,2025-12-08T12:00:00.000Z,StageName,Prospecting,Qualification
+017H01368,006D0375,2025-12-10T09:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01369,006D0375,2025-12-18T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01370,006D0375,2025-12-26T13:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01371,006D0375,2025-12-28T09:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01372,006D0375,2026-01-06T17:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01373,006D0376,2026-02-12T13:15:00.000Z,StageName,Prospecting,Qualification
+017H01374,006D0377,2025-12-17T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01375,006D0377,2025-12-28T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01376,006D0377,2026-01-01T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01377,006D0377,2026-01-08T11:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01378,006D0378,2026-01-07T13:45:00.000Z,StageName,Prospecting,Qualification
+017H01379,006D0378,2026-01-18T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01380,006D0378,2026-01-28T10:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01381,006D0378,2026-01-29T10:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01383,006D0380,2026-02-15T09:15:00.000Z,StageName,Prospecting,Qualification
+017H01384,006D0380,2026-02-26T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01385,006D0380,2026-03-03T14:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01386,006D0380,2026-03-09T11:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01388,006D0382,2026-02-26T10:30:00.000Z,StageName,Prospecting,Qualification
+017H01389,006D0382,2026-02-28T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01390,006D0382,2026-03-03T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01391,006D0382,2026-03-06T13:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01396,006D0384,2026-01-04T09:45:00.000Z,StageName,Prospecting,Qualification
+017H01397,006D0384,2026-01-09T13:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01398,006D0384,2026-01-15T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01399,006D0384,2026-01-21T12:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01404,006D0386,2026-01-06T14:45:00.000Z,StageName,Prospecting,Qualification
+017H01405,006D0387,2026-02-02T14:00:00.000Z,StageName,Prospecting,Qualification
+017H01406,006D0387,2026-02-10T16:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01407,006D0387,2026-02-18T09:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01408,006D0387,2026-02-26T14:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01409,006D0387,2026-03-07T17:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01410,006D0387,2026-03-09T11:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01411,006D0388,2026-02-25T15:00:00.000Z,StageName,Prospecting,Qualification
+017H01412,006D0388,2026-03-04T13:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01413,006D0388,2026-03-08T10:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01414,006D0388,2026-03-11T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01415,006D0389,2026-03-02T13:00:00.000Z,StageName,Prospecting,Qualification
+017H01416,006D0389,2026-03-08T13:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01417,006D0389,2026-03-16T12:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01418,006D0389,2026-03-18T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01419,006D0390,2026-02-13T17:00:00.000Z,StageName,Prospecting,Qualification
+017H01420,006D0390,2026-02-19T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01421,006D0390,2026-02-27T13:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01422,006D0390,2026-03-03T15:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01423,006D0390,2026-03-10T15:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01424,006D0390,2026-03-19T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01425,006D0391,2026-03-26T08:45:00.000Z,StageName,Prospecting,Qualification
+017H01426,006D0392,2026-03-13T15:45:00.000Z,StageName,Prospecting,Qualification
+017H01427,006D0392,2026-03-20T10:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01428,006D0392,2026-03-23T08:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01429,006D0392,2026-03-31T15:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01430,006D0393,2025-12-06T08:15:00.000Z,StageName,Prospecting,Qualification
+017H01431,006D0393,2025-12-11T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01432,006D0393,2025-12-15T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01433,006D0393,2025-12-20T17:15:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01434,006D0393,2025-12-27T11:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01435,006D0393,2026-01-01T14:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01442,006D0395,2026-02-05T15:00:00.000Z,StageName,Prospecting,Qualification
+017H01443,006D0395,2026-02-12T15:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01444,006D0395,2026-02-21T08:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01445,006D0395,2026-03-02T17:15:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01446,006D0396,2026-01-30T14:30:00.000Z,StageName,Prospecting,Qualification
+017H01447,006D0396,2026-02-02T10:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01452,006D0398,2026-01-12T12:00:00.000Z,StageName,Prospecting,Qualification
+017H01453,006D0398,2026-01-18T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01454,006D0398,2026-01-22T15:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01455,006D0398,2026-01-26T09:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01456,006D0399,2026-01-05T17:45:00.000Z,StageName,Prospecting,Qualification
+017H01457,006D0399,2026-01-07T17:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01458,006D0399,2026-01-13T11:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01459,006D0399,2026-01-20T15:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01460,006D0400,2025-12-03T16:00:00.000Z,StageName,Prospecting,Qualification
+017H01461,006D0400,2025-12-09T17:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01462,006D0400,2025-12-17T08:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01463,006D0400,2025-12-28T12:45:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01464,006D0400,2025-12-30T15:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01465,006D0400,2026-01-08T14:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01466,006D0401,2026-02-02T13:45:00.000Z,StageName,Prospecting,Qualification
+017H01467,006D0401,2026-02-08T10:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01468,006D0401,2026-02-18T10:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01469,006D0401,2026-02-24T08:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01474,006D0406,2025-12-30T16:45:00.000Z,StageName,Prospecting,Qualification
+017H01475,006D0406,2026-01-06T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01476,006D0406,2026-01-10T09:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01477,006D0406,2026-01-15T15:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01478,006D0407,2026-03-21T11:30:00.000Z,StageName,Prospecting,Qualification
+017H01479,006D0407,2026-03-31T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01480,006D0408,2026-02-21T14:45:00.000Z,StageName,Prospecting,Qualification
+017H01481,006D0408,2026-02-26T09:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01482,006D0408,2026-03-09T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01483,006D0408,2026-03-19T15:30:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01484,006D0409,2025-12-12T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01485,006D0409,2025-12-16T08:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01486,006D0409,2025-12-25T12:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01487,006D0409,2026-01-04T12:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01488,006D0410,2026-01-06T15:45:00.000Z,StageName,Prospecting,Qualification
+017H01489,006D0410,2026-01-08T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01490,006D0410,2026-01-13T16:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01491,006D0410,2026-01-21T13:45:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01492,006D0411,2026-03-21T13:00:00.000Z,StageName,Prospecting,Qualification
+017H01493,006D0411,2026-03-25T16:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01494,006D0411,2026-03-28T14:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01499,006D0414,2026-01-28T10:45:00.000Z,StageName,Prospecting,Qualification
+017H01500,006D0414,2026-02-04T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01501,006D0414,2026-02-16T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01502,006D0414,2026-02-17T12:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01503,006D0415,2026-01-11T14:45:00.000Z,StageName,Prospecting,Qualification
+017H01504,006D0415,2026-01-22T16:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01505,006D0415,2026-01-31T11:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01506,006D0415,2026-02-09T13:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01511,006D0417,2026-02-21T15:15:00.000Z,StageName,Prospecting,Qualification
+017H01516,006D0419,2026-03-22T14:00:00.000Z,StageName,Prospecting,Qualification
+017H01517,006D0420,2026-03-11T17:00:00.000Z,StageName,Prospecting,Qualification
+017H01518,006D0420,2026-03-17T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01519,006D0420,2026-03-19T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01520,006D0420,2026-03-24T14:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01525,006D0422,2026-01-07T14:45:00.000Z,StageName,Prospecting,Qualification
+017H01526,006D0422,2026-01-18T14:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01527,006D0422,2026-01-30T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01528,006D0422,2026-02-08T09:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01529,006D0423,2026-03-28T17:45:00.000Z,StageName,Prospecting,Qualification
+017H01530,006D0425,2026-01-17T08:30:00.000Z,StageName,Prospecting,Qualification
+017H01531,006D0425,2026-01-29T09:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01532,006D0425,2026-02-06T08:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01533,006D0425,2026-02-07T16:00:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01534,006D0426,2026-01-27T16:30:00.000Z,StageName,Prospecting,Qualification
+017H01535,006D0426,2026-02-03T14:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01536,006D0426,2026-02-09T14:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01537,006D0426,2026-02-19T11:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01538,006D0427,2026-01-11T14:30:00.000Z,StageName,Prospecting,Qualification
+017H01539,006D0427,2026-01-21T11:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01540,006D0427,2026-02-01T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01541,006D0427,2026-02-03T13:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01542,006D0428,2026-03-20T09:15:00.000Z,StageName,Prospecting,Qualification
+017H01543,006D0428,2026-03-31T10:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01548,006D0431,2026-02-03T14:00:00.000Z,StageName,Prospecting,Qualification
+017H01549,006D0431,2026-02-15T11:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01550,006D0431,2026-02-17T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01551,006D0431,2026-02-18T14:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01556,006D0433,2026-01-02T15:45:00.000Z,StageName,Prospecting,Qualification
+017H01557,006D0433,2026-01-04T17:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01558,006D0433,2026-01-14T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01559,006D0433,2026-01-23T14:00:00.000Z,StageName,Negotiation/Review,Proposal/Price Quote
+017H01560,006D0433,2026-02-04T10:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01561,006D0433,2026-02-07T15:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01562,006D0434,2026-01-08T17:15:00.000Z,StageName,Prospecting,Qualification
+017H01563,006D0434,2026-01-20T08:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01564,006D0434,2026-01-26T13:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01565,006D0434,2026-01-28T10:00:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01566,006D0435,2025-12-07T12:45:00.000Z,StageName,Prospecting,Qualification
+017H01567,006D0435,2025-12-16T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01568,006D0435,2025-12-27T13:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01569,006D0435,2026-01-04T17:15:00.000Z,StageName,Negotiation/Review,Closed Won
+017H01570,006D0436,2026-01-23T17:30:00.000Z,StageName,Prospecting,Qualification
+017H01571,006D0436,2026-01-27T13:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01572,006D0436,2026-02-05T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01573,006D0436,2026-02-13T14:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01574,006D0437,2025-12-13T09:45:00.000Z,StageName,Prospecting,Qualification
+017H01575,006D0437,2025-12-19T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01576,006D0437,2025-12-26T15:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01577,006D0437,2026-01-01T17:45:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01582,006D0439,2026-02-25T10:15:00.000Z,StageName,Prospecting,Qualification
+017H01583,006D0439,2026-03-03T14:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01584,006D0439,2026-03-12T17:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01585,006D0439,2026-03-20T16:30:00.000Z,StageName,Negotiation/Review,Closed Lost
+017H01586,006D0440,2026-03-11T13:45:00.000Z,StageName,Prospecting,Qualification
+017H01587,006D0440,2026-03-19T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01588,006D0440,2026-03-28T16:00:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01597,006D0445,2026-03-20T11:30:00.000Z,StageName,Prospecting,Qualification
+017H01598,006D0445,2026-03-24T17:00:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01599,006D0445,2026-03-26T12:30:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01600,006D0446,2026-03-20T11:00:00.000Z,StageName,Prospecting,Qualification
+017H01601,006D0446,2026-03-26T16:15:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01602,006D0447,2026-03-25T17:00:00.000Z,StageName,Prospecting,Qualification
+017H01603,006D0447,2026-03-31T15:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01604,006D0448,2026-03-17T16:45:00.000Z,StageName,Prospecting,Qualification
+017H01605,006D0448,2026-03-27T08:45:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01606,006D0448,2026-03-29T17:45:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01607,006D0450,2026-01-16T09:30:00.000Z,StageName,Prospecting,Qualification
+017H01608,006D0450,2026-01-18T11:30:00.000Z,StageName,Qualification,Proposal/Price Quote
+017H01609,006D0450,2026-01-23T11:15:00.000Z,StageName,Proposal/Price Quote,Negotiation/Review
+017H01610,006D0450,2026-02-01T09:15:00.000Z,StageName,Negotiation/Review,Closed Lost

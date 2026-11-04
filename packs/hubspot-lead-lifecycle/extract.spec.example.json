@@ -1,0 +1,22 @@
+{
+ "version": 1,
+ "system": "hubspot",
+ "start": "2026-01-01T00:00:00Z",
+ "end": "2026-04-01T00:00:00Z",
+ "objects": [
+  {
+   "object": "contacts",
+   "properties": [
+    "lifecyclestage",
+    "hs_lead_status",
+    "hubspot_owner_id"
+   ],
+   "history": [
+    "lifecyclestage",
+    "hs_lead_status",
+    "hubspot_owner_id"
+   ]
+  }
+ ],
+ "history_gaps": []
+}

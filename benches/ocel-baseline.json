@@ -1,0 +1,18 @@
+{
+  "recorded": "2026-08-13",
+  "measured_on": "Apple M3 Pro, 12 cores, 18 GB, macOS",
+  "note": "100k-event smoke baselines on the real pm_query::analyze_ocel path. Refresh on the stable CI runner before tightening the deliberately wide cross-machine tolerance.",
+  "events": 100000,
+  "lifecycle": {
+    "event_object_relations": 100000,
+    "object_object_relations": 0,
+    "per_million_events_ms": 2637.80,
+    "peak_rust_heap_mb": 19.17
+  },
+  "interaction": {
+    "event_object_relations": 500000,
+    "object_object_relations": 40000,
+    "per_million_events_ms": 5336.42,
+    "peak_rust_heap_mb": 38.43
+  }
+}

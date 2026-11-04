@@ -1,0 +1,37 @@
+{
+  "id": "sap-s4-cloud-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (SAP S/4HANA Public Cloud)",
+  "system": "SAP S/4HANA Cloud, public edition",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of SAP's released data views and standard read-only APIs for purchasing, goods movements, supplier invoices and journal entries. Not yet confirmed on a real tenant; tested only on made-up files in this layout. Goods receipts and invoices carry posting dates only.",
+  "case_object_type": "purchase order item",
+  "size_check": {
+    "ask": "How many purchase order items were created in the period for the company code?",
+    "unit": "purchase order item",
+    "steps_per_unit": 4
+  },
+  "include": [
+    "sap-clock",
+    "sap-cloud-suppliers",
+    "sap-cloud-requisitions",
+    "sap-cloud-purchasing",
+    "sap-cloud-payables",
+    "sap-cloud-purchasing-changes"
+  ],
+  "variants": [
+    {
+      "id": "accounts-payable",
+      "name": "Accounts payable: invoice to payment",
+      "case_object_type": "supplier invoice",
+      "tables": [
+        "Supplier",
+        "SupplierInvoice",
+        "JournalEntryItem",
+        "ChangeDocument",
+        "ChangeDocumentItem"
+      ]
+    }
+  ]
+}

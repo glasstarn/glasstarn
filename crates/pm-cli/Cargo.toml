@@ -1,0 +1,35 @@
+[package]
+name = "pm-cli"
+description = "The glasstarn command-line interface."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "glasstarn"
+path = "src/main.rs"
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-ingest = { path = "../pm-ingest" }
+pm-mcp = { path = "../pm-mcp" }
+pm-project = { path = "../pm-project" }
+pm-query = { path = "../pm-query" }
+pm-server = { path = "../pm-server" }
+serde_json.workspace = true
+serde.workspace = true
+csv = "1"
+chrono = "0.4"
+tempfile = "3"
+flate2 = "1.1.9"
+sha2 = "0.10"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[dev-dependencies]
+pm-testgen = { path = "../pm-testgen" }

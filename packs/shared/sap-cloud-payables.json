@@ -1,0 +1,631 @@
+{
+  "id": "sap-cloud-payables",
+  "note": "Supplier invoices and their payment from SAP S/4HANA Public Cloud data views.",
+  "tables": [
+    {
+      "name": "SupplierInvoice",
+      "noun": "supplier invoices",
+      "date_label": "the invoice was posted",
+      "label": "Supplier invoices",
+      "export": "Supplier invoices of the company code posted in the period or later, up to the export date.",
+      "required": [
+        "SupplierInvoice",
+        "FiscalYear",
+        "CompanyCode",
+        "InvoicingParty",
+        "PostingDate",
+        "InvoiceGrossAmount",
+        "IsInvoice"
+      ],
+      "fields": [
+        "DocumentDate",
+        "DocumentCurrency",
+        "SupplierInvoiceIDByInvcgParty"
+      ],
+      "date_field": "PostingDate",
+      "object": "invoice",
+      "key": [
+        "SupplierInvoice",
+        "FiscalYear"
+      ],
+      "scope_field": "CompanyCode"
+    },
+    {
+      "name": "SupplierInvoiceItemPurOrdRef",
+      "label": "Supplier invoice items with their purchase order",
+      "export": "Purchase-order items of the exported supplier invoices.",
+      "required": [
+        "SupplierInvoice",
+        "FiscalYear",
+        "SupplierInvoiceItem",
+        "PurchaseOrder",
+        "PurchaseOrderItem"
+      ],
+      "fields": [
+        "QuantityInPurchaseOrderUnit",
+        "SupplierInvoiceItemAmount"
+      ]
+    },
+    {
+      "name": "JournalEntryItem",
+      "label": "Supplier journal entry items",
+      "export": "Supplier line items (account type K) of the company code for invoices posted in the period, with their clearing date and clearing entry, up to the export date.",
+      "required": [
+        "CompanyCode",
+        "AccountingDocument",
+        "FiscalYear",
+        "AccountingDocumentItem",
+        "FinancialAccountType",
+        "DebitCreditCode",
+        "Supplier",
+        "ReferenceDocumentType",
+        "OriginalReferenceDocument",
+        "ClearingDate"
+      ],
+      "fields": [
+        "AccountingDocumentType",
+        "PostingDate",
+        "AmountInCompanyCodeCurrency",
+        "ClearingJournalEntry"
+      ],
+      "date_field": "PostingDate",
+      "scope_field": "CompanyCode"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-invoice",
+      "table": "SupplierInvoice",
+      "columns": [
+        "SupplierInvoice",
+        "FiscalYear"
+      ],
+      "label": "invoices listed once (number plus fiscal year)"
+    },
+    {
+      "id": "one-invoice-item-per-order-item",
+      "table": "SupplierInvoiceItemPurOrdRef",
+      "columns": [
+        "SupplierInvoice",
+        "FiscalYear",
+        "PurchaseOrder",
+        "PurchaseOrderItem"
+      ],
+      "label": "each invoice charges an order item on one line only"
+    },
+    {
+      "id": "one-journal-item",
+      "table": "JournalEntryItem",
+      "columns": [
+        "CompanyCode",
+        "AccountingDocument",
+        "FiscalYear",
+        "AccountingDocumentItem"
+      ],
+      "label": "journal entry items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "invoices-have-suppliers",
+      "label": "invoices whose supplier is in the supplier list",
+      "from": {
+        "table": "SupplierInvoice",
+        "columns": [
+          "InvoicingParty"
+        ]
+      },
+      "to": {
+        "table": "Supplier",
+        "columns": [
+          "Supplier"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-items-have-invoices",
+      "label": "invoice items whose invoice is in the export",
+      "from": {
+        "table": "SupplierInvoiceItemPurOrdRef",
+        "columns": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ]
+      },
+      "to": {
+        "table": "SupplierInvoice",
+        "columns": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "journal-matches-invoices",
+      "label": "supplier journal items from purchasing that match an exported invoice",
+      "from": {
+        "table": "JournalEntryItem",
+        "columns": [
+          {
+            "column": "OriginalReferenceDocument",
+            "start": 0,
+            "length": 10
+          },
+          {
+            "column": "OriginalReferenceDocument",
+            "start": 10,
+            "length": 4
+          }
+        ],
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "RMRP"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SupplierInvoice",
+        "columns": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-items-reach-orders",
+      "label": "invoice items whose order item is in the export",
+      "from": {
+        "table": "SupplierInvoiceItemPurOrdRef",
+        "columns": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice items ({missing_share}) charge purchase orders that are not in the export, usually orders created before the period. Those invoices will show without their order's earlier steps. Should the administrator export older orders too?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Yes, export orders from earlier months as well"
+          },
+          {
+            "id": "keep",
+            "label": "No, analyse the invoices without those orders"
+          }
+        ],
+        "recommended": "widen"
+      }
+    },
+    {
+      "id": "invoices-have-order-items",
+      "label": "invoices with at least one purchase order item",
+      "from": {
+        "table": "SupplierInvoice",
+        "columns": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ]
+      },
+      "to": {
+        "table": "SupplierInvoiceItemPurOrdRef",
+        "columns": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95
+    },
+    {
+      "id": "paid-invoices-came-through-purchasing",
+      "label": "paid supplier invoices that came through purchasing",
+      "from": {
+        "table": "JournalEntryItem",
+        "columns": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear"
+        ],
+        "where": [
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "K"
+            ]
+          },
+          {
+            "column": "DebitCreditCode",
+            "in": [
+              "H"
+            ]
+          },
+          {
+            "column": "ClearingDate",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "JournalEntryItem",
+        "columns": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear"
+        ],
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "RMRP"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} paid supplier invoices ({missing_share}) were posted straight in accounting with no purchase order. They show as payments to the supplier only, outside the order-to-payment flow. Is that how your company handles some invoices, for example utilities or rent?",
+        "options": [
+          {
+            "id": "expected",
+            "label": "Yes, that is expected"
+          },
+          {
+            "id": "investigate",
+            "label": "No, they should have orders; treat them as a finding"
+          }
+        ],
+        "recommended": "expected"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "invoice",
+        "input": "SupplierInvoice",
+        "namespace": "sap",
+        "object_type": "supplier invoice",
+        "key": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ],
+        "attributes": [
+          {
+            "column": "CompanyCode",
+            "name": "company code"
+          },
+          {
+            "column": "InvoiceGrossAmount",
+            "name": "invoice amount"
+          }
+        ]
+      },
+      {
+        "id": "payable",
+        "input": "JournalEntryItem",
+        "namespace": "sap",
+        "object_type": "payable posting",
+        "key": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear"
+        ],
+        "where": [
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "K"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "invoice_recorded",
+        "input": "SupplierInvoice",
+        "namespace": "sap",
+        "key": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ],
+        "activity": {
+          "value": "Record invoice"
+        },
+        "timestamp": {
+          "date": "PostingDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "SupplierInvoice",
+              "FiscalYear"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "InvoicingParty"
+            ],
+            "qualifier": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "IsInvoice",
+            "in": [
+              "true"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "credit_memo_recorded",
+        "input": "SupplierInvoice",
+        "namespace": "sap",
+        "key": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ],
+        "activity": {
+          "value": "Receive credit memo"
+        },
+        "timestamp": {
+          "date": "PostingDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "SupplierInvoice",
+              "FiscalYear"
+            ],
+            "qualifier": "credit memo"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "InvoicingParty"
+            ],
+            "qualifier": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "IsInvoice",
+            "in": [
+              "false"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "invoice_paid",
+        "input": "JournalEntryItem",
+        "namespace": "sap",
+        "key": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear",
+          "AccountingDocumentItem"
+        ],
+        "where": [
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "K"
+            ]
+          },
+          {
+            "column": "DebitCreditCode",
+            "in": [
+              "H"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Pay invoice"
+        },
+        "timestamp": {
+          "date": "ClearingDate",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "vendor",
+            "columns": [
+              "Supplier"
+            ],
+            "qualifier": "vendor"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "invoice_order_lines",
+        "input": "SupplierInvoiceItemPurOrdRef",
+        "source": {
+          "object": "invoice",
+          "columns": [
+            "SupplierInvoice",
+            "FiscalYear"
+          ],
+          "qualifier": "invoice"
+        },
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "PurchaseOrder",
+            "PurchaseOrderItem"
+          ],
+          "qualifier": "charges order line",
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "payable_invoice",
+        "input": "JournalEntryItem",
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "RMRP"
+            ]
+          },
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "K"
+            ]
+          }
+        ],
+        "source": {
+          "object": "payable",
+          "columns": [
+            "CompanyCode",
+            "AccountingDocument",
+            "FiscalYear"
+          ],
+          "qualifier": "posting"
+        },
+        "target": {
+          "object": "invoice",
+          "columns": [
+            {
+              "column": "OriginalReferenceDocument",
+              "start": 0,
+              "length": 10
+            },
+            {
+              "column": "OriginalReferenceDocument",
+              "start": 10,
+              "length": 4
+            }
+          ],
+          "qualifier": "posts invoice"
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "invoice_lines",
+        "input": "SupplierInvoiceItemPurOrdRef",
+        "event": "invoice_recorded",
+        "event_key": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ],
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "PurchaseOrder",
+            "PurchaseOrderItem"
+          ],
+          "qualifier": "invoiced order line",
+          "allow_unmatched": true
+        },
+        "optional_event": true
+      },
+      {
+        "id": "credit_memo_lines",
+        "input": "SupplierInvoiceItemPurOrdRef",
+        "event": "credit_memo_recorded",
+        "event_key": [
+          "SupplierInvoice",
+          "FiscalYear"
+        ],
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "PurchaseOrder",
+            "PurchaseOrderItem"
+          ],
+          "qualifier": "credited order line",
+          "allow_unmatched": true
+        },
+        "optional_event": true
+      },
+      {
+        "id": "payment_of_invoice",
+        "input": "JournalEntryItem",
+        "event": "invoice_paid",
+        "event_key": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear",
+          "AccountingDocumentItem"
+        ],
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "RMRP"
+            ]
+          },
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "K"
+            ]
+          },
+          {
+            "column": "DebitCreditCode",
+            "in": [
+              "H"
+            ]
+          }
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "invoice",
+          "columns": [
+            {
+              "column": "OriginalReferenceDocument",
+              "start": 0,
+              "length": 10
+            },
+            {
+              "column": "OriginalReferenceDocument",
+              "start": 10,
+              "length": 4
+            }
+          ],
+          "qualifier": "paid invoice"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "payment_order_lines",
+        "event": "invoice_paid",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "paid order line"
+      }
+    ]
+  }
+}

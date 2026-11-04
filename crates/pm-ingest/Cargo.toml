@@ -1,0 +1,34 @@
+[package]
+name = "pm-ingest"
+description = "Profiling, timestamp-format detection, validation, and normalization of event logs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+thiserror.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+# No `clock` feature: parsing must never depend on the current time.
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+hashbrown = "0.17"
+csv = "1.4.0"
+quick-xml = "0.41"
+rusqlite = { version = "0.32.1", features = ["bundled"] }
+flate2 = "1.1.9"
+parquet = { version = "59.2.0", default-features = false, features = ["arrow", "snap", "zstd"] }
+arrow-array = "59.2.0"
+arrow-schema = "59.2.0"
+calamine = { version = "0.38", default-features = false, features = ["dates"] }
+
+[dev-dependencies]
+pm-testgen = { path = "../pm-testgen" }
+pm-core = { path = "../pm-core" }
+
+[lints.rust]
+unsafe_code = "forbid"

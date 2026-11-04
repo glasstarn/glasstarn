@@ -1,0 +1,37 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "Order",
+      "fields": ["Id", "OrderNumber", "AccountId", "OpportunityId", "CreatedDate", "EffectiveDate", "Status", "ActivatedDate", "TotalAmount", "IsReductionOrder", "OriginalOrderId"],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "OrderHistory",
+      "fields": ["Id", "OrderId", "Field", "OldValue", "NewValue", "CreatedDate", "DataType"],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "OrderId",
+      "parent": "Order",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "OrderItem",
+      "fields": ["Id", "OrderId", "Product2Id", "Quantity", "UnitPrice", "TotalPrice", "ServiceDate", "CreatedDate"],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "OrderId",
+      "parent": "Order",
+      "history_gaps": []
+    }
+  ]
+}

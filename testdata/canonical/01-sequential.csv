@@ -1,0 +1,13 @@
+case_id,activity,timestamp
+ORDER-1,Receive Order,2026-03-02 09:00:00
+ORDER-1,Check Credit,2026-03-02 11:00:00
+ORDER-1,Approve Order,2026-03-03 09:00:00
+ORDER-1,Ship Order,2026-03-03 15:00:00
+ORDER-2,Receive Order,2026-03-02 10:00:00
+ORDER-2,Check Credit,2026-03-02 14:00:00
+ORDER-2,Approve Order,2026-03-04 09:00:00
+ORDER-2,Ship Order,2026-03-04 17:00:00
+ORDER-3,Receive Order,2026-03-03 08:00:00
+ORDER-3,Check Credit,2026-03-03 09:00:00
+ORDER-3,Approve Order,2026-03-03 16:00:00
+ORDER-3,Ship Order,2026-03-04 10:00:00

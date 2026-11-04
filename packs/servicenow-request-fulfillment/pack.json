@@ -1,0 +1,652 @@
+{
+  "id": "servicenow-request-fulfillment",
+  "version": 1,
+  "name": "Request fulfillment (ServiceNow)",
+  "system": "ServiceNow",
+  "process": "request fulfillment",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of ServiceNow's Table API, its standard tables and the audit history (sys_audit). Checked on a real ServiceNow instance on 2026-10-15 with planted records; see the README. Steps come from audited fields; a field excluded from auditing leaves no steps.",
+  "case_object_type": "requested item",
+  "size_check": {
+    "ask": "How many catalog items were requested in the period?",
+    "unit": "requested item",
+    "steps_per_unit": 10
+  },
+  "custom_prefixes": [
+    "u_"
+  ],
+  "tables": [
+    {
+      "name": "ServiceNowRequestItem",
+      "noun": "requested items",
+      "date_label": "the item was requested",
+      "label": "ServiceNow requested items",
+      "export": "Requested items with activity in the period, from the ServiceNow extract (table sc_req_item): sys_id, number, created, request, cat_item, state, stage, approval and the company's own fields, with state, stage, approval and catalog item labels.",
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "state",
+        "stage",
+        "approval",
+        "state_label",
+        "stage_label",
+        "approval_label"
+      ],
+      "fields": [
+        "request",
+        "cat_item",
+        "cat_item_label"
+      ],
+      "date_field": "created",
+      "object": "sn_requested_item",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowCatalogTask",
+      "noun": "catalog tasks",
+      "date_label": "the task was created",
+      "label": "ServiceNow catalog tasks",
+      "export": "The catalog tasks of those requested items (table sc_task, by request_item): sys_id, number, created, request_item, state, assignment_group, with state and assignment group labels.",
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "request_item",
+        "state",
+        "state_label"
+      ],
+      "fields": [
+        "assignment_group",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_catalog_task",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowAudit",
+      "label": "ServiceNow audit history",
+      "export": "The audit history (sys_audit) of those records, one row per changed field, from the ServiceNow extract: table, record, audit_id, created, user, field, old and new stored values and their display labels.",
+      "required": [
+        "table",
+        "record",
+        "audit_id",
+        "created",
+        "field",
+        "old_value",
+        "old_label",
+        "new_value",
+        "new_label"
+      ],
+      "fields": [
+        "user"
+      ],
+      "date_field": "created"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ServiceNowRequestItem",
+      "table": "ServiceNowRequestItem",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "requested items listed once"
+    },
+    {
+      "id": "one-ServiceNowCatalogTask",
+      "table": "ServiceNowCatalogTask",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "catalog tasks listed once"
+    },
+    {
+      "id": "one-audit-row",
+      "table": "ServiceNowAudit",
+      "columns": [
+        "audit_id"
+      ],
+      "label": "audit rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "audit-has-sc-req-item",
+      "label": "audit rows whose requested item is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_req_item"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowRequestItem",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "audit-has-sc-task",
+      "label": "audit rows whose catalog task is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_task"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowCatalogTask",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "tasks-have-items",
+      "label": "catalog tasks whose requested item is in the extract",
+      "from": {
+        "table": "ServiceNowCatalogTask",
+        "columns": [
+          "request_item"
+        ]
+      },
+      "to": {
+        "table": "ServiceNowRequestItem",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sn_requested_item",
+        "input": "ServiceNowRequestItem",
+        "namespace": "servicenow",
+        "object_type": "requested item",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "cat_item_label",
+            "name": "catalog item"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      },
+      {
+        "id": "sn_catalog_task",
+        "input": "ServiceNowCatalogTask",
+        "namespace": "servicenow",
+        "object_type": "catalog task",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "task_of_item",
+        "input": "ServiceNowCatalogTask",
+        "source": {
+          "object": "sn_catalog_task",
+          "columns": [
+            "sys_id"
+          ],
+          "qualifier": "task"
+        },
+        "target": {
+          "object": "sn_requested_item",
+          "columns": [
+            "request_item"
+          ],
+          "qualifier": "of requested item"
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "item_requested",
+        "input": "ServiceNowRequestItem",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Request item"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "requested item"
+          }
+        ]
+      },
+      {
+        "id": "item_state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_req_item"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "requested item"
+          }
+        ],
+        "activity": {
+          "column": "new_label"
+        }
+      },
+      {
+        "id": "item_stage_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_req_item"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "stage"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "requested item"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Stage "
+        }
+      },
+      {
+        "id": "item_approval",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_req_item"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "approval"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "requested item"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Approval "
+        }
+      },
+      {
+        "id": "item_field_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_req_item"
+            ]
+          },
+          {
+            "column": "field",
+            "not_in": [
+              "state",
+              "stage",
+              "approval",
+              "work_notes",
+              "comments"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "requested item"
+          }
+        ],
+        "activity": {
+          "column": "field",
+          "prefix": "Change "
+        }
+      },
+      {
+        "id": "task_created",
+        "input": "ServiceNowCatalogTask",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Create catalog task"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_catalog_task",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "request_item"
+            ],
+            "qualifier": "requested item"
+          }
+        ]
+      },
+      {
+        "id": "task_state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_task"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_catalog_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "request_item"
+            ],
+            "qualifier": "requested item"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Catalog task "
+        },
+        "lookup": {
+          "input": "ServiceNowCatalogTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "request_item"
+          ]
+        }
+      },
+      {
+        "id": "task_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "sc_task"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_catalog_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_requested_item",
+            "columns": [
+              "request_item"
+            ],
+            "qualifier": "requested item"
+          }
+        ],
+        "activity": {
+          "value": "Reassign catalog task"
+        },
+        "lookup": {
+          "input": "ServiceNowCatalogTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "request_item"
+          ]
+        }
+      }
+    ]
+  }
+}

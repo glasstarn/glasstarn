@@ -1,0 +1,53 @@
+{
+  "id": "sap-cloud-suppliers",
+  "note": "Suppliers from SAP S/4HANA Public Cloud data views.",
+  "tables": [
+    {
+      "name": "Supplier",
+      "noun": "suppliers",
+      "label": "Suppliers",
+      "export": "Suppliers that appear on the purchase orders or supplier invoices.",
+      "required": [
+        "Supplier",
+        "SupplierName"
+      ],
+      "fields": [
+        "Country"
+      ],
+      "object": "vendor",
+      "key": [
+        "Supplier"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-supplier",
+      "table": "Supplier",
+      "columns": [
+        "Supplier"
+      ],
+      "label": "suppliers listed once"
+    }
+  ],
+  "checks": [],
+  "recipe": {
+    "objects": [
+      {
+        "id": "vendor",
+        "input": "Supplier",
+        "namespace": "sap",
+        "object_type": "vendor",
+        "key": [
+          "Supplier"
+        ],
+        "attributes": [
+          {
+            "column": "SupplierName",
+            "name": "vendor name"
+          }
+        ]
+      }
+    ]
+  }
+}

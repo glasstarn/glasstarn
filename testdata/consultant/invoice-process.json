@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "title": "Invoice handling including the off-system review",
+  "view": "combined_current",
+  "sources": [
+    {
+      "id": "sop",
+      "kind": "document",
+      "title": "Synthetic invoice SOP",
+      "revision": "v2",
+      "reference": "Acceptance fixture, section 3"
+    },
+    {
+      "id": "interview",
+      "kind": "reported_practice",
+      "title": "Finance lead's account",
+      "revision": "2026-10-18",
+      "reference": "Synthetic employee account: review happens in email"
+    }
+  ],
+  "steps": [
+    {
+      "id": "issue",
+      "label": "Issue invoice",
+      "owner": "Billing",
+      "evidence": [
+        {
+          "kind": "observed",
+          "query": "exports/query-1.json"
+        }
+      ]
+    },
+    {
+      "id": "review",
+      "label": "Review supporting documents in email",
+      "owner": "Finance lead",
+      "evidence": [
+        {
+          "kind": "documented",
+          "source": "sop",
+          "section": "3. Review documents before payment"
+        },
+        {
+          "kind": "reported",
+          "source": "interview"
+        }
+      ]
+    },
+    {
+      "id": "pay",
+      "label": "Pay invoice",
+      "owner": "Treasury",
+      "evidence": [
+        {
+          "kind": "observed",
+          "query": "exports/query-1.json"
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "from": "issue",
+      "to": "review",
+      "evidence": [
+        {
+          "kind": "documented",
+          "source": "sop",
+          "section": "3. Review documents before payment"
+        }
+      ]
+    },
+    {
+      "from": "review",
+      "to": "pay",
+      "evidence": [
+        {
+          "kind": "reported",
+          "source": "interview"
+        }
+      ]
+    }
+  ],
+  "open_questions": [
+    "How long does the email review take? No timestamps establish this.",
+    "Does the SOP apply to every invoice or only exceptions?"
+  ]
+}

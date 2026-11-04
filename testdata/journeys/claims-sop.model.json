@@ -1,0 +1,10 @@
+{"source":"Claims Handling SOP v2.1","tree":{"kind":"sequence","children":[
+ {"kind":"activity","activity":"Claim submitted"},{"kind":"activity","activity":"Claim registered"},{"kind":"activity","activity":"Assign adjuster"},{"kind":"activity","activity":"Assess claim"},
+ {"kind":"loop","body":{"kind":"tau"},"redo":{"kind":"sequence","children":[{"kind":"activity","activity":"Request documents"},{"kind":"activity","activity":"Documents received"},{"kind":"activity","activity":"Assess claim"}]}},
+ {"kind":"exclusive","children":[{"kind":"activity","activity":"Damage inspection"},{"kind":"tau"}]},
+ {"kind":"exclusive","children":[{"kind":"activity","activity":"Senior review"},{"kind":"tau"}]},
+ {"kind":"exclusive","children":[
+   {"kind":"sequence","children":[{"kind":"activity","activity":"Approve claim"},{"kind":"activity","activity":"Approve payment"},{"kind":"activity","activity":"Pay claim"},{"kind":"activity","activity":"Notify customer"}]},
+   {"kind":"sequence","children":[{"kind":"activity","activity":"Reject claim"},{"kind":"activity","activity":"Notify customer"},
+     {"kind":"exclusive","children":[{"kind":"tau"},{"kind":"sequence","children":[{"kind":"activity","activity":"Customer appeal"},{"kind":"activity","activity":"Senior review"},{"kind":"activity","activity":"Approve claim"},{"kind":"activity","activity":"Approve payment"},{"kind":"activity","activity":"Pay claim"},{"kind":"activity","activity":"Notify customer"}]}]}]}]},
+ {"kind":"activity","activity":"Close claim"}]}}

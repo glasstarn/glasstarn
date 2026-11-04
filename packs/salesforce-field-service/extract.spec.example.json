@@ -1,0 +1,98 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "WorkOrder",
+      "fields": [
+        "Id",
+        "WorkOrderNumber",
+        "CaseId",
+        "AccountId",
+        "AssetId",
+        "WorkTypeId",
+        "CreatedDate",
+        "Status",
+        "Priority"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "WorkOrderHistory",
+      "fields": [
+        "Id",
+        "WorkOrderId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "WorkOrderId",
+      "parent": "WorkOrder",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "ServiceAppointment",
+      "fields": [
+        "Id",
+        "AppointmentNumber",
+        "ParentRecordId",
+        "CreatedDate",
+        "Status",
+        "SchedStartTime",
+        "SchedEndTime",
+        "ActualStartTime",
+        "ActualEndTime",
+        "ArrivalWindowStartTime",
+        "ArrivalWindowEndTime"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "ServiceAppointmentHistory",
+      "fields": [
+        "Id",
+        "ServiceAppointmentId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ],
+      "item_field": "ServiceAppointmentId",
+      "parent": "ServiceAppointment"
+    },
+    {
+      "name": "AssignedResource",
+      "fields": [
+        "Id",
+        "ServiceAppointmentId",
+        "ServiceResourceId",
+        "CreatedDate"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "history_gaps": [],
+      "item_field": "ServiceAppointmentId",
+      "parent": "ServiceAppointment"
+    }
+  ]
+}

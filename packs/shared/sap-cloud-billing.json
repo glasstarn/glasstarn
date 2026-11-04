@@ -1,0 +1,320 @@
+{
+  "id": "sap-cloud-billing",
+  "note": "Customer invoices and their cancellations from SAP S/4HANA Public Cloud data views.",
+  "tables": [
+    {
+      "name": "BillingDocument",
+      "noun": "invoices",
+      "date_label": "the invoice was created",
+      "label": "Billing documents (customer invoices)",
+      "export": "Billing documents of the company code created in the period or later, up to the export date, including cancellations (type S1).",
+      "required": [
+        "BillingDocument",
+        "BillingDocumentType",
+        "CreationDate",
+        "CreationTime",
+        "CompanyCode",
+        "SoldToParty",
+        "TotalNetAmount",
+        "BillingDocumentIsCancelled",
+        "CancelledBillingDocument"
+      ],
+      "fields": [
+        "BillingDocumentDate",
+        "TransactionCurrency"
+      ],
+      "date_field": "CreationDate",
+      "object": "billing",
+      "key": [
+        "BillingDocument"
+      ],
+      "scope_field": "CompanyCode"
+    },
+    {
+      "name": "BillingDocumentItem",
+      "label": "Billing document items",
+      "export": "Items of the exported billing documents.",
+      "required": [
+        "BillingDocument",
+        "BillingDocumentItem",
+        "SalesDocument",
+        "SalesDocumentItem"
+      ],
+      "fields": [
+        "ReferenceSDDocument",
+        "ReferenceSDDocumentItem",
+        "BillingQuantity",
+        "NetAmount"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-billing-document",
+      "table": "BillingDocument",
+      "columns": [
+        "BillingDocument"
+      ],
+      "label": "billing documents listed once"
+    },
+    {
+      "id": "one-billing-line-per-order-line",
+      "table": "BillingDocumentItem",
+      "columns": [
+        "BillingDocument",
+        "SalesDocument",
+        "SalesDocumentItem"
+      ],
+      "label": "each invoice bills an order item on one line only"
+    }
+  ],
+  "checks": [
+    {
+      "id": "invoices-have-customers",
+      "label": "invoices whose customer is in the customer list",
+      "from": {
+        "table": "BillingDocument",
+        "columns": [
+          "SoldToParty"
+        ]
+      },
+      "to": {
+        "table": "Customer",
+        "columns": [
+          "Customer"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "billing-items-have-documents",
+      "label": "billing items whose billing document is in the export",
+      "from": {
+        "table": "BillingDocumentItem",
+        "columns": [
+          "BillingDocument"
+        ]
+      },
+      "to": {
+        "table": "BillingDocument",
+        "columns": [
+          "BillingDocument"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "billing",
+        "input": "BillingDocument",
+        "namespace": "sap",
+        "object_type": "customer invoice",
+        "key": [
+          "BillingDocument"
+        ],
+        "where": [
+          {
+            "column": "BillingDocumentType",
+            "in": [
+              "F2",
+              "RE",
+              "G2"
+            ]
+          }
+        ],
+        "attributes": [
+          {
+            "column": "TotalNetAmount",
+            "name": "invoice amount"
+          },
+          {
+            "column": "CompanyCode",
+            "name": "company code"
+          },
+          {
+            "column": "BillingDocumentIsCancelled",
+            "name": "cancelled"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "invoice_created",
+        "input": "BillingDocument",
+        "namespace": "sap",
+        "key": [
+          "BillingDocument"
+        ],
+        "where": [
+          {
+            "column": "BillingDocumentType",
+            "in": [
+              "F2"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create invoice"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "BillingDocument"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "invoice_cancelled",
+        "input": "BillingDocument",
+        "namespace": "sap",
+        "key": [
+          "BillingDocument"
+        ],
+        "where": [
+          {
+            "column": "BillingDocumentType",
+            "in": [
+              "S1"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel invoice"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "CancelledBillingDocument"
+            ],
+            "qualifier": "cancelled invoice"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "credit_memo_created",
+        "input": "BillingDocument",
+        "namespace": "sap",
+        "key": [
+          "BillingDocument"
+        ],
+        "where": [
+          {
+            "column": "BillingDocumentType",
+            "in": [
+              "RE",
+              "G2"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create credit memo"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "BillingDocument"
+            ],
+            "qualifier": "credit memo"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "billing_order_lines",
+        "input": "BillingDocumentItem",
+        "source": {
+          "object": "billing",
+          "columns": [
+            "BillingDocument"
+          ],
+          "qualifier": "invoice",
+          "allow_unmatched": true
+        },
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "SalesDocument",
+            "SalesDocumentItem"
+          ],
+          "qualifier": "bills order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "invoice_created_lines",
+        "event": "invoice_created",
+        "through": "billing",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "invoice_cancelled_lines",
+        "event": "invoice_cancelled",
+        "through": "billing",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "credit_memo_created_lines",
+        "event": "credit_memo_created",
+        "through": "billing",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "credit_memo_created_original",
+        "event": "credit_memo_created",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      }
+    ]
+  }
+}

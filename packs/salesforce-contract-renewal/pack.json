@@ -1,0 +1,367 @@
+{
+  "id": "salesforce-contract-renewal",
+  "version": 1,
+  "name": "Contracts and renewals (Salesforce)",
+  "system": "Salesforce Sales Cloud",
+  "process": "contract renewal",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Salesforce's standard Contract object, its field history and opportunities linked to contracts. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Contract status steps need field history tracking on the contract status. Renewals are opportunities whose ContractId names the contract; renewals made with the Salesforce CPQ managed package are not yet covered.",
+  "case_object_type": "contract",
+  "size_check": {
+    "ask": "How many contracts started or were created in the period?",
+    "unit": "contract",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "include": [
+    "salesforce-opportunities"
+  ],
+  "tables": [
+    {
+      "name": "Contract",
+      "noun": "contracts",
+      "date_label": "the contract was created",
+      "label": "Salesforce contracts",
+      "export": "Contracts created in the period or ending within a year of it: Id, ContractNumber, AccountId, Status, StartDate, EndDate, ContractTerm, ActivatedDate, CreatedDate and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "Status",
+        "StartDate",
+        "EndDate",
+        "ActivatedDate"
+      ],
+      "fields": [
+        "ContractNumber",
+        "AccountId",
+        "ContractTerm",
+        "StatusCode",
+        "OwnerExpirationNotice"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_contract",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "ContractHistory",
+      "label": "Salesforce contract field history",
+      "export": "Field history of those contracts (ContractHistory): Id, ContractId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "ContractId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "Contract",
+      "needs_tracked": [
+        "Status"
+      ]
+    },
+    {
+      "name": "Opportunity",
+      "noun": "opportunities",
+      "date_label": "the opportunity was created",
+      "label": "Salesforce opportunities",
+      "export": "Opportunities for the period: Id, Name, AccountId, CreatedDate, StageName, IsClosed, IsWon, CloseDate, Amount, ContractId (the contract a renewal belongs to) and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "StageName",
+        "IsClosed",
+        "IsWon",
+        "CloseDate",
+        "Amount"
+      ],
+      "fields": [
+        "Name",
+        "AccountId",
+        "LeadSource",
+        "OwnerId",
+        "Probability",
+        "Type",
+        "ContractId"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_opportunity",
+      "key": [
+        "Id"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-contract",
+      "table": "Contract",
+      "columns": [
+        "Id"
+      ],
+      "label": "contracts listed once"
+    },
+    {
+      "id": "one-sf-contract-history-row",
+      "table": "ContractHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "contract history rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "contract-history-has-contracts",
+      "label": "contract history rows whose contract is in the export",
+      "from": {
+        "table": "ContractHistory",
+        "columns": [
+          "ContractId"
+        ]
+      },
+      "to": {
+        "table": "Contract",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "renewals-have-contracts",
+      "label": "renewal opportunities whose contract is in the export",
+      "from": {
+        "table": "Opportunity",
+        "columns": [
+          "ContractId"
+        ],
+        "where": [
+          {
+            "column": "ContractId",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Contract",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} renewal opportunities name a contract that is not in the export. Keep them without their contract, or re-export the contracts?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their contract"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with those contracts"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "sf_contract",
+        "input": "Contract",
+        "namespace": "salesforce",
+        "object_type": "contract",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          },
+          {
+            "column": "StartDate",
+            "name": "start date"
+          },
+          {
+            "column": "EndDate",
+            "name": "end date"
+          },
+          {
+            "column": "ContractTerm",
+            "name": "term in months"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_contract_created",
+        "input": "Contract",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create contract"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_contract",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "contract"
+          }
+        ]
+      },
+      {
+        "id": "sf_contract_status_changed",
+        "input": "ContractHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Status"
+            ]
+          },
+          {
+            "column": "NewValue",
+            "not_in": [
+              "Activated"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue",
+          "prefix": "Contract: "
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_contract",
+            "columns": [
+              "ContractId"
+            ],
+            "qualifier": "contract"
+          }
+        ]
+      },
+      {
+        "id": "sf_contract_activated",
+        "input": "Contract",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Activate contract"
+        },
+        "timestamp": "ActivatedDate",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "sf_contract",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "contract"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "sf_renewal_of_contract",
+        "input": "Opportunity",
+        "source": {
+          "object": "sf_opportunity",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "renewal"
+        },
+        "target": {
+          "object": "sf_contract",
+          "columns": [
+            "ContractId"
+          ],
+          "qualifier": "renews",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "sf_opportunity_created_contract",
+        "event": "sf_opportunity_created",
+        "through": "sf_opportunity",
+        "relationship": "sf_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_stage_reached_contract",
+        "event": "sf_stage_reached",
+        "through": "sf_opportunity",
+        "relationship": "sf_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_opportunity_won_contract",
+        "event": "sf_opportunity_won",
+        "through": "sf_opportunity",
+        "relationship": "sf_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_opportunity_lost_contract",
+        "event": "sf_opportunity_lost",
+        "through": "sf_opportunity",
+        "relationship": "sf_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_amount_changed_contract",
+        "event": "sf_amount_changed",
+        "through": "sf_opportunity",
+        "relationship": "sf_renewal_of_contract",
+        "qualifier": "contract"
+      },
+      {
+        "id": "sf_close_date_moved_contract",
+        "event": "sf_close_date_moved",
+        "through": "sf_opportunity",
+        "relationship": "sf_renewal_of_contract",
+        "qualifier": "contract"
+      }
+    ]
+  }
+}

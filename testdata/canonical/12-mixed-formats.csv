@@ -1,0 +1,10 @@
+case_id,activity,timestamp
+JOB-1,Queued,2026-01-05 09:00:00
+JOB-1,Started,05/01/2026 11:00
+JOB-1,Finished,2026-01-05T14:00:00Z
+JOB-2,Queued,2026-01-06 08:30:00
+JOB-2,Started,06/01/2026 10:15
+JOB-2,Finished,2026-01-06T13:45:00Z
+JOB-3,Queued,2026-01-07 07:00:00
+JOB-3,Started,07/01/2026 09:30
+JOB-3,Finished,2026-01-07T12:00:00Z

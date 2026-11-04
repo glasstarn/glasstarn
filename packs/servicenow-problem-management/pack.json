@@ -1,0 +1,821 @@
+{
+  "id": "servicenow-problem-management",
+  "version": 1,
+  "name": "Problem management (ServiceNow)",
+  "system": "ServiceNow",
+  "process": "problem management",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of ServiceNow's Table API, its standard tables and the audit history (sys_audit). Checked on a real ServiceNow instance on 2026-10-15 with planted records; see the README. Steps come from audited fields; a field excluded from auditing leaves no steps.",
+  "case_object_type": "problem",
+  "size_check": {
+    "ask": "How many problems were opened in the period?",
+    "unit": "problem",
+    "steps_per_unit": 7
+  },
+  "custom_prefixes": [
+    "u_"
+  ],
+  "tables": [
+    {
+      "name": "ServiceNowProblem",
+      "noun": "problems",
+      "date_label": "the problem was opened",
+      "label": "ServiceNow problems",
+      "export": "Problems with activity in the period, from the ServiceNow extract (table problem): sys_id, number, created, state, priority, assignment_group, assigned_to and the company's own fields (u_…), with state, priority and assignment group labels.",
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "state",
+        "state_label"
+      ],
+      "fields": [
+        "priority",
+        "priority_label",
+        "assignment_group",
+        "assigned_to",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_problem",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowProblemTask",
+      "noun": "problem tasks",
+      "date_label": "the task was created",
+      "label": "ServiceNow problem tasks",
+      "export": "The problem tasks of those problems (table problem_task, by problem): sys_id, number, created, problem, state, assignment_group, with state and assignment group labels. Optional.",
+      "optional": true,
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "problem",
+        "state",
+        "state_label"
+      ],
+      "fields": [
+        "assignment_group",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_problem_task",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowAudit",
+      "label": "ServiceNow audit history",
+      "export": "The audit history (sys_audit) of those records, one row per changed field, from the ServiceNow extract: table, record, audit_id, created, user, field, old and new stored values and their display labels.",
+      "required": [
+        "table",
+        "record",
+        "audit_id",
+        "created",
+        "field",
+        "old_value",
+        "old_label",
+        "new_value",
+        "new_label"
+      ],
+      "fields": [
+        "user"
+      ],
+      "date_field": "created"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ServiceNowProblem",
+      "table": "ServiceNowProblem",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "problems listed once"
+    },
+    {
+      "id": "one-ServiceNowProblemTask",
+      "table": "ServiceNowProblemTask",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "problem tasks listed once"
+    },
+    {
+      "id": "one-audit-row",
+      "table": "ServiceNowAudit",
+      "columns": [
+        "audit_id"
+      ],
+      "label": "audit rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "audit-has-problem",
+      "label": "audit rows whose problem is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowProblem",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "audit-has-task",
+      "label": "audit rows whose task is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem_task"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowProblemTask",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "tasks-have-problem",
+      "label": "tasks whose problem is in the extract",
+      "from": {
+        "table": "ServiceNowProblemTask",
+        "columns": [
+          "problem"
+        ]
+      },
+      "to": {
+        "table": "ServiceNowProblem",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sn_problem",
+        "input": "ServiceNowProblem",
+        "namespace": "servicenow",
+        "object_type": "problem",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "priority_label",
+            "name": "priority"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      },
+      {
+        "id": "sn_problem_task",
+        "input": "ServiceNowProblemTask",
+        "namespace": "servicenow",
+        "object_type": "problem task",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "task_of_problem",
+        "input": "ServiceNowProblemTask",
+        "source": {
+          "object": "sn_problem_task",
+          "columns": [
+            "sys_id"
+          ],
+          "qualifier": "task"
+        },
+        "target": {
+          "object": "sn_problem",
+          "columns": [
+            "problem"
+          ],
+          "qualifier": "of problem"
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "problem_opened",
+        "input": "ServiceNowProblem",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Open problem"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "problem"
+          }
+        ]
+      },
+      {
+        "id": "state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "column": "new_label"
+        }
+      },
+      {
+        "id": "group_assigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "value": "Assign to group"
+        }
+      },
+      {
+        "id": "group_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "value": "Reassign to another group"
+        }
+      },
+      {
+        "id": "person_assigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assigned_to"
+            ]
+          },
+          {
+            "column": "old_value",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "value": "Assign to person"
+        }
+      },
+      {
+        "id": "person_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assigned_to"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "value": "Reassign to another person"
+        }
+      },
+      {
+        "id": "priority_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "priority"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "value": "Change priority"
+        }
+      },
+      {
+        "id": "field_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem"
+            ]
+          },
+          {
+            "column": "field",
+            "not_in": [
+              "state",
+              "assignment_group",
+              "assigned_to",
+              "priority",
+              "work_notes",
+              "comments"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "column": "field",
+          "prefix": "Change "
+        }
+      },
+      {
+        "id": "task_created",
+        "input": "ServiceNowProblemTask",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Create problem task"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_problem_task",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_problem",
+            "columns": [
+              "problem"
+            ],
+            "qualifier": "problem"
+          }
+        ]
+      },
+      {
+        "id": "task_state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem_task"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_problem",
+            "columns": [
+              "problem"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Problem task "
+        },
+        "lookup": {
+          "input": "ServiceNowProblemTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "problem"
+          ]
+        }
+      },
+      {
+        "id": "task_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "problem_task"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_problem_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_problem",
+            "columns": [
+              "problem"
+            ],
+            "qualifier": "problem"
+          }
+        ],
+        "activity": {
+          "value": "Reassign problem task"
+        },
+        "lookup": {
+          "input": "ServiceNowProblemTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "problem"
+          ]
+        }
+      }
+    ]
+  }
+}

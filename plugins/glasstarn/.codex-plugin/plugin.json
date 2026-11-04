@@ -1,0 +1,25 @@
+{
+  "name": "glasstarn",
+  "version": "1.0.0",
+  "description": "Ask how your work really flows. glasstarn reads your process history on your own computer and your agent explains the evidence.",
+  "author": {
+    "name": "Tropical Glacier LLC"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["process-mining", "audit", "ocel", "event-log"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Glasstarn",
+    "shortDescription": "See how your work really flows.",
+    "longDescription": "Create or reopen an investigation, inventory company-approved extracts, propose and validate a reviewable preparation recipe, run deterministic glasstarn analysis, and answer follow-up questions from saved evidence.",
+    "developerName": "Tropical Glacier LLC",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "Analyze this event log in a new local project.",
+      "Investigate why this ERP process is slow using these approved extracts.",
+      "Reopen my process-mining project and rerun it.",
+      "Inspect this OCEL extract and explain its scope."
+    ]
+  }
+}

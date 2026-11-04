@@ -1,0 +1,4 @@
+interface:
+  display_name: "Glasstarn"
+  short_description: "Understand a process with a guided, saved investigation"
+  default_prompt: "Use $glasstarn to help me understand a business process, guide me to the records needed, and investigate my question with saved evidence."

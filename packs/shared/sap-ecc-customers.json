@@ -1,0 +1,53 @@
+{
+  "id": "sap-ecc-customers",
+  "note": "Customers from SAP ECC or S/4HANA tables.",
+  "tables": [
+    {
+      "name": "KNA1",
+      "noun": "customers",
+      "label": "Customers",
+      "export": "Customers that appear on the sales orders or invoices.",
+      "required": [
+        "KUNNR",
+        "NAME1"
+      ],
+      "fields": [
+        "LAND1"
+      ],
+      "object": "customer",
+      "key": [
+        "KUNNR"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-customer",
+      "table": "KNA1",
+      "columns": [
+        "KUNNR"
+      ],
+      "label": "customers listed once"
+    }
+  ],
+  "checks": [],
+  "recipe": {
+    "objects": [
+      {
+        "id": "customer",
+        "input": "KNA1",
+        "namespace": "sap",
+        "object_type": "customer",
+        "key": [
+          "KUNNR"
+        ],
+        "attributes": [
+          {
+            "column": "NAME1",
+            "name": "customer name"
+          }
+        ]
+      }
+    ]
+  }
+}

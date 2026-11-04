@@ -1,0 +1,626 @@
+{
+  "id": "netsuite-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (NetSuite)",
+  "system": "Oracle NetSuite",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of NetSuite's SuiteQL tables (transaction, transactionline, previoustransactionlinelink, systemnote). Not yet confirmed on a real account; tested only on made-up extracts.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period?",
+    "unit": "purchase order line",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [
+    "custbody*",
+    "custcol*"
+  ],
+  "settings": [
+    {
+      "id": "status_field",
+      "question": "Which system-note field records the purchase order's status or approval changes? The system notes name it, for example TRANDOC.KSTATUS.",
+      "example": "TRANDOC.KSTATUS"
+    }
+  ],
+  "tables": [
+    {
+      "name": "Transaction",
+      "label": "Transactions",
+      "export": "Transactions of types PurchOrd, ItemRcpt, VendBill and VendPymt for the period (SuiteQL on transaction): id, tranid, type, createddate, trandate, entity, status and approvalstatus. Times in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "id",
+        "tranid",
+        "type",
+        "createddate",
+        "entity"
+      ],
+      "fields": [
+        "trandate",
+        "status",
+        "approvalstatus",
+        "foreigntotal"
+      ],
+      "date_field": "createddate"
+    },
+    {
+      "name": "TransactionLine",
+      "label": "Transaction lines",
+      "export": "The item lines of those purchase orders (SuiteQL on transactionline, mainline F), with the transaction's type: transaction, id, type, item and quantity.",
+      "required": [
+        "transaction",
+        "id",
+        "type",
+        "item",
+        "quantity"
+      ],
+      "fields": [
+        "rate",
+        "amount"
+      ]
+    },
+    {
+      "name": "PreviousTransactionLineLink",
+      "label": "Transaction links",
+      "export": "How those transactions follow each other line by line (SuiteQL on previoustransactionlinelink), with both transactions' types: previousdoc, previousline, previoustype, nextdoc, nextline, nexttype and linktype.",
+      "required": [
+        "previousdoc",
+        "previousline",
+        "previoustype",
+        "nextdoc",
+        "nextline",
+        "nexttype"
+      ],
+      "fields": [
+        "linktype",
+        "foreignamount"
+      ]
+    },
+    {
+      "name": "SystemNote",
+      "label": "System notes",
+      "export": "Field changes on those purchase orders (SuiteQL on systemnote): id, recordid, field, oldvalue, newvalue, date and name (who). Times in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "id",
+        "recordid",
+        "field",
+        "oldvalue",
+        "newvalue",
+        "date"
+      ],
+      "fields": [
+        "name",
+        "context"
+      ],
+      "date_field": "date",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-transaction",
+      "table": "Transaction",
+      "columns": [
+        "id"
+      ],
+      "label": "transactions listed once"
+    },
+    {
+      "id": "one-transaction-line",
+      "table": "TransactionLine",
+      "columns": [
+        "transaction",
+        "id"
+      ],
+      "label": "transaction lines listed once"
+    },
+    {
+      "id": "one-system-note",
+      "table": "SystemNote",
+      "columns": [
+        "id"
+      ],
+      "label": "system notes listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-transactions",
+      "label": "lines whose transaction is in the export",
+      "from": {
+        "table": "TransactionLine",
+        "columns": [
+          "transaction"
+        ]
+      },
+      "to": {
+        "table": "Transaction",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "links-have-next-transactions",
+      "label": "links whose next transaction is in the export",
+      "from": {
+        "table": "PreviousTransactionLineLink",
+        "columns": [
+          "nextdoc"
+        ]
+      },
+      "to": {
+        "table": "Transaction",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "links-have-order-lines",
+      "label": "links from an order line in the export",
+      "from": {
+        "table": "PreviousTransactionLineLink",
+        "columns": [
+          "previousdoc",
+          "previousline"
+        ],
+        "where": [
+          {
+            "column": "previoustype",
+            "in": [
+              "PurchOrd"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "TransactionLine",
+        "columns": [
+          "transaction",
+          "id"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} receipts or bills follow orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "notes-have-orders",
+      "label": "system notes whose order is in the export",
+      "from": {
+        "table": "SystemNote",
+        "columns": [
+          "recordid"
+        ]
+      },
+      "to": {
+        "table": "Transaction",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "ns_p_order",
+        "input": "Transaction",
+        "namespace": "netsuite",
+        "object_type": "purchase order",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "tranid",
+            "name": "number"
+          },
+          {
+            "column": "entity",
+            "name": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "type",
+            "in": [
+              "PurchOrd"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ns_p_line",
+        "input": "TransactionLine",
+        "namespace": "netsuite",
+        "object_type": "purchase order line",
+        "key": [
+          "transaction",
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "item",
+            "name": "item"
+          },
+          {
+            "column": "quantity",
+            "name": "quantity"
+          }
+        ],
+        "where": [
+          {
+            "column": "type",
+            "in": [
+              "PurchOrd"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "ns_p_bill",
+        "input": "Transaction",
+        "namespace": "netsuite",
+        "object_type": "vendor bill",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "tranid",
+            "name": "number"
+          },
+          {
+            "column": "foreigntotal",
+            "name": "amount"
+          }
+        ],
+        "where": [
+          {
+            "column": "type",
+            "in": [
+              "VendBill"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ns_p_order_created",
+        "input": "Transaction",
+        "namespace": "netsuite",
+        "key": [
+          "id"
+        ],
+        "where": [
+          {
+            "column": "type",
+            "in": [
+              "PurchOrd"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": "createddate",
+        "objects": [
+          {
+            "object": "ns_p_order",
+            "columns": [
+              "id"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ns_p_order_status",
+        "input": "SystemNote",
+        "namespace": "netsuite",
+        "key": [
+          "id"
+        ],
+        "where": [
+          {
+            "column": "field",
+            "in": [
+              "{setting:status_field}"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "newvalue",
+          "prefix": "Status: "
+        },
+        "timestamp": "date",
+        "attributes": [
+          {
+            "column": "oldvalue",
+            "name": "old value"
+          },
+          {
+            "column": "name",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ns_p_order",
+            "columns": [
+              "recordid"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ns_p_goods_moved",
+        "input": "PreviousTransactionLineLink",
+        "namespace": "netsuite",
+        "key": [
+          "nextdoc",
+          "nextline"
+        ],
+        "where": [
+          {
+            "column": "previoustype",
+            "in": [
+              "PurchOrd"
+            ]
+          },
+          {
+            "column": "nexttype",
+            "in": [
+              "ItemRcpt"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive goods"
+        },
+        "lookup": {
+          "input": "Transaction",
+          "key": [
+            "id"
+          ],
+          "matching": [
+            "nextdoc"
+          ],
+          "columns": [
+            "createddate"
+          ]
+        },
+        "timestamp": "createddate",
+        "objects": [
+          {
+            "object": "ns_p_line",
+            "columns": [
+              "previousdoc",
+              "previousline"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "ns_p_bill_created",
+        "input": "Transaction",
+        "namespace": "netsuite",
+        "key": [
+          "id"
+        ],
+        "where": [
+          {
+            "column": "type",
+            "in": [
+              "VendBill"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Record vendor bill"
+        },
+        "timestamp": "createddate",
+        "attributes": [
+          {
+            "column": "foreigntotal",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ns_p_bill",
+            "columns": [
+              "id"
+            ],
+            "qualifier": "vendor bill"
+          }
+        ]
+      },
+      {
+        "id": "ns_p_bill_paid",
+        "input": "PreviousTransactionLineLink",
+        "namespace": "netsuite",
+        "key": [
+          "previousdoc",
+          "nextdoc"
+        ],
+        "where": [
+          {
+            "column": "previoustype",
+            "in": [
+              "VendBill"
+            ]
+          },
+          {
+            "column": "nexttype",
+            "in": [
+              "VendPymt"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Pay vendor bill"
+        },
+        "lookup": {
+          "input": "Transaction",
+          "key": [
+            "id"
+          ],
+          "matching": [
+            "nextdoc"
+          ],
+          "columns": [
+            "createddate"
+          ]
+        },
+        "timestamp": "createddate",
+        "attributes": [
+          {
+            "column": "foreignamount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ns_p_bill",
+            "columns": [
+              "previousdoc"
+            ],
+            "qualifier": "vendor bill"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "ns_p_order_has_line",
+        "input": "TransactionLine",
+        "where": [
+          {
+            "column": "type",
+            "in": [
+              "PurchOrd"
+            ]
+          }
+        ],
+        "source": {
+          "object": "ns_p_order",
+          "columns": [
+            "transaction"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "ns_p_line",
+          "columns": [
+            "transaction",
+            "id"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "ns_p_bill_for_line",
+        "input": "PreviousTransactionLineLink",
+        "where": [
+          {
+            "column": "previoustype",
+            "in": [
+              "PurchOrd"
+            ]
+          },
+          {
+            "column": "nexttype",
+            "in": [
+              "VendBill"
+            ]
+          }
+        ],
+        "source": {
+          "object": "ns_p_bill",
+          "columns": [
+            "nextdoc"
+          ],
+          "qualifier": "vendor bill"
+        },
+        "target": {
+          "object": "ns_p_line",
+          "columns": [
+            "previousdoc",
+            "previousline"
+          ],
+          "qualifier": "purchase order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "ns_p_order_created_lines",
+        "event": "ns_p_order_created",
+        "through": "ns_p_order",
+        "relationship": "ns_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ns_p_order_status_lines",
+        "event": "ns_p_order_status",
+        "through": "ns_p_order",
+        "relationship": "ns_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ns_p_bill_created_lines",
+        "event": "ns_p_bill_created",
+        "through": "ns_p_bill",
+        "relationship": "ns_p_bill_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ns_p_bill_paid_lines",
+        "event": "ns_p_bill_paid",
+        "through": "ns_p_bill",
+        "relationship": "ns_p_bill_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "NetSuite purchase order number",
+      "object": "ns_p_order",
+      "table": "Transaction",
+      "key": [
+        "tranid"
+      ],
+      "example": "PO1042",
+      "carry": [
+        "ns_p_order_has_line"
+      ]
+    }
+  ]
+}

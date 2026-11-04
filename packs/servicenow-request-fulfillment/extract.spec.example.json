@@ -1,0 +1,47 @@
+{
+  "version": 1,
+  "system": "servicenow",
+  "instance": "https://your-instance.service-now.com",
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "tables": [
+    {
+      "table": "sc_req_item",
+      "fields": [
+        "request",
+        "cat_item",
+        "state",
+        "stage",
+        "approval"
+      ],
+      "label_fields": [
+        "state",
+        "stage",
+        "approval",
+        "cat_item"
+      ]
+    },
+    {
+      "table": "sc_task",
+      "fields": [
+        "state",
+        "assignment_group"
+      ],
+      "label_fields": [
+        "state",
+        "assignment_group"
+      ],
+      "parent": {
+        "field": "request_item",
+        "table": "sc_req_item"
+      }
+    }
+  ],
+  "history_fields": [
+    "state",
+    "stage",
+    "approval",
+    "assignment_group"
+  ],
+  "history_gaps": []
+}

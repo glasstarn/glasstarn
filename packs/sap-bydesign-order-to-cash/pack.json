@@ -1,0 +1,811 @@
+{
+  "id": "sap-bydesign-order-to-cash",
+  "version": 1,
+  "name": "Order to cash (SAP Business ByDesign)",
+  "system": "SAP Business ByDesign",
+  "process": "order to cash",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the SAP Business ByDesign business objects and their OData services. Not yet confirmed on a real tenant; tested only on made-up extracts. File and field names follow the business objects; the tenant's own OData or report exports may name them differently.",
+  "case_object_type": "sales order line",
+  "size_check": {
+    "ask": "How many sales order lines were created in the period?",
+    "unit": "sales order line",
+    "steps_per_unit": 4
+  },
+  "custom_prefixes": [
+    "*_KUT"
+  ],
+  "tables": [
+    {
+      "name": "SalesQuote",
+      "label": "Sales quotes",
+      "export": "Sales quotes created in the period: ID, CreationDateTime, BuyerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "BuyerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "optional": true,
+      "object": "byd_s_request",
+      "key": [
+        "ID"
+      ],
+      "noun": "sales quotes"
+    },
+    {
+      "name": "SalesQuoteItem",
+      "label": "Sales quote items",
+      "export": "The items of those sales quotes: SalesQuoteID (the document), ID (the item), ProductID, Quantity.",
+      "required": [
+        "SalesQuoteID",
+        "ID",
+        "ProductID",
+        "Quantity"
+      ],
+      "fields": [
+        "NetAmount"
+      ],
+      "optional": true
+    },
+    {
+      "name": "SalesOrder",
+      "label": "Sales orders",
+      "export": "Sales orders created in the period: ID, CreationDateTime, BuyerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "BuyerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "object": "byd_s_order",
+      "key": [
+        "ID"
+      ],
+      "noun": "sales orders"
+    },
+    {
+      "name": "SalesOrderItem",
+      "label": "Sales order lines",
+      "export": "The items of those orders, with the request item each came from (blank if none): SalesOrderID (the document), ID (the item), ProductID, Quantity, SalesQuoteID, SalesQuoteItemID.",
+      "required": [
+        "SalesOrderID",
+        "ID",
+        "ProductID",
+        "Quantity",
+        "SalesQuoteID",
+        "SalesQuoteItemID"
+      ],
+      "fields": [
+        "NetAmount"
+      ],
+      "object": "byd_s_order_line",
+      "key": [
+        "SalesOrderID",
+        "ID"
+      ],
+      "noun": "sales order lines"
+    },
+    {
+      "name": "OutboundDelivery",
+      "label": "Deliverys",
+      "export": "Deliverys for those orders: ID, CreationDateTime, BuyerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "BuyerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime"
+    },
+    {
+      "name": "OutboundDeliveryItem",
+      "label": "Delivery lines",
+      "export": "Their items, with the order item each one is for: OutboundDeliveryID (the document), ID (the item), ProductID, Quantity, SalesOrderID, SalesOrderItemID.",
+      "required": [
+        "OutboundDeliveryID",
+        "ID",
+        "ProductID",
+        "Quantity",
+        "SalesOrderID",
+        "SalesOrderItemID"
+      ],
+      "fields": [
+        "NetAmount"
+      ],
+      "object": "byd_s_receipt_line",
+      "key": [
+        "OutboundDeliveryID",
+        "ID"
+      ]
+    },
+    {
+      "name": "CustomerInvoice",
+      "label": "Customer invoices",
+      "export": "Customer invoices for those orders: ID, CreationDateTime, BuyerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "BuyerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "object": "byd_s_invoice",
+      "key": [
+        "ID"
+      ],
+      "noun": "customer invoices"
+    },
+    {
+      "name": "CustomerInvoiceItem",
+      "label": "Customer invoice items",
+      "export": "Their items, with the order item each one charges: CustomerInvoiceID (the document), ID (the item), ProductID, Quantity, SalesOrderID, SalesOrderItemID.",
+      "required": [
+        "CustomerInvoiceID",
+        "ID",
+        "ProductID",
+        "Quantity",
+        "SalesOrderID",
+        "SalesOrderItemID"
+      ],
+      "fields": [
+        "NetAmount"
+      ]
+    },
+    {
+      "name": "IncomingPayment",
+      "label": "Payments",
+      "export": "Payments of those invoices: ID, CreationDateTime and BuyerPartyID. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "BuyerPartyID",
+        "TotalAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "optional": true
+    },
+    {
+      "name": "IncomingPaymentAllocation",
+      "label": "Payment allocations",
+      "export": "The invoices each payment pays: IncomingPaymentID (the payment), ID (the allocation), CustomerInvoiceID and Amount.",
+      "required": [
+        "IncomingPaymentID",
+        "ID",
+        "CustomerInvoiceID"
+      ],
+      "fields": [
+        "Amount"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-salesquote",
+      "table": "SalesQuote",
+      "columns": [
+        "ID"
+      ],
+      "label": "sales quotes listed once"
+    },
+    {
+      "id": "one-salesquoteitem",
+      "table": "SalesQuoteItem",
+      "columns": [
+        "SalesQuoteID",
+        "ID"
+      ],
+      "label": "sales quote items listed once"
+    },
+    {
+      "id": "one-salesorder",
+      "table": "SalesOrder",
+      "columns": [
+        "ID"
+      ],
+      "label": "sales orders listed once"
+    },
+    {
+      "id": "one-salesorderitem",
+      "table": "SalesOrderItem",
+      "columns": [
+        "SalesOrderID",
+        "ID"
+      ],
+      "label": "sales order lines listed once"
+    },
+    {
+      "id": "one-outbounddelivery",
+      "table": "OutboundDelivery",
+      "columns": [
+        "ID"
+      ],
+      "label": "deliverys listed once"
+    },
+    {
+      "id": "one-outbounddeliveryitem",
+      "table": "OutboundDeliveryItem",
+      "columns": [
+        "OutboundDeliveryID",
+        "ID"
+      ],
+      "label": "delivery lines listed once"
+    },
+    {
+      "id": "one-customerinvoice",
+      "table": "CustomerInvoice",
+      "columns": [
+        "ID"
+      ],
+      "label": "customer invoices listed once"
+    },
+    {
+      "id": "one-customerinvoiceitem",
+      "table": "CustomerInvoiceItem",
+      "columns": [
+        "CustomerInvoiceID",
+        "ID"
+      ],
+      "label": "customer invoice items listed once"
+    },
+    {
+      "id": "one-incomingpayment",
+      "table": "IncomingPayment",
+      "columns": [
+        "ID"
+      ],
+      "label": "payments listed once"
+    },
+    {
+      "id": "one-incomingpaymentallocation",
+      "table": "IncomingPaymentAllocation",
+      "columns": [
+        "IncomingPaymentID",
+        "ID"
+      ],
+      "label": "payment allocations listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "request-items-have-requests",
+      "label": "request items whose request is in the export",
+      "from": {
+        "table": "SalesQuoteItem",
+        "columns": [
+          "SalesQuoteID"
+        ]
+      },
+      "to": {
+        "table": "SalesQuote",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "order-items-have-orders",
+      "label": "order items whose order is in the export",
+      "from": {
+        "table": "SalesOrderItem",
+        "columns": [
+          "SalesOrderID"
+        ]
+      },
+      "to": {
+        "table": "SalesOrder",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-items-have-documents",
+      "label": "items whose document is in the export",
+      "from": {
+        "table": "OutboundDeliveryItem",
+        "columns": [
+          "OutboundDeliveryID"
+        ]
+      },
+      "to": {
+        "table": "OutboundDelivery",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-items-have-order-items",
+      "label": "items whose order item is in the export",
+      "from": {
+        "table": "OutboundDeliveryItem",
+        "columns": [
+          "SalesOrderID",
+          "SalesOrderItemID"
+        ]
+      },
+      "to": {
+        "table": "SalesOrderItem",
+        "columns": [
+          "SalesOrderID",
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-items-have-invoices",
+      "label": "invoice items whose invoice is in the export",
+      "from": {
+        "table": "CustomerInvoiceItem",
+        "columns": [
+          "CustomerInvoiceID"
+        ]
+      },
+      "to": {
+        "table": "CustomerInvoice",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-items-have-order-items",
+      "label": "invoice items whose order item is in the export",
+      "from": {
+        "table": "CustomerInvoiceItem",
+        "columns": [
+          "SalesOrderID",
+          "SalesOrderItemID"
+        ]
+      },
+      "to": {
+        "table": "SalesOrderItem",
+        "columns": [
+          "SalesOrderID",
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "allocations-have-payments",
+      "label": "allocations whose payment is in the export",
+      "from": {
+        "table": "IncomingPaymentAllocation",
+        "columns": [
+          "IncomingPaymentID"
+        ]
+      },
+      "to": {
+        "table": "IncomingPayment",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "allocations-have-invoices",
+      "label": "allocations whose invoice is in the export",
+      "from": {
+        "table": "IncomingPaymentAllocation",
+        "columns": [
+          "CustomerInvoiceID"
+        ]
+      },
+      "to": {
+        "table": "CustomerInvoice",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "byd_s_request",
+        "input": "SalesQuote",
+        "namespace": "sap-byd",
+        "object_type": "sales quote",
+        "key": [
+          "ID"
+        ]
+      },
+      {
+        "id": "byd_s_order",
+        "input": "SalesOrder",
+        "namespace": "sap-byd",
+        "object_type": "sales order",
+        "key": [
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "BuyerPartyID",
+            "name": "customer"
+          },
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_order_line",
+        "input": "SalesOrderItem",
+        "namespace": "sap-byd",
+        "object_type": "sales order line",
+        "key": [
+          "SalesOrderID",
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "ProductID",
+            "name": "product"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "NetAmount",
+            "name": "net amount"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_receipt_line",
+        "input": "OutboundDeliveryItem",
+        "namespace": "sap-byd",
+        "object_type": "delivery line",
+        "key": [
+          "OutboundDeliveryID",
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "ProductID",
+            "name": "product"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_invoice",
+        "input": "CustomerInvoice",
+        "namespace": "sap-byd",
+        "object_type": "customer invoice",
+        "key": [
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "BuyerPartyID",
+            "name": "customer"
+          },
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "byd_s_request_created",
+        "input": "SalesQuote",
+        "namespace": "sap-byd",
+        "key": [
+          "ID"
+        ],
+        "activity": {
+          "value": "Create sales quote"
+        },
+        "timestamp": "CreationDateTime",
+        "objects": [
+          {
+            "object": "byd_s_request",
+            "columns": [
+              "ID"
+            ],
+            "qualifier": "sales quote"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_order_created",
+        "input": "SalesOrder",
+        "namespace": "sap-byd",
+        "key": [
+          "ID"
+        ],
+        "activity": {
+          "value": "Create sales order"
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "BuyerPartyID",
+            "name": "customer"
+          },
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_s_order",
+            "columns": [
+              "ID"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_goods_moved",
+        "input": "OutboundDeliveryItem",
+        "namespace": "sap-byd",
+        "key": [
+          "OutboundDeliveryID",
+          "ID"
+        ],
+        "activity": {
+          "value": "Deliver goods"
+        },
+        "lookup": {
+          "input": "OutboundDelivery",
+          "key": [
+            "ID"
+          ],
+          "matching": [
+            "OutboundDeliveryID"
+          ],
+          "columns": [
+            "CreationDateTime"
+          ]
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_s_receipt_line",
+            "columns": [
+              "OutboundDeliveryID",
+              "ID"
+            ],
+            "qualifier": "delivery line"
+          },
+          {
+            "object": "byd_s_order_line",
+            "columns": [
+              "SalesOrderID",
+              "SalesOrderItemID"
+            ],
+            "qualifier": "sales order line"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_invoice_created",
+        "input": "CustomerInvoice",
+        "namespace": "sap-byd",
+        "key": [
+          "ID"
+        ],
+        "activity": {
+          "value": "Create customer invoice"
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_s_invoice",
+            "columns": [
+              "ID"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      },
+      {
+        "id": "byd_s_invoice_paid",
+        "input": "IncomingPaymentAllocation",
+        "namespace": "sap-byd",
+        "key": [
+          "IncomingPaymentID",
+          "ID"
+        ],
+        "activity": {
+          "value": "Receive customer payment"
+        },
+        "lookup": {
+          "input": "IncomingPayment",
+          "key": [
+            "ID"
+          ],
+          "matching": [
+            "IncomingPaymentID"
+          ],
+          "columns": [
+            "CreationDateTime"
+          ]
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_s_invoice",
+            "columns": [
+              "CustomerInvoiceID"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "byd_s_order_has_line",
+        "input": "SalesOrderItem",
+        "source": {
+          "object": "byd_s_order",
+          "columns": [
+            "SalesOrderID"
+          ],
+          "qualifier": "sales order"
+        },
+        "target": {
+          "object": "byd_s_order_line",
+          "columns": [
+            "SalesOrderID",
+            "ID"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "byd_s_request_became_line",
+        "input": "SalesOrderItem",
+        "where": [
+          {
+            "column": "SalesQuoteID",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "byd_s_request",
+          "columns": [
+            "SalesQuoteID"
+          ],
+          "qualifier": "sales quote"
+        },
+        "target": {
+          "object": "byd_s_order_line",
+          "columns": [
+            "SalesOrderID",
+            "ID"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "byd_s_invoice_for_line",
+        "input": "CustomerInvoiceItem",
+        "source": {
+          "object": "byd_s_invoice",
+          "columns": [
+            "CustomerInvoiceID"
+          ],
+          "qualifier": "customer invoice"
+        },
+        "target": {
+          "object": "byd_s_order_line",
+          "columns": [
+            "SalesOrderID",
+            "SalesOrderItemID"
+          ],
+          "qualifier": "sales order line"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "byd_s_request_created_lines",
+        "event": "byd_s_request_created",
+        "through": "byd_s_request",
+        "relationship": "byd_s_request_became_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "byd_s_order_created_lines",
+        "event": "byd_s_order_created",
+        "through": "byd_s_order",
+        "relationship": "byd_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "byd_s_invoice_created_lines",
+        "event": "byd_s_invoice_created",
+        "through": "byd_s_invoice",
+        "relationship": "byd_s_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "byd_s_invoice_paid_lines",
+        "event": "byd_s_invoice_paid",
+        "through": "byd_s_invoice",
+        "relationship": "byd_s_invoice_for_line",
+        "qualifier": "sales order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "ByDesign sales order ID",
+      "object": "byd_s_order",
+      "table": "SalesOrder",
+      "key": [
+        "ID"
+      ],
+      "example": "4500123",
+      "carry": [
+        "byd_s_order_has_line"
+      ]
+    }
+  ]
+}

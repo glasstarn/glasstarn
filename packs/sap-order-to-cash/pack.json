@@ -1,0 +1,36 @@
+{
+  "id": "sap-order-to-cash",
+  "version": 2,
+  "name": "Order to cash (SAP ECC and S/4HANA)",
+  "system": "SAP ECC or SAP S/4HANA",
+  "process": "order to cash",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a scoped SAP S/4HANA 2025 FPS01 trial: full order to cash and accounts receivable checks, builds and five source-history comparisons each passed. Export the documented VBTYP categories and linked records. Other releases, customer settings and unobserved branches still require validation; see the pack README.",
+  "case_object_type": "sales order item",
+  "size_check": {
+    "ask": "How many sales order items were created in the period for the company code?",
+    "unit": "sales order item",
+    "steps_per_unit": 5
+  },
+  "include": [
+    "sap-clock",
+    "sap-ecc-customers",
+    "sap-ecc-sales",
+    "sap-ecc-billing",
+    "sap-ecc-receivables",
+    "sap-ecc-sales-changes"
+  ],
+  "variants": [
+    {
+      "id": "accounts-receivable",
+      "name": "Accounts receivable: invoice to cash",
+      "case_object_type": "customer invoice",
+      "tables": [
+        "KNA1",
+        "VBRK",
+        "BKPF",
+        "BSAD"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,377 @@
+{
+  "id": "d365-customer-service",
+  "version": 1,
+  "name": "Case handling (Dynamics 365 Customer Service)",
+  "system": "Microsoft Dynamics 365 Customer Service (Dataverse)",
+  "process": "support case handling",
+  "status": "tested",
+  "note": "Tested on a live Dynamics 365 Customer Service Enterprise trial on 2026-10-17 UTC: five synthetic cases and 13 events covering an open case with a task, queue routing, escalation, cancellation and repeated resolutions after reopening. Case, step, UTC time and source-row lineage reconciled. No standalone reopen or status-history steps; cancellation uses last modification; queue snapshots may omit earlier moves. Phone, email and appointment execution was not tested live.",
+  "case_object_type": "case",
+  "size_check": {
+    "ask": "How many cases were created in the period?",
+    "unit": "case",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "*_*"
+  ],
+  "tables": [
+    {
+      "name": "incident",
+      "noun": "cases",
+      "date_label": "the case was created",
+      "label": "Cases",
+      "export": "Cases created in the period: incidentid, ticketnumber, createdon, statecode and statuscode (labels), prioritycode, caseorigincode, isescalated, escalatedon and modifiedon. No titles or descriptions. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels.",
+      "required": [
+        "incidentid",
+        "createdon",
+        "statecode",
+        "isescalated",
+        "escalatedon",
+        "modifiedon"
+      ],
+      "fields": [
+        "ticketnumber",
+        "statuscode",
+        "prioritycode",
+        "caseorigincode"
+      ],
+      "date_field": "createdon",
+      "object": "dv_case",
+      "key": [
+        "incidentid"
+      ]
+    },
+    {
+      "name": "queueitem",
+      "label": "Queue items",
+      "export": "Queue entries of those cases: queueitemid, objectid, queueid (label) and enteredon. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels.",
+      "required": [
+        "queueitemid",
+        "objectid",
+        "queueid",
+        "enteredon"
+      ],
+      "fields": [
+        "workerid"
+      ],
+      "date_field": "enteredon",
+      "optional": true
+    },
+    {
+      "name": "incidentresolution",
+      "label": "Case resolutions",
+      "export": "Resolutions of those cases: activityid, incidentid, createdon and timespent. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels. Include earlier resolutions even if their current state is Canceled after reopening; do not filter to active or completed rows.",
+      "required": [
+        "activityid",
+        "incidentid",
+        "createdon"
+      ],
+      "fields": [
+        "timespent"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    },
+    {
+      "name": "activitypointer",
+      "label": "Activities",
+      "export": "Activities (phone calls, emails, appointments, tasks) regarding those records: activityid, regardingobjectid, activitytypecode (label), createdon and actualend. No subjects or bodies. Times in UTC as Dataverse returns them (2026-01-05T14:30:00Z); choice columns with their labels. Exclude Case Resolution activities, which are read separately from incidentresolution, to avoid counting a resolution twice.",
+      "required": [
+        "activityid",
+        "regardingobjectid",
+        "activitytypecode",
+        "createdon"
+      ],
+      "fields": [
+        "actualend",
+        "statecode",
+        "ownerid"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-case",
+      "table": "incident",
+      "columns": [
+        "incidentid"
+      ],
+      "label": "cases listed once"
+    },
+    {
+      "id": "one-queue-item",
+      "table": "queueitem",
+      "columns": [
+        "queueitemid"
+      ],
+      "label": "queue items listed once"
+    },
+    {
+      "id": "one-resolution",
+      "table": "incidentresolution",
+      "columns": [
+        "activityid"
+      ],
+      "label": "resolutions listed once"
+    },
+    {
+      "id": "one-activity",
+      "table": "activitypointer",
+      "columns": [
+        "activityid"
+      ],
+      "label": "activities listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "queue-items-have-cases",
+      "label": "queue items whose case is in the export",
+      "from": {
+        "table": "queueitem",
+        "columns": [
+          "objectid"
+        ]
+      },
+      "to": {
+        "table": "incident",
+        "columns": [
+          "incidentid"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "resolutions-have-cases",
+      "label": "resolutions whose case is in the export",
+      "from": {
+        "table": "incidentresolution",
+        "columns": [
+          "incidentid"
+        ]
+      },
+      "to": {
+        "table": "incident",
+        "columns": [
+          "incidentid"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "activities-have-cases",
+      "label": "activities whose case is in the export",
+      "from": {
+        "table": "activitypointer",
+        "columns": [
+          "regardingobjectid"
+        ]
+      },
+      "to": {
+        "table": "incident",
+        "columns": [
+          "incidentid"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "dv_case",
+        "input": "incident",
+        "namespace": "dataverse",
+        "object_type": "case",
+        "key": [
+          "incidentid"
+        ],
+        "attributes": [
+          {
+            "column": "prioritycode",
+            "name": "priority"
+          },
+          {
+            "column": "caseorigincode",
+            "name": "origin"
+          },
+          {
+            "column": "statecode",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "dv_case_created",
+        "input": "incident",
+        "namespace": "dataverse",
+        "key": [
+          "incidentid"
+        ],
+        "activity": {
+          "value": "Create case"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_case",
+            "columns": [
+              "incidentid"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "dv_case_routed",
+        "input": "queueitem",
+        "namespace": "dataverse",
+        "key": [
+          "queueitemid"
+        ],
+        "activity": {
+          "column": "queueid",
+          "prefix": "Route to queue: "
+        },
+        "timestamp": "enteredon",
+        "objects": [
+          {
+            "object": "dv_case",
+            "columns": [
+              "objectid"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "dv_case_escalated",
+        "input": "incident",
+        "namespace": "dataverse",
+        "key": [
+          "incidentid"
+        ],
+        "where": [
+          {
+            "column": "isescalated",
+            "in": [
+              "true"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Escalate case"
+        },
+        "timestamp": "escalatedon",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "dv_case",
+            "columns": [
+              "incidentid"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "dv_activity",
+        "input": "activitypointer",
+        "namespace": "dataverse",
+        "key": [
+          "activityid"
+        ],
+        "activity": {
+          "column": "activitytypecode",
+          "prefix": "Activity: "
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "dv_case",
+            "columns": [
+              "regardingobjectid"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "dv_case_resolved",
+        "input": "incidentresolution",
+        "namespace": "dataverse",
+        "key": [
+          "activityid"
+        ],
+        "activity": {
+          "value": "Resolve case"
+        },
+        "timestamp": "createdon",
+        "attributes": [
+          {
+            "column": "timespent",
+            "name": "time spent"
+          }
+        ],
+        "objects": [
+          {
+            "object": "dv_case",
+            "columns": [
+              "incidentid"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "dv_case_cancelled",
+        "input": "incident",
+        "namespace": "dataverse",
+        "key": [
+          "incidentid"
+        ],
+        "where": [
+          {
+            "column": "statecode",
+            "in": [
+              "Cancelled"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel case"
+        },
+        "timestamp": "modifiedon",
+        "objects": [
+          {
+            "object": "dv_case",
+            "columns": [
+              "incidentid"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "case",
+      "label": "Dynamics 365 case number",
+      "object": "dv_case",
+      "table": "incident",
+      "key": [
+        "ticketnumber"
+      ],
+      "example": "CAS-01234-X1Y2Z3",
+      "carry": []
+    }
+  ]
+}

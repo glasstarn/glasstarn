@@ -1,0 +1,1033 @@
+{
+  "id": "sap-ecc-sales-changes",
+  "note": "Credit, delivery and billing blocks, rejected lines and changes from the change log of SAP ECC or S/4HANA (CDHDR and CDPOS). Needs the sales part.",
+  "tables": [
+    {
+      "name": "CDHDR",
+      "label": "Change log headers",
+      "export": "Change headers for object class VERKBELEG (sales documents) of the exported orders, from the period to the export date.",
+      "required": [
+        "OBJECTCLAS",
+        "OBJECTID",
+        "CHANGENR",
+        "USERNAME",
+        "UDATE",
+        "UTIME"
+      ],
+      "fields": [],
+      "date_field": "UDATE",
+      "optional": true
+    },
+    {
+      "name": "CDPOS",
+      "label": "Change log items",
+      "export": "The changed fields of those change headers, at least for tables VBAK, VBUK and VBAP.",
+      "required": [
+        "OBJECTCLAS",
+        "OBJECTID",
+        "CHANGENR",
+        "TABNAME",
+        "TABKEY",
+        "FNAME",
+        "VALUE_NEW",
+        "VALUE_OLD"
+      ],
+      "fields": [],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-change-header",
+      "table": "CDHDR",
+      "columns": [
+        "OBJECTCLAS",
+        "OBJECTID",
+        "CHANGENR"
+      ],
+      "label": "change headers listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "change-items-have-headers",
+      "label": "changed fields whose change header is in the export",
+      "from": {
+        "table": "CDPOS",
+        "columns": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR"
+        ]
+      },
+      "to": {
+        "table": "CDHDR",
+        "columns": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "rejection-history-items-present",
+      "label": "historical rejected items still present in the item export",
+      "from": {
+        "table": "CDPOS",
+        "columns": [
+          {
+            "column": "TABKEY",
+            "start": 3,
+            "length": 10
+          },
+          {
+            "column": "TABKEY",
+            "start": 13,
+            "length": 6
+          }
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAP"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "ABGRU"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "VBAP",
+        "columns": [
+          "VBELN",
+          "POSNR"
+        ]
+      },
+      "expect": "most",
+      "threshold": 1.0,
+      "require_nonblank": true,
+      "question": {
+        "text": "{missing} of {total} historical rejection changes name items absent from the current item export. They remain on their order header with the original item key, but cannot appear on a missing item timeline. Export historical/archive items too, or keep the order-level evidence?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Export historical or archived items as well"
+          },
+          {
+            "id": "keep",
+            "label": "Keep the order-level history and disclose the missing item links"
+          }
+        ],
+        "recommended": "widen"
+      }
+    }
+  ],
+  "recipe": {
+    "events": [
+      {
+        "id": "credit_blocked",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAK",
+              "VBUK"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "CMGST"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "in": [
+              "B",
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Block for credit"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "credit_released",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAK",
+              "VBUK"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "CMGST"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "in": [
+              "D",
+              "A"
+            ]
+          },
+          {
+            "column": "VALUE_OLD",
+            "in": [
+              "B",
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Release credit block"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "delivery_blocked",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAK"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "LIFSK"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Set delivery block"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "delivery_block_removed",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAK"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "LIFSK"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "in": [
+              ""
+            ]
+          },
+          {
+            "column": "VALUE_OLD",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Remove delivery block"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "billing_blocked",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAK"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "FAKSK"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Set billing block"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "billing_block_removed",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAK"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "FAKSK"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "in": [
+              ""
+            ]
+          },
+          {
+            "column": "VALUE_OLD",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Remove billing block"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "order_line_rejected",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAP"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "ABGRU"
+            ]
+          },
+          {
+            "column": "VALUE_NEW",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject order line"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          },
+          {
+            "column": "TABKEY",
+            "name": "source item key"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_item",
+            "columns": [
+              {
+                "column": "TABKEY",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "TABKEY",
+                "start": 13,
+                "length": 6
+              }
+            ],
+            "qualifier": "order line",
+            "allow_unmatched": true
+          },
+          {
+            "object": "sales_order",
+            "columns": [
+              "OBJECTID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "price_changed",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAP"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "NETWR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change price"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_item",
+            "columns": [
+              {
+                "column": "TABKEY",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "TABKEY",
+                "start": 13,
+                "length": 6
+              }
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "quantity_changed",
+        "input": "CDPOS",
+        "namespace": "sap",
+        "key": [
+          "OBJECTCLAS",
+          "OBJECTID",
+          "CHANGENR",
+          "TABNAME",
+          "TABKEY",
+          "FNAME"
+        ],
+        "where": [
+          {
+            "column": "OBJECTCLAS",
+            "in": [
+              "VERKBELEG"
+            ]
+          },
+          {
+            "column": "TABNAME",
+            "in": [
+              "VBAP"
+            ]
+          },
+          {
+            "column": "FNAME",
+            "in": [
+              "KWMENG"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change quantity"
+        },
+        "lookup": {
+          "input": "CDHDR",
+          "key": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "matching": [
+            "OBJECTCLAS",
+            "OBJECTID",
+            "CHANGENR"
+          ],
+          "columns": [
+            "UDATE",
+            "UTIME",
+            "USERNAME"
+          ]
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "time": "UTIME",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "USERNAME",
+            "name": "resource"
+          },
+          {
+            "column": "VALUE_NEW",
+            "name": "new value"
+          },
+          {
+            "column": "VALUE_OLD",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sales_item",
+            "columns": [
+              {
+                "column": "TABKEY",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "TABKEY",
+                "start": 13,
+                "length": 6
+              }
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "credit_blocked_lines",
+        "event": "credit_blocked",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "credit_released_lines",
+        "event": "credit_released",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "delivery_blocked_lines",
+        "event": "delivery_blocked",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "delivery_block_removed_lines",
+        "event": "delivery_block_removed",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "billing_blocked_lines",
+        "event": "billing_blocked",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "billing_block_removed_lines",
+        "event": "billing_block_removed",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

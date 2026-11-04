@@ -1,0 +1,57 @@
+{
+  "eventTypes": [
+    {"name": "place order", "attributes": [{"name": "item count", "type": "integer"}]},
+    {"name": "create package", "attributes": []},
+    {"name": "deliver package", "attributes": [{"name": "successful", "type": "boolean"}]}
+  ],
+  "objectTypes": [
+    {"name": "order", "attributes": [{"name": "status", "type": "string"}]},
+    {"name": "item", "attributes": [{"name": "price", "type": "float"}]},
+    {"name": "package", "attributes": []}
+  ],
+  "events": [
+    {
+      "id": "e-place", "type": "place order", "time": "1970-01-01T00:00:00Z",
+      "attributes": [{"name": "item count", "value": 2}],
+      "relationships": [
+        {"objectId": "order-1", "qualifier": "order"},
+        {"objectId": "item-1", "qualifier": "item"},
+        {"objectId": "item-2", "qualifier": "item"}
+      ]
+    },
+    {
+      "id": "e-pack", "type": "create package", "time": "1970-01-02T00:00:00Z",
+      "attributes": [],
+      "relationships": [
+        {"objectId": "item-1", "qualifier": "packed item"},
+        {"objectId": "item-2", "qualifier": "packed item"}
+      ]
+    },
+    {
+      "id": "e-deliver", "type": "deliver package", "time": "1970-01-03T00:00:00Z",
+      "attributes": [{"name": "successful", "value": true}],
+      "relationships": [{"objectId": "package-1", "qualifier": "package"}]
+    }
+  ],
+  "objects": [
+    {
+      "id": "order-1", "type": "order",
+      "attributes": [
+        {"name": "status", "time": "1970-01-01T00:00:00Z", "value": "open"},
+        {"name": "status", "time": "1970-01-02T00:00:00Z", "value": "shipped"}
+      ],
+      "relationships": []
+    },
+    {
+      "id": "item-1", "type": "item",
+      "attributes": [{"name": "price", "time": "1970-01-01T00:00:00Z", "value": 10.5}],
+      "relationships": [{"objectId": "order-1", "qualifier": "part of"}, {"objectId": "package-1", "qualifier": "packed in"}]
+    },
+    {
+      "id": "item-2", "type": "item",
+      "attributes": [{"name": "price", "time": "1970-01-01T00:00:00Z", "value": 20.0}],
+      "relationships": [{"objectId": "order-1", "qualifier": "part of"}]
+    },
+    {"id": "package-1", "type": "package", "attributes": [], "relationships": []}
+  ]
+}

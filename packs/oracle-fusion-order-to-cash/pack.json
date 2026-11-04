@@ -1,0 +1,626 @@
+{
+  "id": "oracle-fusion-order-to-cash",
+  "version": 1,
+  "name": "Order to cash (Oracle Fusion Cloud)",
+  "system": "Oracle Fusion Cloud Order Management and Receivables",
+  "process": "order to cash",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the Oracle Order Management (DOO) and Receivables tables. Not yet confirmed on a real system; tested only on made-up tables in the standard layout.",
+  "case_object_type": "fulfillment line",
+  "size_check": {
+    "ask": "How many fulfillment lines were created in the period?",
+    "unit": "fulfillment line",
+    "steps_per_unit": 4
+  },
+  "custom_prefixes": [
+    "ATTRIBUTE*"
+  ],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "Oracle Fusion Cloud stores times in UTC; answer Z unless the extract converted them. Give it as an offset from UTC, for example Z or +01:00.",
+      "example": "Z"
+    },
+    {
+      "id": "invoice_line_field",
+      "question": "Which field of the invoice lines (RA_CUSTOMER_TRX_LINES_ALL) holds the order fulfillment line ID the line was billed from? Usually one of the INTERFACE_LINE_ATTRIBUTE fields for the order management context.",
+      "example": "INTERFACE_LINE_ATTRIBUTE5"
+    }
+  ],
+  "tables": [
+    {
+      "name": "DOO_HEADERS_ALL",
+      "noun": "sales orders",
+      "date_label": "the order was created",
+      "label": "Sales orders",
+      "export": "Sales orders created in the period: HEADER_ID, ORDER_NUMBER, SOLD_TO_PARTY_ID, CREATION_DATE, SUBMITTED_DATE and STATUS_CODE. Extract with BI Publisher (SQL on the tables below) or BI Cloud Connector. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "HEADER_ID",
+        "ORDER_NUMBER",
+        "CREATION_DATE",
+        "SUBMITTED_DATE",
+        "STATUS_CODE"
+      ],
+      "fields": [
+        "SOLD_TO_PARTY_ID",
+        "ORG_ID"
+      ],
+      "date_field": "CREATION_DATE",
+      "object": "ora_so",
+      "key": [
+        "HEADER_ID"
+      ]
+    },
+    {
+      "name": "DOO_FULFILL_LINES_ALL",
+      "noun": "fulfillment lines",
+      "label": "Fulfillment lines",
+      "export": "The fulfillment lines of those orders: FULFILL_LINE_ID, HEADER_ID, FULFILL_LINE_NUMBER, INVENTORY_ITEM_ID, ORDERED_QTY, CREATION_DATE, ACTUAL_SHIP_DATE, CANCELED_FLAG and LAST_UPDATE_DATE.",
+      "required": [
+        "FULFILL_LINE_ID",
+        "HEADER_ID",
+        "ORDERED_QTY",
+        "CREATION_DATE",
+        "ACTUAL_SHIP_DATE",
+        "CANCELED_FLAG",
+        "LAST_UPDATE_DATE"
+      ],
+      "fields": [
+        "FULFILL_LINE_NUMBER",
+        "INVENTORY_ITEM_ID",
+        "STATUS_CODE"
+      ],
+      "object": "ora_so_line",
+      "key": [
+        "FULFILL_LINE_ID"
+      ]
+    },
+    {
+      "name": "RA_CUSTOMER_TRX_ALL",
+      "noun": "customer invoices",
+      "label": "Customer invoices",
+      "export": "Invoices for those orders: CUSTOMER_TRX_ID, TRX_NUMBER, TRX_DATE, CREATION_DATE and BILL_TO_CUSTOMER_ID. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "CUSTOMER_TRX_ID",
+        "TRX_NUMBER",
+        "CREATION_DATE"
+      ],
+      "fields": [
+        "TRX_DATE",
+        "BILL_TO_CUSTOMER_ID",
+        "CUST_TRX_TYPE_ID"
+      ],
+      "date_field": "CREATION_DATE",
+      "object": "ora_trx",
+      "key": [
+        "CUSTOMER_TRX_ID"
+      ]
+    },
+    {
+      "name": "RA_CUSTOMER_TRX_LINES_ALL",
+      "label": "Customer invoice lines",
+      "export": "The lines of those invoices: CUSTOMER_TRX_LINE_ID, CUSTOMER_TRX_ID, LINE_TYPE, INTERFACE_LINE_CONTEXT and the INTERFACE_LINE_ATTRIBUTE fields (they name the order line billed).",
+      "required": [
+        "CUSTOMER_TRX_LINE_ID",
+        "CUSTOMER_TRX_ID",
+        "LINE_TYPE",
+        "{setting:invoice_line_field}"
+      ],
+      "fields": [
+        "INTERFACE_LINE_CONTEXT",
+        "EXTENDED_AMOUNT"
+      ]
+    },
+    {
+      "name": "AR_RECEIVABLE_APPLICATIONS_ALL",
+      "label": "Receipt applications",
+      "export": "Cash receipts applied to those invoices: RECEIVABLE_APPLICATION_ID, APPLIED_CUSTOMER_TRX_ID, CASH_RECEIPT_ID, STATUS, DISPLAY, AMOUNT_APPLIED and CREATION_DATE. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "RECEIVABLE_APPLICATION_ID",
+        "APPLIED_CUSTOMER_TRX_ID",
+        "STATUS",
+        "DISPLAY",
+        "CREATION_DATE"
+      ],
+      "fields": [
+        "CASH_RECEIPT_ID",
+        "AMOUNT_APPLIED",
+        "APPLY_DATE"
+      ],
+      "date_field": "CREATION_DATE",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-doo-headers-all",
+      "table": "DOO_HEADERS_ALL",
+      "columns": [
+        "HEADER_ID"
+      ],
+      "label": "sales orders listed once"
+    },
+    {
+      "id": "one-doo-fulfill-lines-all",
+      "table": "DOO_FULFILL_LINES_ALL",
+      "columns": [
+        "FULFILL_LINE_ID"
+      ],
+      "label": "fulfillment lines listed once"
+    },
+    {
+      "id": "one-ra-customer-trx-all",
+      "table": "RA_CUSTOMER_TRX_ALL",
+      "columns": [
+        "CUSTOMER_TRX_ID"
+      ],
+      "label": "customer invoices listed once"
+    },
+    {
+      "id": "one-ra-customer-trx-lines-all",
+      "table": "RA_CUSTOMER_TRX_LINES_ALL",
+      "columns": [
+        "CUSTOMER_TRX_LINE_ID"
+      ],
+      "label": "customer invoice lines listed once"
+    },
+    {
+      "id": "one-ar-receivable-applications-all",
+      "table": "AR_RECEIVABLE_APPLICATIONS_ALL",
+      "columns": [
+        "RECEIVABLE_APPLICATION_ID"
+      ],
+      "label": "receipt applications listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "DOO_FULFILL_LINES_ALL",
+        "columns": [
+          "HEADER_ID"
+        ]
+      },
+      "to": {
+        "table": "DOO_HEADERS_ALL",
+        "columns": [
+          "HEADER_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "RA_CUSTOMER_TRX_LINES_ALL",
+        "columns": [
+          "CUSTOMER_TRX_ID"
+        ]
+      },
+      "to": {
+        "table": "RA_CUSTOMER_TRX_ALL",
+        "columns": [
+          "CUSTOMER_TRX_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-order-lines",
+      "label": "invoice lines billed from an order line in the export",
+      "from": {
+        "table": "RA_CUSTOMER_TRX_LINES_ALL",
+        "columns": [
+          "{setting:invoice_line_field}"
+        ],
+        "where": [
+          {
+            "column": "LINE_TYPE",
+            "in": [
+              "LINE"
+            ]
+          },
+          {
+            "column": "{setting:invoice_line_field}",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "DOO_FULFILL_LINES_ALL",
+        "columns": [
+          "FULFILL_LINE_ID"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines were billed from orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "applications-have-invoices",
+      "label": "receipt applications whose invoice is in the export",
+      "from": {
+        "table": "AR_RECEIVABLE_APPLICATIONS_ALL",
+        "columns": [
+          "APPLIED_CUSTOMER_TRX_ID"
+        ],
+        "where": [
+          {
+            "column": "STATUS",
+            "in": [
+              "APP"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "RA_CUSTOMER_TRX_ALL",
+        "columns": [
+          "CUSTOMER_TRX_ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "ora_so",
+        "input": "DOO_HEADERS_ALL",
+        "namespace": "oracle",
+        "object_type": "sales order",
+        "key": [
+          "HEADER_ID"
+        ],
+        "attributes": [
+          {
+            "column": "ORDER_NUMBER",
+            "name": "order number"
+          }
+        ]
+      },
+      {
+        "id": "ora_so_line",
+        "input": "DOO_FULFILL_LINES_ALL",
+        "namespace": "oracle",
+        "object_type": "fulfillment line",
+        "key": [
+          "FULFILL_LINE_ID"
+        ],
+        "attributes": [
+          {
+            "column": "ORDERED_QTY",
+            "name": "quantity"
+          },
+          {
+            "column": "INVENTORY_ITEM_ID",
+            "name": "item"
+          }
+        ]
+      },
+      {
+        "id": "ora_trx",
+        "input": "RA_CUSTOMER_TRX_ALL",
+        "namespace": "oracle",
+        "object_type": "customer invoice",
+        "key": [
+          "CUSTOMER_TRX_ID"
+        ],
+        "attributes": [
+          {
+            "column": "TRX_NUMBER",
+            "name": "invoice number"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ora_so_created",
+        "input": "DOO_HEADERS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "HEADER_ID"
+        ],
+        "activity": {
+          "value": "Create sales order"
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "ora_so",
+            "columns": [
+              "HEADER_ID"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "ora_so_booked",
+        "input": "DOO_HEADERS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "HEADER_ID"
+        ],
+        "activity": {
+          "value": "Submit sales order"
+        },
+        "timestamp": {
+          "date": "SUBMITTED_DATE",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ora_so",
+            "columns": [
+              "HEADER_ID"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "ora_line_shipped",
+        "input": "DOO_FULFILL_LINES_ALL",
+        "namespace": "oracle",
+        "key": [
+          "FULFILL_LINE_ID"
+        ],
+        "activity": {
+          "value": "Ship goods"
+        },
+        "timestamp": {
+          "date": "ACTUAL_SHIP_DATE",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ora_so_line",
+            "columns": [
+              "FULFILL_LINE_ID"
+            ],
+            "qualifier": "fulfillment line"
+          },
+          {
+            "object": "ora_so",
+            "columns": [
+              "HEADER_ID"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "ora_line_cancelled",
+        "input": "DOO_FULFILL_LINES_ALL",
+        "namespace": "oracle",
+        "key": [
+          "FULFILL_LINE_ID"
+        ],
+        "where": [
+          {
+            "column": "CANCELED_FLAG",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel order line"
+        },
+        "timestamp": {
+          "date": "LAST_UPDATE_DATE",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "ora_so_line",
+            "columns": [
+              "FULFILL_LINE_ID"
+            ],
+            "qualifier": "fulfillment line"
+          },
+          {
+            "object": "ora_so",
+            "columns": [
+              "HEADER_ID"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "ora_trx_created",
+        "input": "RA_CUSTOMER_TRX_ALL",
+        "namespace": "oracle",
+        "key": [
+          "CUSTOMER_TRX_ID"
+        ],
+        "activity": {
+          "value": "Create customer invoice"
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "ora_trx",
+            "columns": [
+              "CUSTOMER_TRX_ID"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      },
+      {
+        "id": "ora_payment_applied",
+        "input": "AR_RECEIVABLE_APPLICATIONS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "RECEIVABLE_APPLICATION_ID"
+        ],
+        "where": [
+          {
+            "column": "STATUS",
+            "in": [
+              "APP"
+            ]
+          },
+          {
+            "column": "DISPLAY",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive customer payment"
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "AMOUNT_APPLIED",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_trx",
+            "columns": [
+              "APPLIED_CUSTOMER_TRX_ID"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "ora_so_has_line",
+        "input": "DOO_FULFILL_LINES_ALL",
+        "source": {
+          "object": "ora_so",
+          "columns": [
+            "HEADER_ID"
+          ],
+          "qualifier": "sales order"
+        },
+        "target": {
+          "object": "ora_so_line",
+          "columns": [
+            "FULFILL_LINE_ID"
+          ],
+          "qualifier": "fulfillment line"
+        }
+      },
+      {
+        "id": "ora_trx_for_line",
+        "input": "RA_CUSTOMER_TRX_LINES_ALL",
+        "where": [
+          {
+            "column": "LINE_TYPE",
+            "in": [
+              "LINE"
+            ]
+          },
+          {
+            "column": "{setting:invoice_line_field}",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "ora_trx",
+          "columns": [
+            "CUSTOMER_TRX_ID"
+          ],
+          "qualifier": "customer invoice"
+        },
+        "target": {
+          "object": "ora_so_line",
+          "columns": [
+            "{setting:invoice_line_field}"
+          ],
+          "qualifier": "fulfillment line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "ora_so_created_lines",
+        "event": "ora_so_created",
+        "through": "ora_so",
+        "relationship": "ora_so_has_line",
+        "qualifier": "fulfillment line"
+      },
+      {
+        "id": "ora_so_booked_lines",
+        "event": "ora_so_booked",
+        "through": "ora_so",
+        "relationship": "ora_so_has_line",
+        "qualifier": "fulfillment line"
+      },
+      {
+        "id": "ora_trx_created_lines",
+        "event": "ora_trx_created",
+        "through": "ora_trx",
+        "relationship": "ora_trx_for_line",
+        "qualifier": "fulfillment line"
+      },
+      {
+        "id": "ora_payment_applied_lines",
+        "event": "ora_payment_applied",
+        "through": "ora_trx",
+        "relationship": "ora_trx_for_line",
+        "qualifier": "fulfillment line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "Oracle sales order number",
+      "object": "ora_so",
+      "table": "DOO_HEADERS_ALL",
+      "key": [
+        "ORDER_NUMBER"
+      ],
+      "example": "56012",
+      "carry": [
+        "ora_so_has_line"
+      ]
+    }
+  ]
+}

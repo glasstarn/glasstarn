@@ -1,0 +1,384 @@
+{
+  "id": "sap-ariba-buying",
+  "note": "Requisitions, approval history and orders from SAP Ariba report exports. Needs a purchasing part that defines the order, order_item and order_lines rules.",
+  "custom_prefixes": [
+    "cus_"
+  ],
+  "tables": [
+    {
+      "name": "AribaRequisition",
+      "noun": "requisitions",
+      "date_label": "the requisition was created",
+      "label": "Ariba requisitions",
+      "export": "An Ariba requisition report for the period with the columns Requisition ID, Title, Requester, Created Date, Submitted Date and ERP Order ID (the SAP purchase order number), dates with their time.",
+      "required": [
+        "Requisition ID",
+        "Created Date",
+        "Submitted Date",
+        "ERP Order ID"
+      ],
+      "fields": [
+        "Title",
+        "Requester",
+        "Amount",
+        "Currency"
+      ],
+      "date_field": "Created Date",
+      "object": "ariba_requisition",
+      "key": [
+        "Requisition ID"
+      ]
+    },
+    {
+      "name": "AribaApproval",
+      "label": "Ariba approval history",
+      "export": "The approval history of the exported requisitions: Requisition ID, Approval Step (its order), Approver, Approval Role, Action (Approved or Denied) and Action Date with time.",
+      "required": [
+        "Requisition ID",
+        "Approval Step",
+        "Approver",
+        "Action",
+        "Action Date"
+      ],
+      "fields": [
+        "Approval Role"
+      ],
+      "date_field": "Action Date"
+    },
+    {
+      "name": "AribaOrder",
+      "label": "Ariba purchase orders",
+      "export": "An Ariba purchase order report for the period: Order ID, ERP Order ID, Requisition ID, Ordered Date with time and Supplier.",
+      "required": [
+        "Order ID",
+        "ERP Order ID",
+        "Ordered Date"
+      ],
+      "fields": [
+        "Requisition ID",
+        "Supplier"
+      ],
+      "date_field": "Ordered Date"
+    }
+  ],
+  "settings": [
+    {
+      "id": "ariba_offset",
+      "question": "Which time zone are the dates in the Ariba reports in? Ariba shows times in the time zone of the person who ran the report. Give it as an offset from UTC, for example +01:00.",
+      "example": "+01:00"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ariba-requisition",
+      "table": "AribaRequisition",
+      "columns": [
+        "Requisition ID"
+      ],
+      "label": "Ariba requisitions listed once"
+    },
+    {
+      "id": "one-ariba-approval-step",
+      "table": "AribaApproval",
+      "columns": [
+        "Requisition ID",
+        "Approval Step"
+      ],
+      "label": "each approval step listed once"
+    },
+    {
+      "id": "one-ariba-order",
+      "table": "AribaOrder",
+      "columns": [
+        "Order ID"
+      ],
+      "label": "Ariba orders listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "approvals-have-requisitions",
+      "label": "approval rows whose requisition is in the export",
+      "from": {
+        "table": "AribaApproval",
+        "columns": [
+          "Requisition ID"
+        ]
+      },
+      "to": {
+        "table": "AribaRequisition",
+        "columns": [
+          "Requisition ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "ariba_requisition",
+        "input": "AribaRequisition",
+        "namespace": "ariba",
+        "object_type": "purchase requisition",
+        "key": [
+          "Requisition ID"
+        ],
+        "attributes": [
+          {
+            "column": "Title",
+            "name": "title"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ariba_requisition_created",
+        "input": "AribaRequisition",
+        "namespace": "ariba",
+        "key": [
+          "Requisition ID"
+        ],
+        "activity": {
+          "value": "Create requisition"
+        },
+        "timestamp": {
+          "date": "Created Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "objects": [
+          {
+            "object": "ariba_requisition",
+            "columns": [
+              "Requisition ID"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "ariba_requisition_submitted",
+        "input": "AribaRequisition",
+        "namespace": "ariba",
+        "key": [
+          "Requisition ID"
+        ],
+        "activity": {
+          "value": "Submit requisition"
+        },
+        "timestamp": {
+          "date": "Submitted Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ariba_requisition",
+            "columns": [
+              "Requisition ID"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "ariba_requisition_approved",
+        "input": "AribaApproval",
+        "namespace": "ariba",
+        "key": [
+          "Requisition ID",
+          "Approval Step"
+        ],
+        "where": [
+          {
+            "column": "Action",
+            "in": [
+              "Approved"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve requisition"
+        },
+        "timestamp": {
+          "date": "Action Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "attributes": [
+          {
+            "column": "Approver",
+            "name": "resource"
+          },
+          {
+            "column": "Approval Role",
+            "name": "approval role"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ariba_requisition",
+            "columns": [
+              "Requisition ID"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "ariba_requisition_denied",
+        "input": "AribaApproval",
+        "namespace": "ariba",
+        "key": [
+          "Requisition ID",
+          "Approval Step"
+        ],
+        "where": [
+          {
+            "column": "Action",
+            "in": [
+              "Denied"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Deny requisition"
+        },
+        "timestamp": {
+          "date": "Action Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "attributes": [
+          {
+            "column": "Approver",
+            "name": "resource"
+          },
+          {
+            "column": "Approval Role",
+            "name": "approval role"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ariba_requisition",
+            "columns": [
+              "Requisition ID"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "ariba_order_sent",
+        "input": "AribaOrder",
+        "namespace": "ariba",
+        "key": [
+          "Order ID"
+        ],
+        "activity": {
+          "value": "Send order to supplier"
+        },
+        "timestamp": {
+          "date": "Ordered Date",
+          "offset": "{setting:ariba_offset}"
+        },
+        "objects": [
+          {
+            "object": "order",
+            "columns": [
+              "ERP Order ID"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "requisition_to_order",
+        "input": "AribaRequisition",
+        "source": {
+          "object": "ariba_requisition",
+          "columns": [
+            "Requisition ID"
+          ],
+          "qualifier": "requisition"
+        },
+        "target": {
+          "object": "order",
+          "columns": [
+            "ERP Order ID"
+          ],
+          "qualifier": "became order",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "ariba_requisition_created_order",
+        "event": "ariba_requisition_created",
+        "through": "ariba_requisition",
+        "relationship": "requisition_to_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_requisition_submitted_order",
+        "event": "ariba_requisition_submitted",
+        "through": "ariba_requisition",
+        "relationship": "requisition_to_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_requisition_approved_order",
+        "event": "ariba_requisition_approved",
+        "through": "ariba_requisition",
+        "relationship": "requisition_to_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_requisition_denied_order",
+        "event": "ariba_requisition_denied",
+        "through": "ariba_requisition",
+        "relationship": "requisition_to_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "ariba_requisition_created_lines",
+        "event": "ariba_requisition_created",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_requisition_submitted_lines",
+        "event": "ariba_requisition_submitted",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_requisition_approved_lines",
+        "event": "ariba_requisition_approved",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_requisition_denied_lines",
+        "event": "ariba_requisition_denied",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_order_sent_lines",
+        "event": "ariba_order_sent",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

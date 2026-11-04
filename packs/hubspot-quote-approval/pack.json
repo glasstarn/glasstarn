@@ -1,0 +1,254 @@
+{
+  "id": "hubspot-quote-approval",
+  "version": 1,
+  "name": "Quote approval (HubSpot)",
+  "system": "HubSpot",
+  "process": "quote approval",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a HubSpot developer test account. Five planted legacy quotes produced 15 events. One approval used HubSpot's review screen; rejection and resubmission transitions used its API. Status histories matched exactly. Newer CPQ quote properties and live expiry changes remain outside this test. This is scoped trial coverage, not certification or proof of complete vendor history retention. See the pack README.",
+  "case_object_type": "quote",
+  "size_check": {
+    "ask": "How many quotes were created or changed in the period?",
+    "unit": "quote",
+    "steps_per_unit": 3
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "HubSpotQuote",
+      "noun": "quotes",
+      "date_label": "the quote was created",
+      "label": "HubSpot quotes",
+      "export": "Quotes changed in the period, from the HubSpot extract: id, created, hs_status, hs_title, hs_expiration_date, with the status label.",
+      "required": [
+        "id",
+        "created",
+        "hs_status",
+        "hs_title",
+        "hs_expiration_date",
+        "hs_status_label"
+      ],
+      "fields": [],
+      "date_field": "created",
+      "object": "hs_quote",
+      "key": [
+        "id"
+      ]
+    },
+    {
+      "name": "HubSpotHistory",
+      "label": "HubSpot property history",
+      "export": "The history of the listed properties of those records, from the HubSpot extract: object, record, property, value, label, timestamp, source, user and whether the first value was present at record creation. A first assignment made later is a change.",
+      "required": [
+        "object",
+        "record",
+        "property",
+        "value",
+        "label",
+        "timestamp",
+        "first"
+      ],
+      "fields": [
+        "source",
+        "user"
+      ],
+      "date_field": "timestamp"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-HubSpotQuote",
+      "table": "HubSpotQuote",
+      "columns": [
+        "id"
+      ],
+      "label": "quotes listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "history-has-quote",
+      "label": "history rows whose quote is in the extract",
+      "from": {
+        "table": "HubSpotHistory",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "quotes"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "HubSpotQuote",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "hs_quote",
+        "input": "HubSpotQuote",
+        "namespace": "hubspot",
+        "object_type": "quote",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "hs_status_label",
+            "name": "status"
+          },
+          {
+            "column": "hs_title",
+            "name": "title"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "quote_created",
+        "input": "HubSpotQuote",
+        "namespace": "hubspot",
+        "key": [
+          "id"
+        ],
+        "activity": {
+          "value": "Create quote"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "hs_quote",
+            "columns": [
+              "id"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "status_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "quotes"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hs_status"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_quote",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "quote"
+          }
+        ],
+        "activity": {
+          "column": "label",
+          "prefix": "Quote: "
+        }
+      },
+      {
+        "id": "expiry_moved",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "quotes"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hs_expiration_date"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_quote",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "quote"
+          }
+        ],
+        "activity": {
+          "value": "Move expiry date"
+        }
+      }
+    ]
+  }
+}

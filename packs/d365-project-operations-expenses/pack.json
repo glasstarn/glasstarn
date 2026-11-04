@@ -1,0 +1,272 @@
+{
+  "id": "d365-project-operations-expenses",
+  "version": 1,
+  "name": "Project expenses and approvals (Dynamics 365 Project Operations)",
+  "system": "Microsoft Dynamics 365 Project Operations (Dataverse)",
+  "process": "project expense approval",
+  "status": "tested",
+  "note": "Live Core validation covered a synthetic expense draft, submission and approval. Three events, two objects and five links matched independent raw source timestamps, IDs, hashes and rows. No reimbursement/payment/posting, live rejection/resubmission or complete recall history claim.",
+  "case_object_type": "expense",
+  "size_check": {
+    "ask": "How many project expenses were created in the period?",
+    "unit": "expense",
+    "steps_per_unit": 3
+  },
+  "custom_prefixes": [
+    "*_*"
+  ],
+  "tables": [
+    {
+      "name": "msdyn_expense",
+      "noun": "expenses",
+      "label": "Project expenses",
+      "export": "Expenses in scope: msdyn_expenseid and createdon (raw UTC). Optional msdyn_project and msdyn_expensestatus. Rename _msdyn_project_value to msdyn_project preserving GUIDs. Exclude purpose text, receipts, worker/customer names and external comments. Transaction Date is a business date, not creation or submission time.",
+      "required": [
+        "msdyn_expenseid",
+        "createdon"
+      ],
+      "fields": [
+        "msdyn_project",
+        "msdyn_expensestatus"
+      ],
+      "date_field": "createdon",
+      "object": "po_expense",
+      "key": [
+        "msdyn_expenseid"
+      ]
+    },
+    {
+      "name": "msdyn_projectapproval",
+      "label": "Expense approval requests",
+      "export": "Every retained expense-approval row linked to those expenses, including previous rejected/resubmitted instances: msdyn_projectapprovalid, createdon, msdyn_expenseentry. Rename _msdyn_expenseentry_value preserving GUIDs. Optional msdyn_recordstage numeric code or standard English label and raw UTC msdyn_approvedon. This field is also populated for rejection and must be interpreted with Record Stage. Exclude time/material approval rows and grouped UI header records. Current state is not complete audit history.",
+      "required": [
+        "msdyn_projectapprovalid",
+        "createdon",
+        "msdyn_expenseentry"
+      ],
+      "fields": [
+        "msdyn_recordstage",
+        "msdyn_approvedon"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-expense",
+      "table": "msdyn_expense",
+      "columns": [
+        "msdyn_expenseid"
+      ],
+      "label": "expenses listed once"
+    },
+    {
+      "id": "one-approval",
+      "table": "msdyn_projectapproval",
+      "columns": [
+        "msdyn_projectapprovalid"
+      ],
+      "label": "approval requests listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "request-has-expense",
+      "label": "approval requests whose expense is in the export",
+      "from": {
+        "table": "msdyn_projectapproval",
+        "columns": [
+          "msdyn_expenseentry"
+        ]
+      },
+      "to": {
+        "table": "msdyn_expense",
+        "columns": [
+          "msdyn_expenseid"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "po_expense",
+        "input": "msdyn_expense",
+        "namespace": "dataverse",
+        "object_type": "expense",
+        "key": [
+          "msdyn_expenseid"
+        ],
+        "attributes": [
+          {
+            "column": "msdyn_expensestatus",
+            "name": "current status"
+          },
+          {
+            "column": "msdyn_project",
+            "name": "project GUID"
+          }
+        ]
+      },
+      {
+        "id": "po_expense_approval",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "object_type": "expense approval request",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "attributes": [
+          {
+            "column": "msdyn_recordstage",
+            "name": "current stage"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "po_expense_created",
+        "input": "msdyn_expense",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_expenseid"
+        ],
+        "activity": {
+          "value": "Create project expense"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "po_expense",
+            "columns": [
+              "msdyn_expenseid"
+            ],
+            "qualifier": "expense"
+          }
+        ]
+      },
+      {
+        "id": "po_expense_approval_created",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "activity": {
+          "value": "Create expense approval request"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "po_expense",
+            "columns": [
+              "msdyn_expenseentry"
+            ],
+            "qualifier": "expense"
+          },
+          {
+            "object": "po_expense_approval",
+            "columns": [
+              "msdyn_projectapprovalid"
+            ],
+            "qualifier": "expense approval request"
+          }
+        ]
+      },
+      {
+        "id": "po_reject_expense",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "activity": {
+          "value": "Reject expense (latest decision)"
+        },
+        "timestamp": "msdyn_approvedon",
+        "objects": [
+          {
+            "object": "po_expense",
+            "columns": [
+              "msdyn_expenseentry"
+            ],
+            "qualifier": "expense"
+          },
+          {
+            "object": "po_expense_approval",
+            "columns": [
+              "msdyn_projectapprovalid"
+            ],
+            "qualifier": "expense approval request"
+          }
+        ],
+        "optional_timestamp": true,
+        "where": [
+          {
+            "column": "msdyn_recordstage",
+            "in": [
+              "1",
+              "Rejected"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "po_approve_expense",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "activity": {
+          "value": "Approve expense (latest decision)"
+        },
+        "timestamp": "msdyn_approvedon",
+        "objects": [
+          {
+            "object": "po_expense",
+            "columns": [
+              "msdyn_expenseentry"
+            ],
+            "qualifier": "expense"
+          },
+          {
+            "object": "po_expense_approval",
+            "columns": [
+              "msdyn_projectapprovalid"
+            ],
+            "qualifier": "expense approval request"
+          }
+        ],
+        "optional_timestamp": true,
+        "where": [
+          {
+            "column": "msdyn_recordstage",
+            "in": [
+              "2",
+              "Approved"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "expense",
+      "label": "Dynamics 365 expense GUID",
+      "object": "po_expense",
+      "table": "msdyn_expense",
+      "key": [
+        "msdyn_expenseid"
+      ],
+      "example": "6a1f0c2e-\u2026",
+      "carry": []
+    }
+  ]
+}

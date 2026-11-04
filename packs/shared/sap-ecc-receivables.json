@@ -1,0 +1,486 @@
+{
+  "id": "sap-ecc-receivables",
+  "note": "Customer payments from SAP ECC or S/4HANA tables.",
+  "tables": [
+    {
+      "name": "BKPF",
+      "label": "Accounting document headers",
+      "export": "The posting headers for the exported financial billing documents (AWTYP VBRK, AWKEY starts with the exported VBRK-VBELN), plus customer payment documents (BLART DZ) of the company code. Do not include postings of excluded pro-forma/list/request scopes.",
+      "required": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "AWTYP",
+        "AWKEY",
+        "BLART",
+        "CPUDT",
+        "CPUTM"
+      ],
+      "fields": [
+        "BUDAT",
+        "USNAM"
+      ],
+      "date_field": "CPUDT",
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "BSAD",
+      "label": "Cleared customer items",
+      "export": "Cleared customer items of the company code for the exported accounting documents, cleared up to the export date.",
+      "required": [
+        "BUKRS",
+        "KUNNR",
+        "BELNR",
+        "GJAHR",
+        "BLART",
+        "SHKZG",
+        "AUGDT",
+        "AUGBL",
+        "AUGGJ",
+        "BUZEI"
+      ],
+      "fields": [
+        "BUDAT",
+        "ZFBDT",
+        "ZBD1T",
+        "DMBTR",
+        "WAERS"
+      ],
+      "date_field": "AUGDT",
+      "scope_field": "BUKRS"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-customer-accounting-document",
+      "table": "BKPF",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR"
+      ],
+      "label": "accounting documents listed once"
+    },
+    {
+      "id": "one-customer-item",
+      "table": "BSAD",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "BUZEI"
+      ],
+      "label": "cleared customer items listed once (company, document, year and item)"
+    }
+  ],
+  "checks": [
+    {
+      "id": "billing-postings-match-invoices",
+      "label": "accounting documents from billing that match an exported billing document",
+      "from": {
+        "table": "BKPF",
+        "columns": [
+          {
+            "column": "AWKEY",
+            "start": 0,
+            "length": 10
+          }
+        ],
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "VBRK"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "VBRK",
+        "columns": [
+          "VBELN"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "cleared-items-have-documents",
+      "label": "cleared invoice items whose accounting document is in the export",
+      "from": {
+        "table": "BSAD",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "SHKZG",
+            "in": [
+              "S"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoices-posted",
+      "label": "invoices posted to accounting",
+      "from": {
+        "table": "VBRK",
+        "columns": [
+          "VBELN"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "M",
+              "5",
+              "O",
+              "6",
+              "P"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          {
+            "column": "AWKEY",
+            "start": 0,
+            "length": 10
+          }
+        ],
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "VBRK"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} invoices ({missing_share}) were never posted to accounting, often because the posting was blocked. Is that expected, or should it be looked at?",
+        "options": [
+          {
+            "id": "finding",
+            "label": "Not expected; treat it as a finding"
+          },
+          {
+            "id": "expected",
+            "label": "Expected (for example pro-forma invoices)"
+          }
+        ],
+        "recommended": "finding"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "receivable",
+        "input": "BKPF",
+        "namespace": "sap",
+        "object_type": "receivable posting",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "VBRK"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "customer_item",
+        "input": "BSAD",
+        "namespace": "sap",
+        "object_type": "customer accounting item",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR",
+          "BUZEI"
+        ],
+        "attributes": [
+          {
+            "column": "KUNNR",
+            "name": "customer"
+          },
+          {
+            "column": "SHKZG",
+            "name": "debit credit"
+          }
+        ]
+      },
+      {
+        "id": "customer_payment",
+        "input": "BKPF",
+        "namespace": "sap",
+        "object_type": "customer payment document",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "BLART",
+            "in": [
+              "DZ"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "payment_received",
+        "input": "BKPF",
+        "namespace": "sap",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "BLART",
+            "in": [
+              "DZ"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Post customer payment"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "customer_payment",
+            "columns": [
+              "BUKRS",
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "payment document"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "receivable_billing",
+        "input": "BKPF",
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "VBRK"
+            ]
+          }
+        ],
+        "source": {
+          "object": "receivable",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR"
+          ],
+          "qualifier": "posting"
+        },
+        "target": {
+          "object": "billing",
+          "columns": [
+            {
+              "column": "AWKEY",
+              "start": 0,
+              "length": 10
+            }
+          ],
+          "qualifier": "posts invoice",
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "customer_item_receivable",
+        "input": "BSAD",
+        "source": {
+          "object": "customer_item",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "customer item"
+        },
+        "target": {
+          "object": "receivable",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR"
+          ],
+          "qualifier": "posting",
+          "allow_unmatched": true
+        },
+        "where": [
+          {
+            "column": "SHKZG",
+            "in": [
+              "S"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "customer_item_customer",
+        "input": "BSAD",
+        "source": {
+          "object": "customer_item",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "customer item"
+        },
+        "target": {
+          "object": "customer",
+          "columns": [
+            "KUNNR"
+          ],
+          "qualifier": "customer"
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "payment_cleared_items",
+        "input": "BSAD",
+        "event": "payment_received",
+        "event_key": [
+          "BUKRS",
+          "AUGBL",
+          "AUGGJ"
+        ],
+        "where": [
+          {
+            "column": "SHKZG",
+            "in": [
+              "S"
+            ]
+          }
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "customer_item",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "cleared customer item"
+        }
+      },
+      {
+        "id": "payment_posted_items",
+        "input": "BSAD",
+        "event": "payment_received",
+        "event_key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "BLART",
+            "in": [
+              "DZ"
+            ]
+          },
+          {
+            "column": "SHKZG",
+            "in": [
+              "H"
+            ]
+          }
+        ],
+        "optional_event": false,
+        "target": {
+          "object": "customer_item",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "payment customer item"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "payment_of_receivable",
+        "event": "payment_received",
+        "through": "customer_item",
+        "relationship": "customer_item_receivable",
+        "qualifier": "paid posting"
+      },
+      {
+        "id": "payment_customers",
+        "event": "payment_received",
+        "through": "customer_item",
+        "relationship": "customer_item_customer",
+        "qualifier": "customer"
+      },
+      {
+        "id": "payment_invoice",
+        "event": "payment_received",
+        "through": "receivable",
+        "relationship": "receivable_billing",
+        "qualifier": "paid invoice"
+      },
+      {
+        "id": "payment_billing_items",
+        "event": "payment_received",
+        "through": "billing",
+        "relationship": "billing_items",
+        "qualifier": "paid invoice item"
+      },
+      {
+        "id": "payment_lines",
+        "event": "payment_received",
+        "through": "billing_item",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

@@ -1,0 +1,4 @@
+company,invoice_number,order_number,issued_at
+A,0010,0007,2026-01-03T09:00:00Z
+A,0011,0008,2026-01-03T10:00:00Z
+B,0010,0007,2026-01-03T11:00:00Z

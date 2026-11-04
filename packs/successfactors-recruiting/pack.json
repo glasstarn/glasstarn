@@ -1,0 +1,490 @@
+{
+  "id": "successfactors-recruiting",
+  "version": 1,
+  "name": "Hiring (SAP SuccessFactors Recruiting)",
+  "system": "SAP SuccessFactors Recruiting",
+  "process": "recruit to hire",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the SuccessFactors Recruiting OData entities. Not yet confirmed on a real instance; tested only on made-up extracts. Application steps are the instance's own status names from the status audit trail. Requisition approval is not covered: SAP does not expose the approval date through the API.",
+  "case_object_type": "job application",
+  "size_check": {
+    "ask": "How many job applications were received in the period?",
+    "unit": "job application",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "cust_*"
+  ],
+  "tables": [
+    {
+      "name": "JobRequisition",
+      "noun": "job requisitions",
+      "date_label": "the requisition was opened",
+      "label": "Job requisitions",
+      "export": "Job requisitions opened in the period: jobReqId, createdDateTime, closedDateTime, department, location, numberOpenings and the instance's own fields. Times in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "jobReqId",
+        "createdDateTime"
+      ],
+      "fields": [
+        "closedDateTime",
+        "department",
+        "location",
+        "numberOpenings",
+        "internalStatus"
+      ],
+      "date_field": "createdDateTime",
+      "object": "requisition",
+      "key": [
+        "jobReqId"
+      ]
+    },
+    {
+      "name": "JobApplication",
+      "noun": "job applications",
+      "date_label": "the application arrived",
+      "label": "Job applications",
+      "export": "Applications to those requisitions: applicationId, jobReqId, candidateId, applicationDate, source and status. No names, contact details or resumes.",
+      "required": [
+        "applicationId",
+        "jobReqId",
+        "candidateId",
+        "applicationDate"
+      ],
+      "fields": [
+        "source",
+        "appStatusName"
+      ],
+      "date_field": "applicationDate",
+      "object": "application",
+      "key": [
+        "applicationId"
+      ]
+    },
+    {
+      "name": "JobApplicationStatusAuditTrail",
+      "label": "Application status history",
+      "export": "Status changes of those applications (JobApplicationStatusAuditTrail) with the status label: revNumber, applicationId, statusName, createdDateTime and createdBy.",
+      "required": [
+        "revNumber",
+        "applicationId",
+        "statusName",
+        "createdDateTime"
+      ],
+      "fields": [
+        "createdBy"
+      ],
+      "date_field": "createdDateTime"
+    },
+    {
+      "name": "ONB2Process",
+      "label": "Onboarding processes",
+      "export": "Onboarding 2.0 processes of those hires (ONB2Process): processId, the jobApplicationId it was started from, createdDateTime, onboardingHireStatus and the time the process completed (completedDateTime, blank while it runs). Times in UTC.",
+      "required": [
+        "processId",
+        "jobApplicationId",
+        "createdDateTime",
+        "onboardingHireStatus",
+        "completedDateTime"
+      ],
+      "fields": [],
+      "date_field": "createdDateTime",
+      "optional": true
+    },
+    {
+      "name": "JobApplicationInterview",
+      "label": "Interviews",
+      "export": "Interviews scheduled for those applications: applicationInterviewId, applicationId, startDate, endDate and status.",
+      "required": [
+        "applicationInterviewId",
+        "applicationId",
+        "startDate"
+      ],
+      "fields": [
+        "endDate",
+        "status"
+      ],
+      "date_field": "startDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-requisition",
+      "table": "JobRequisition",
+      "columns": [
+        "jobReqId"
+      ],
+      "label": "requisitions listed once"
+    },
+    {
+      "id": "one-application",
+      "table": "JobApplication",
+      "columns": [
+        "applicationId"
+      ],
+      "label": "applications listed once"
+    },
+    {
+      "id": "one-status-change",
+      "table": "JobApplicationStatusAuditTrail",
+      "columns": [
+        "revNumber"
+      ],
+      "label": "status changes listed once"
+    },
+    {
+      "id": "one-onboarding",
+      "table": "ONB2Process",
+      "columns": [
+        "processId"
+      ],
+      "label": "onboarding processes listed once"
+    },
+    {
+      "id": "one-interview",
+      "table": "JobApplicationInterview",
+      "columns": [
+        "applicationInterviewId"
+      ],
+      "label": "interviews listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "applications-have-requisitions",
+      "label": "applications whose requisition is in the export",
+      "from": {
+        "table": "JobApplication",
+        "columns": [
+          "jobReqId"
+        ]
+      },
+      "to": {
+        "table": "JobRequisition",
+        "columns": [
+          "jobReqId"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} applications are for requisitions opened before the period. Export those requisitions too, or keep the applications without them?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them; the requisition is older"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older requisitions"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "status-changes-have-applications",
+      "label": "status changes whose application is in the export",
+      "from": {
+        "table": "JobApplicationStatusAuditTrail",
+        "columns": [
+          "applicationId"
+        ]
+      },
+      "to": {
+        "table": "JobApplication",
+        "columns": [
+          "applicationId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "onboarding-has-applications",
+      "label": "onboarding processes whose application is in the export",
+      "from": {
+        "table": "ONB2Process",
+        "columns": [
+          "jobApplicationId"
+        ]
+      },
+      "to": {
+        "table": "JobApplication",
+        "columns": [
+          "applicationId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "interviews-have-applications",
+      "label": "interviews whose application is in the export",
+      "from": {
+        "table": "JobApplicationInterview",
+        "columns": [
+          "applicationId"
+        ]
+      },
+      "to": {
+        "table": "JobApplication",
+        "columns": [
+          "applicationId"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "requisition",
+        "input": "JobRequisition",
+        "namespace": "successfactors",
+        "object_type": "job requisition",
+        "key": [
+          "jobReqId"
+        ],
+        "attributes": [
+          {
+            "column": "department",
+            "name": "department"
+          },
+          {
+            "column": "location",
+            "name": "location"
+          },
+          {
+            "column": "numberOpenings",
+            "name": "openings"
+          }
+        ]
+      },
+      {
+        "id": "application",
+        "input": "JobApplication",
+        "namespace": "successfactors",
+        "object_type": "job application",
+        "key": [
+          "applicationId"
+        ],
+        "attributes": [
+          {
+            "column": "source",
+            "name": "source"
+          },
+          {
+            "column": "appStatusName",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "requisition_opened",
+        "input": "JobRequisition",
+        "namespace": "successfactors",
+        "key": [
+          "jobReqId"
+        ],
+        "activity": {
+          "value": "Open job requisition"
+        },
+        "timestamp": "createdDateTime",
+        "objects": [
+          {
+            "object": "requisition",
+            "columns": [
+              "jobReqId"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "requisition_closed",
+        "input": "JobRequisition",
+        "namespace": "successfactors",
+        "key": [
+          "jobReqId"
+        ],
+        "activity": {
+          "value": "Close job requisition"
+        },
+        "timestamp": "closedDateTime",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "requisition",
+            "columns": [
+              "jobReqId"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "application_received",
+        "input": "JobApplication",
+        "namespace": "successfactors",
+        "key": [
+          "applicationId"
+        ],
+        "activity": {
+          "value": "Receive application"
+        },
+        "timestamp": "applicationDate",
+        "attributes": [
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "application",
+            "columns": [
+              "applicationId"
+            ],
+            "qualifier": "application"
+          },
+          {
+            "object": "requisition",
+            "columns": [
+              "jobReqId"
+            ],
+            "qualifier": "requisition",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "application_status_changed",
+        "input": "JobApplicationStatusAuditTrail",
+        "namespace": "successfactors",
+        "key": [
+          "revNumber"
+        ],
+        "activity": {
+          "column": "statusName"
+        },
+        "timestamp": "createdDateTime",
+        "attributes": [
+          {
+            "column": "createdBy",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "application",
+            "columns": [
+              "applicationId"
+            ],
+            "qualifier": "application"
+          }
+        ]
+      },
+      {
+        "id": "onboarding_started",
+        "input": "ONB2Process",
+        "namespace": "successfactors",
+        "key": [
+          "processId"
+        ],
+        "activity": {
+          "value": "Start onboarding"
+        },
+        "timestamp": "createdDateTime",
+        "attributes": [
+          {
+            "column": "onboardingHireStatus",
+            "name": "hire status"
+          }
+        ],
+        "objects": [
+          {
+            "object": "application",
+            "columns": [
+              "jobApplicationId"
+            ],
+            "qualifier": "application"
+          }
+        ]
+      },
+      {
+        "id": "onboarding_completed",
+        "input": "ONB2Process",
+        "namespace": "successfactors",
+        "key": [
+          "processId"
+        ],
+        "activity": {
+          "value": "Complete onboarding"
+        },
+        "timestamp": "completedDateTime",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "application",
+            "columns": [
+              "jobApplicationId"
+            ],
+            "qualifier": "application"
+          }
+        ]
+      },
+      {
+        "id": "interview_held",
+        "input": "JobApplicationInterview",
+        "namespace": "successfactors",
+        "key": [
+          "applicationInterviewId"
+        ],
+        "activity": {
+          "value": "Interview candidate"
+        },
+        "timestamp": "startDate",
+        "attributes": [
+          {
+            "column": "status",
+            "name": "interview status"
+          }
+        ],
+        "objects": [
+          {
+            "object": "application",
+            "columns": [
+              "applicationId"
+            ],
+            "qualifier": "application"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "application_for_requisition",
+        "input": "JobApplication",
+        "source": {
+          "object": "application",
+          "columns": [
+            "applicationId"
+          ],
+          "qualifier": "application"
+        },
+        "target": {
+          "object": "requisition",
+          "columns": [
+            "jobReqId"
+          ],
+          "qualifier": "for requisition",
+          "allow_unmatched": true
+        }
+      }
+    ]
+  }
+}

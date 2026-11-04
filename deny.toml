@@ -1,0 +1,38 @@
+# Dependency policy, checked with `cargo deny check` (locally and in CI).
+# Glasstarn is Apache-2.0. Every dependency must be usable in an
+# Apache-2.0 product without copyleft obligations.
+
+[graph]
+all-features = true
+
+[licenses]
+# Permissive licences only. A crate offering a choice (for example
+# "MIT OR Apache-2.0 OR LGPL-2.1-or-later") passes on its permissive option.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "MIT",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "BSL-1.0",
+    "CC0-1.0",
+    "0BSD",
+    "Unicode-3.0",
+    "Unlicense",
+    "Zlib",
+]
+confidence-threshold = 0.9
+
+[bans]
+multiple-versions = "allow"
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+
+[advisories]
+# Known vulnerabilities and unmaintained crates are reported; yanked crates fail.
+yanked = "deny"

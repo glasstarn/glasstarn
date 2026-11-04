@@ -1,0 +1,230 @@
+{
+  "id": "pega-case-management",
+  "version": 1,
+  "name": "Case management (Pega Platform)",
+  "system": "Pega Platform",
+  "process": "case management",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the Pega Platform database: work items in the work table and their history in pc_history_work. Not yet confirmed on a real system; tested only on made-up extracts. Every company builds its own case types, so which history field names the step is a question for the company.",
+  "case_object_type": "case",
+  "size_check": {
+    "ask": "How many cases were created in the period?",
+    "unit": "case",
+    "steps_per_unit": 8
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "step_field",
+      "question": "Which column of the work history (pc_history_work) names what happened in each row, as the business would call it? Usually pyMemo or pyMessageKey; a custom column also works.",
+      "example": "pyMemo"
+    }
+  ],
+  "tables": [
+    {
+      "name": "pc_work",
+      "noun": "cases",
+      "date_label": "the case was created",
+      "label": "Cases",
+      "export": "Work items (cases) created in the period from the application's work table: pzInsKey, pyID, pxObjClass (case type), pxCreateDateTime, pyStatusWork, pyResolvedTimestamp, pxUrgencyWork and pxCreateOperator. Times as exported in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "pzInsKey",
+        "pyID",
+        "pxObjClass",
+        "pxCreateDateTime",
+        "pyStatusWork"
+      ],
+      "fields": [
+        "pyResolvedTimestamp",
+        "pxUrgencyWork",
+        "pxCreateOperator",
+        "pyResolvedUserID"
+      ],
+      "date_field": "pxCreateDateTime",
+      "object": "pega_case",
+      "key": [
+        "pzInsKey"
+      ]
+    },
+    {
+      "name": "pc_history_work",
+      "label": "Case history",
+      "export": "The history rows of those cases (pc_history_work): pzInsKey, pxHistoryForReference (the case's pzInsKey), pxTimeCreated, pyPerformer and the column that names each step. Times as exported in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "pzInsKey",
+        "pxHistoryForReference",
+        "pxTimeCreated",
+        "pyPerformer",
+        "{setting:step_field}"
+      ],
+      "fields": [
+        "pyHistoryType",
+        "pyMessageKey",
+        "pyMemo"
+      ],
+      "date_field": "pxTimeCreated"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-pega-case",
+      "table": "pc_work",
+      "columns": [
+        "pzInsKey"
+      ],
+      "label": "cases listed once"
+    },
+    {
+      "id": "one-pega-history-row",
+      "table": "pc_history_work",
+      "columns": [
+        "pzInsKey"
+      ],
+      "label": "history rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "pega-history-has-cases",
+      "label": "history rows whose case is in the export",
+      "from": {
+        "table": "pc_history_work",
+        "columns": [
+          "pxHistoryForReference"
+        ]
+      },
+      "to": {
+        "table": "pc_work",
+        "columns": [
+          "pzInsKey"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "pega_case",
+        "input": "pc_work",
+        "namespace": "pega",
+        "object_type": "case",
+        "key": [
+          "pzInsKey"
+        ],
+        "attributes": [
+          {
+            "column": "pyID",
+            "name": "case ID"
+          },
+          {
+            "column": "pxObjClass",
+            "name": "case type"
+          },
+          {
+            "column": "pxUrgencyWork",
+            "name": "urgency"
+          },
+          {
+            "column": "pyStatusWork",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "pega_case_created",
+        "input": "pc_work",
+        "namespace": "pega",
+        "key": [
+          "pzInsKey"
+        ],
+        "activity": {
+          "value": "Create case"
+        },
+        "timestamp": "pxCreateDateTime",
+        "attributes": [
+          {
+            "column": "pxObjClass",
+            "name": "case type"
+          },
+          {
+            "column": "pxCreateOperator",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "pega_case",
+            "columns": [
+              "pzInsKey"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "pega_history",
+        "input": "pc_history_work",
+        "namespace": "pega",
+        "key": [
+          "pzInsKey"
+        ],
+        "activity": {
+          "column": "{setting:step_field}"
+        },
+        "timestamp": "pxTimeCreated",
+        "attributes": [
+          {
+            "column": "pyPerformer",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "pega_case",
+            "columns": [
+              "pxHistoryForReference"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "pega_case_resolved",
+        "input": "pc_work",
+        "namespace": "pega",
+        "key": [
+          "pzInsKey"
+        ],
+        "activity": {
+          "value": "Resolve case"
+        },
+        "timestamp": "pyResolvedTimestamp",
+        "optional_timestamp": true,
+        "attributes": [
+          {
+            "column": "pyStatusWork",
+            "name": "status"
+          },
+          {
+            "column": "pyResolvedUserID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "pega_case",
+            "columns": [
+              "pzInsKey"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      }
+    ]
+  }
+}

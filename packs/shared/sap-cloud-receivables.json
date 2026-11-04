@@ -1,0 +1,299 @@
+{
+  "id": "sap-cloud-receivables",
+  "note": "Customer payments from SAP S/4HANA Public Cloud data views.",
+  "tables": [
+    {
+      "name": "JournalEntryItem",
+      "label": "Customer journal entry items",
+      "export": "Customer line items (account type D) of the company code for billing and payment documents from the period to the export date, with their clearing date, clearing entry and its fiscal year.",
+      "required": [
+        "CompanyCode",
+        "AccountingDocument",
+        "FiscalYear",
+        "AccountingDocumentType",
+        "FinancialAccountType",
+        "DebitCreditCode",
+        "Customer",
+        "ReferenceDocumentType",
+        "OriginalReferenceDocument",
+        "ClearingDate",
+        "ClearingJournalEntry",
+        "ClearingJournalEntryFiscalYear"
+      ],
+      "fields": [
+        "AccountingDocumentItem",
+        "PostingDate",
+        "AmountInCompanyCodeCurrency"
+      ],
+      "date_field": "PostingDate",
+      "scope_field": "CompanyCode"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-customer-posting",
+      "table": "JournalEntryItem",
+      "columns": [
+        "CompanyCode",
+        "AccountingDocument",
+        "FiscalYear"
+      ],
+      "label": "each document has one customer line",
+      "where": [
+        {
+          "column": "FinancialAccountType",
+          "in": [
+            "D"
+          ]
+        }
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "billing-postings-match-invoices",
+      "label": "customer postings from billing that match an exported billing document",
+      "from": {
+        "table": "JournalEntryItem",
+        "columns": [
+          "OriginalReferenceDocument"
+        ],
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "VBRK"
+            ]
+          },
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "D"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "BillingDocument",
+        "columns": [
+          "BillingDocument"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoices-posted",
+      "label": "invoices posted to accounting",
+      "from": {
+        "table": "BillingDocument",
+        "columns": [
+          "BillingDocument"
+        ],
+        "where": [
+          {
+            "column": "BillingDocumentType",
+            "in": [
+              "F2"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "JournalEntryItem",
+        "columns": [
+          "OriginalReferenceDocument"
+        ],
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "VBRK"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} invoices ({missing_share}) were never posted to accounting, often because the posting was blocked. Is that expected, or should it be looked at?",
+        "options": [
+          {
+            "id": "finding",
+            "label": "Not expected; treat it as a finding"
+          },
+          {
+            "id": "expected",
+            "label": "Expected (for example pro-forma invoices)"
+          }
+        ],
+        "recommended": "finding"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "receivable",
+        "input": "JournalEntryItem",
+        "namespace": "sap",
+        "object_type": "receivable posting",
+        "key": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear"
+        ],
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "VBRK"
+            ]
+          },
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "D"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "payment_received",
+        "input": "JournalEntryItem",
+        "namespace": "sap",
+        "key": [
+          "CompanyCode",
+          "AccountingDocument",
+          "FiscalYear"
+        ],
+        "where": [
+          {
+            "column": "AccountingDocumentType",
+            "in": [
+              "DZ"
+            ]
+          },
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "D"
+            ]
+          },
+          {
+            "column": "DebitCreditCode",
+            "in": [
+              "H"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive payment"
+        },
+        "timestamp": {
+          "date": "ClearingDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "customer",
+            "columns": [
+              "Customer"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "receivable_billing",
+        "input": "JournalEntryItem",
+        "where": [
+          {
+            "column": "ReferenceDocumentType",
+            "in": [
+              "VBRK"
+            ]
+          },
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "D"
+            ]
+          }
+        ],
+        "source": {
+          "object": "receivable",
+          "columns": [
+            "CompanyCode",
+            "AccountingDocument",
+            "FiscalYear"
+          ],
+          "qualifier": "posting"
+        },
+        "target": {
+          "object": "billing",
+          "columns": [
+            "OriginalReferenceDocument"
+          ],
+          "qualifier": "posts invoice",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "payment_of_receivable",
+        "input": "JournalEntryItem",
+        "event": "payment_received",
+        "event_key": [
+          "CompanyCode",
+          "ClearingJournalEntry",
+          "ClearingJournalEntryFiscalYear"
+        ],
+        "where": [
+          {
+            "column": "FinancialAccountType",
+            "in": [
+              "D"
+            ]
+          },
+          {
+            "column": "DebitCreditCode",
+            "in": [
+              "S"
+            ]
+          }
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "receivable",
+          "columns": [
+            "CompanyCode",
+            "AccountingDocument",
+            "FiscalYear"
+          ],
+          "qualifier": "paid posting"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "payment_invoice",
+        "event": "payment_received",
+        "through": "receivable",
+        "relationship": "receivable_billing",
+        "qualifier": "paid invoice"
+      },
+      {
+        "id": "payment_lines",
+        "event": "payment_received",
+        "through": "billing",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

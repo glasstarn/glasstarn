@@ -1,0 +1,781 @@
+{
+  "id": "sap-cloud-sales",
+  "note": "Sales orders and deliveries from SAP S/4HANA Public Cloud data views.",
+  "custom_prefixes": [
+    "YY1_"
+  ],
+  "tables": [
+    {
+      "name": "SalesOrder",
+      "noun": "sales orders",
+      "date_label": "the order was created",
+      "label": "Sales orders",
+      "export": "Sales orders of the company code created in the period, including the company's own fields (names starting with YY1_).",
+      "required": [
+        "SalesOrder",
+        "SoldToParty",
+        "CreationDate",
+        "CreationTime",
+        "CompanyCode",
+        "SalesOrderType"
+      ],
+      "fields": [
+        "SalesOrderType",
+        "SalesOrganization",
+        "CreatedByUser",
+        "TotalNetAmount",
+        "TransactionCurrency"
+      ],
+      "date_field": "CreationDate",
+      "object": "sales_order",
+      "key": [
+        "SalesOrder"
+      ],
+      "scope_field": "CompanyCode",
+      "fan_out": [
+        {
+          "input": "SalesOrderItem",
+          "event_key": [
+            "SalesOrder"
+          ],
+          "target": {
+            "object": "sales_item",
+            "columns": [
+              "SalesOrder",
+              "SalesOrderItem"
+            ],
+            "qualifier": "order line"
+          }
+        }
+      ]
+    },
+    {
+      "name": "SalesOrderItem",
+      "noun": "sales order items",
+      "label": "Sales order items",
+      "export": "All items of the exported sales orders.",
+      "required": [
+        "SalesOrder",
+        "SalesOrderItem",
+        "Material",
+        "NetAmount",
+        "SalesDocumentRjcnReason",
+        "ReferenceSDDocument",
+        "ReferenceSDDocumentItem"
+      ],
+      "fields": [
+        "SalesOrderItemText",
+        "RequestedQuantity",
+        "Plant"
+      ],
+      "object": "sales_item",
+      "key": [
+        "SalesOrder",
+        "SalesOrderItem"
+      ]
+    },
+    {
+      "name": "OutboundDelivery",
+      "noun": "deliveries",
+      "date_label": "the delivery was created",
+      "label": "Outbound deliveries",
+      "export": "Deliveries for the exported sales orders, up to the export date.",
+      "required": [
+        "OutboundDelivery",
+        "DeliveryDocumentType",
+        "CreationDate",
+        "CreationTime",
+        "ActualGoodsMovementDate",
+        "SoldToParty"
+      ],
+      "fields": [
+        "PlannedGoodsIssueDate",
+        "ShippingPoint"
+      ],
+      "date_field": "CreationDate",
+      "object": "delivery",
+      "key": [
+        "OutboundDelivery"
+      ]
+    },
+    {
+      "name": "OutboundDeliveryItem",
+      "label": "Outbound delivery items",
+      "export": "Items of the exported deliveries.",
+      "required": [
+        "OutboundDelivery",
+        "OutboundDeliveryItem",
+        "ReferenceSDDocument",
+        "ReferenceSDDocumentItem"
+      ],
+      "fields": [
+        "Material",
+        "ActualDeliveryQuantity"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sales-order",
+      "table": "SalesOrder",
+      "columns": [
+        "SalesOrder"
+      ],
+      "label": "sales orders listed once"
+    },
+    {
+      "id": "one-sales-item",
+      "table": "SalesOrderItem",
+      "columns": [
+        "SalesOrder",
+        "SalesOrderItem"
+      ],
+      "label": "sales order items listed once"
+    },
+    {
+      "id": "one-delivery",
+      "table": "OutboundDelivery",
+      "columns": [
+        "OutboundDelivery"
+      ],
+      "label": "deliveries listed once"
+    },
+    {
+      "id": "one-delivery-item",
+      "table": "OutboundDeliveryItem",
+      "columns": [
+        "OutboundDelivery",
+        "OutboundDeliveryItem"
+      ],
+      "label": "delivery items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "items-have-orders",
+      "label": "order items whose sales order is in the export",
+      "from": {
+        "table": "SalesOrderItem",
+        "columns": [
+          "SalesOrder"
+        ]
+      },
+      "to": {
+        "table": "SalesOrder",
+        "columns": [
+          "SalesOrder"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "orders-have-customers",
+      "label": "sales orders whose customer is in the customer list",
+      "from": {
+        "table": "SalesOrder",
+        "columns": [
+          "SoldToParty"
+        ]
+      },
+      "to": {
+        "table": "Customer",
+        "columns": [
+          "Customer"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "delivery-items-have-deliveries",
+      "label": "delivery items whose delivery is in the export",
+      "from": {
+        "table": "OutboundDeliveryItem",
+        "columns": [
+          "OutboundDelivery"
+        ]
+      },
+      "to": {
+        "table": "OutboundDelivery",
+        "columns": [
+          "OutboundDelivery"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "deliveries-reach-orders",
+      "label": "delivery items whose order item is in the export",
+      "from": {
+        "table": "OutboundDeliveryItem",
+        "columns": [
+          "ReferenceSDDocument",
+          "ReferenceSDDocumentItem"
+        ]
+      },
+      "to": {
+        "table": "SalesOrderItem",
+        "columns": [
+          "SalesOrder",
+          "SalesOrderItem"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} delivery items ({missing_share}) refer to sales orders that are not in the export, usually orders created before the period. They will show without the order's earlier steps. Should the SAP admin export older orders too?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Yes, export orders from earlier months as well"
+          },
+          {
+            "id": "keep",
+            "label": "No, analyse them without those orders"
+          }
+        ],
+        "recommended": "widen"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "sales_order",
+        "input": "SalesOrder",
+        "namespace": "sap",
+        "object_type": "sales order",
+        "key": [
+          "SalesOrder"
+        ],
+        "attributes": [
+          {
+            "column": "CompanyCode",
+            "name": "company code"
+          },
+          {
+            "column": "SalesOrderType",
+            "name": "order type"
+          }
+        ]
+      },
+      {
+        "id": "sales_item",
+        "input": "SalesOrderItem",
+        "namespace": "sap",
+        "object_type": "sales order item",
+        "key": [
+          "SalesOrder",
+          "SalesOrderItem"
+        ],
+        "attributes": [
+          {
+            "column": "Material",
+            "name": "material"
+          },
+          {
+            "column": "NetAmount",
+            "name": "net value"
+          },
+          {
+            "column": "SalesDocumentRjcnReason",
+            "name": "rejection reason"
+          }
+        ]
+      },
+      {
+        "id": "delivery",
+        "input": "OutboundDelivery",
+        "namespace": "sap",
+        "object_type": "delivery",
+        "key": [
+          "OutboundDelivery"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sales_order_created",
+        "input": "SalesOrder",
+        "namespace": "sap",
+        "key": [
+          "SalesOrder"
+        ],
+        "where": [
+          {
+            "not_in": [
+              "RE",
+              "CR",
+              "DR"
+            ],
+            "column": "SalesOrderType"
+          }
+        ],
+        "activity": {
+          "value": "Create sales order"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "SalesOrder"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "return_order_created",
+        "input": "SalesOrder",
+        "namespace": "sap",
+        "key": [
+          "SalesOrder"
+        ],
+        "where": [
+          {
+            "in": [
+              "RE"
+            ],
+            "column": "SalesOrderType"
+          }
+        ],
+        "activity": {
+          "value": "Create return order"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "SalesOrder"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "credit_request_created",
+        "input": "SalesOrder",
+        "namespace": "sap",
+        "key": [
+          "SalesOrder"
+        ],
+        "where": [
+          {
+            "in": [
+              "CR"
+            ],
+            "column": "SalesOrderType"
+          }
+        ],
+        "activity": {
+          "value": "Request credit memo"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "sales_order",
+            "columns": [
+              "SalesOrder"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "delivery_created",
+        "input": "OutboundDelivery",
+        "namespace": "sap",
+        "key": [
+          "OutboundDelivery"
+        ],
+        "where": [
+          {
+            "column": "DeliveryDocumentType",
+            "not_in": [
+              "LR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create delivery"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "delivery",
+            "columns": [
+              "OutboundDelivery"
+            ],
+            "qualifier": "delivery"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "goods_issued",
+        "input": "OutboundDelivery",
+        "namespace": "sap",
+        "key": [
+          "OutboundDelivery"
+        ],
+        "where": [
+          {
+            "column": "DeliveryDocumentType",
+            "not_in": [
+              "LR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Post goods issue"
+        },
+        "timestamp": {
+          "date": "ActualGoodsMovementDate",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "delivery",
+            "columns": [
+              "OutboundDelivery"
+            ],
+            "qualifier": "delivery"
+          }
+        ]
+      },
+      {
+        "id": "return_delivery_created",
+        "input": "OutboundDelivery",
+        "namespace": "sap",
+        "key": [
+          "OutboundDelivery"
+        ],
+        "where": [
+          {
+            "column": "DeliveryDocumentType",
+            "in": [
+              "LR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create return delivery"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}",
+          "time": "CreationTime"
+        },
+        "objects": [
+          {
+            "object": "delivery",
+            "columns": [
+              "OutboundDelivery"
+            ],
+            "qualifier": "return delivery"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "SoldToParty"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "returned_goods_received",
+        "input": "OutboundDelivery",
+        "namespace": "sap",
+        "key": [
+          "OutboundDelivery"
+        ],
+        "where": [
+          {
+            "column": "DeliveryDocumentType",
+            "in": [
+              "LR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive returned goods"
+        },
+        "timestamp": {
+          "date": "ActualGoodsMovementDate",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "delivery",
+            "columns": [
+              "OutboundDelivery"
+            ],
+            "qualifier": "return delivery"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "item_of_sales_order",
+        "input": "SalesOrderItem",
+        "source": {
+          "object": "sales_item",
+          "columns": [
+            "SalesOrder",
+            "SalesOrderItem"
+          ],
+          "qualifier": "order line"
+        },
+        "target": {
+          "object": "sales_order",
+          "columns": [
+            "SalesOrder"
+          ],
+          "qualifier": "belongs to order"
+        }
+      },
+      {
+        "id": "sales_order_lines",
+        "input": "SalesOrderItem",
+        "source": {
+          "object": "sales_order",
+          "columns": [
+            "SalesOrder"
+          ],
+          "qualifier": "order"
+        },
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "SalesOrder",
+            "SalesOrderItem"
+          ],
+          "qualifier": "has line"
+        }
+      },
+      {
+        "id": "item_reference",
+        "input": "SalesOrderItem",
+        "where": [
+          {
+            "column": "ReferenceSDDocument",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "sales_item",
+          "columns": [
+            "SalesOrder",
+            "SalesOrderItem"
+          ],
+          "qualifier": "order line"
+        },
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "ReferenceSDDocument",
+            "ReferenceSDDocumentItem"
+          ],
+          "qualifier": "refers to order line",
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "delivery_order_lines",
+        "input": "OutboundDeliveryItem",
+        "source": {
+          "object": "delivery",
+          "columns": [
+            "OutboundDelivery"
+          ],
+          "qualifier": "delivery"
+        },
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "ReferenceSDDocument",
+            "ReferenceSDDocumentItem"
+          ],
+          "qualifier": "delivers order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "sales_order_created_lines",
+        "input": "SalesOrderItem",
+        "event": "sales_order_created",
+        "event_key": [
+          "SalesOrder"
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "SalesOrder",
+            "SalesOrderItem"
+          ],
+          "qualifier": "order line"
+        }
+      },
+      {
+        "id": "return_order_created_lines",
+        "input": "SalesOrderItem",
+        "event": "return_order_created",
+        "event_key": [
+          "SalesOrder"
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "SalesOrder",
+            "SalesOrderItem"
+          ],
+          "qualifier": "order line"
+        }
+      },
+      {
+        "id": "credit_request_created_lines",
+        "input": "SalesOrderItem",
+        "event": "credit_request_created",
+        "event_key": [
+          "SalesOrder"
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "SalesOrder",
+            "SalesOrderItem"
+          ],
+          "qualifier": "order line"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "delivery_created_lines",
+        "event": "delivery_created",
+        "through": "delivery",
+        "relationship": "delivery_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "goods_issued_lines",
+        "event": "goods_issued",
+        "through": "delivery",
+        "relationship": "delivery_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "return_delivery_created_lines",
+        "event": "return_delivery_created",
+        "through": "delivery",
+        "relationship": "delivery_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "returned_goods_received_lines",
+        "event": "returned_goods_received",
+        "through": "delivery",
+        "relationship": "delivery_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "return_order_created_original",
+        "event": "return_order_created",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      },
+      {
+        "id": "credit_request_created_original",
+        "event": "credit_request_created",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      },
+      {
+        "id": "return_delivery_created_original",
+        "event": "return_delivery_created",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      },
+      {
+        "id": "returned_goods_received_original",
+        "event": "returned_goods_received",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "SAP sales order number",
+      "object": "sales_order",
+      "table": "SalesOrder",
+      "key": [
+        "SalesOrder"
+      ],
+      "example": "12345",
+      "carry": [
+        "sales_order_lines"
+      ]
+    }
+  ]
+}

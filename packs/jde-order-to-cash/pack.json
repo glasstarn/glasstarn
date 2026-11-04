@@ -1,0 +1,703 @@
+{
+  "id": "jde-order-to-cash",
+  "version": 1,
+  "name": "Order to cash (JD Edwards EnterpriseOne)",
+  "system": "JD Edwards EnterpriseOne",
+  "process": "order to cash",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the JD Edwards EnterpriseOne tables. Not yet confirmed on a real system; tested only on made-up tables in the standard layout. Status steps need the detail ledger (F43199, F42199), which records a row for each status change only where the company switched it on.",
+  "case_object_type": "sales order line",
+  "size_check": {
+    "ask": "How many sales order lines were entered in the period for the company?",
+    "unit": "sales order line",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "What time zone are JD Edwards dates and times recorded in (the server's or the company's)? JD Edwards stores them without a time zone. Give it as an offset from UTC, for example -06:00.",
+      "example": "-06:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "F4201",
+      "noun": "sales orders",
+      "date_label": "the order was entered",
+      "label": "Sales order headers",
+      "export": "Sales orders (order type SO) entered in the period for the company: SHDOCO, SHDCTO, SHKCOO, SHAN8, SHTRDJ and SHUSER. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "SHDOCO",
+        "SHDCTO",
+        "SHKCOO",
+        "SHAN8",
+        "SHTRDJ"
+      ],
+      "fields": [
+        "SHUSER",
+        "SHMCU"
+      ],
+      "date_field": "SHTRDJ",
+      "object": "jde_so",
+      "key": [
+        "SHDOCO",
+        "SHDCTO",
+        "SHKCOO"
+      ],
+      "scope_field": "SHKCOO"
+    },
+    {
+      "name": "F4211",
+      "noun": "sales order lines",
+      "label": "Sales order lines",
+      "export": "The lines of those orders, open (F4211) and closed (F42119) in one file: SDDOCO, SDDCTO, SDKCOO, SDLNID, SDLITM, SDUORG, SDNXTR, SDLTTR, SDADDJ (actual ship date), SDDOC, SDDCT and SDKCO (the invoice). Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "SDDOCO",
+        "SDDCTO",
+        "SDKCOO",
+        "SDLNID",
+        "SDUORG",
+        "SDNXTR",
+        "SDLTTR",
+        "SDADDJ",
+        "SDDOC",
+        "SDDCT",
+        "SDKCO"
+      ],
+      "fields": [
+        "SDLITM",
+        "SDUPRC"
+      ],
+      "object": "jde_so_line",
+      "key": [
+        "SDDOCO",
+        "SDDCTO",
+        "SDKCOO",
+        "SDLNID"
+      ]
+    },
+    {
+      "name": "F42199",
+      "label": "Sales order detail ledger",
+      "export": "Status changes of those lines (F42199): SLDOCO, SLDCTO, SLKCOO, SLLNID, SLLTTR, SLNXTR, SLUPMJ, SLTDAY and SLUSER. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "SLDOCO",
+        "SLDCTO",
+        "SLKCOO",
+        "SLLNID",
+        "SLLTTR",
+        "SLUPMJ",
+        "SLTDAY"
+      ],
+      "fields": [
+        "SLNXTR",
+        "SLUSER"
+      ],
+      "date_field": "SLUPMJ",
+      "optional": true
+    },
+    {
+      "name": "F03B11",
+      "noun": "customer invoices",
+      "label": "Customer invoices",
+      "export": "Invoices for those orders, first pay item (RPSFX 001): RPDOC, RPDCT, RPKCO, RPSFX, RPDIVJ, RPAN8, RPAG and RPPST. Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "RPDOC",
+        "RPDCT",
+        "RPKCO",
+        "RPSFX",
+        "RPDIVJ",
+        "RPPST"
+      ],
+      "fields": [
+        "RPAN8",
+        "RPAG"
+      ],
+      "date_field": "RPDIVJ",
+      "object": "jde_invoice",
+      "key": [
+        "RPDOC",
+        "RPDCT",
+        "RPKCO"
+      ]
+    },
+    {
+      "name": "F03B14",
+      "label": "Receipt details",
+      "export": "Customer payments applied to those invoices (F03B14): RZPYID, RZRC5, RZDOC, RZDCT, RZKCO, RZSFX and RZPAAP.",
+      "required": [
+        "RZPYID",
+        "RZRC5",
+        "RZDOC",
+        "RZDCT",
+        "RZKCO",
+        "RZSFX"
+      ],
+      "fields": [
+        "RZPAAP"
+      ],
+      "optional": true
+    },
+    {
+      "name": "F03B13",
+      "label": "Receipt headers",
+      "export": "The receipts themselves (F03B13): RYPYID, RYCKNU (receipt number) and RYDMTJ (receipt date). Dates as stored (Julian CYYDDD, for example 126014), times as stored (HHMMSS).",
+      "required": [
+        "RYPYID",
+        "RYCKNU",
+        "RYDMTJ"
+      ],
+      "fields": [
+        "RYVDGJ"
+      ],
+      "date_field": "RYDMTJ",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-so",
+      "table": "F4201",
+      "columns": [
+        "SHDOCO",
+        "SHDCTO",
+        "SHKCOO"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-so-line",
+      "table": "F4211",
+      "columns": [
+        "SDDOCO",
+        "SDDCTO",
+        "SDKCOO",
+        "SDLNID"
+      ],
+      "label": "order lines listed once"
+    },
+    {
+      "id": "one-invoice",
+      "table": "F03B11",
+      "columns": [
+        "RPDOC",
+        "RPDCT",
+        "RPKCO"
+      ],
+      "label": "invoices listed once",
+      "where": [
+        {
+          "column": "RPSFX",
+          "in": [
+            "001"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-receipt-detail",
+      "table": "F03B14",
+      "columns": [
+        "RZPYID",
+        "RZRC5"
+      ],
+      "label": "receipt details listed once"
+    },
+    {
+      "id": "one-receipt",
+      "table": "F03B13",
+      "columns": [
+        "RYPYID"
+      ],
+      "label": "receipts listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "F4211",
+        "columns": [
+          "SDDOCO",
+          "SDDCTO",
+          "SDKCOO"
+        ]
+      },
+      "to": {
+        "table": "F4201",
+        "columns": [
+          "SHDOCO",
+          "SHDCTO",
+          "SHKCOO"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "ledger-has-lines",
+      "label": "status changes whose order line is in the export",
+      "from": {
+        "table": "F42199",
+        "columns": [
+          "SLDOCO",
+          "SLDCTO",
+          "SLKCOO",
+          "SLLNID"
+        ]
+      },
+      "to": {
+        "table": "F4211",
+        "columns": [
+          "SDDOCO",
+          "SDDCTO",
+          "SDKCOO",
+          "SDLNID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoiced-lines-have-invoices",
+      "label": "invoiced lines whose invoice is in the export",
+      "from": {
+        "table": "F4211",
+        "columns": [
+          "SDDOC",
+          "SDDCT",
+          "SDKCO"
+        ],
+        "where": [
+          {
+            "column": "SDDOC",
+            "not_in": [
+              "",
+              "0"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "F03B11",
+        "columns": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipts-have-invoices",
+      "label": "receipt details whose invoice is in the export",
+      "from": {
+        "table": "F03B14",
+        "columns": [
+          "RZDOC",
+          "RZDCT",
+          "RZKCO"
+        ]
+      },
+      "to": {
+        "table": "F03B11",
+        "columns": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-details-have-receipts",
+      "label": "receipt details whose receipt is in the export",
+      "from": {
+        "table": "F03B14",
+        "columns": [
+          "RZPYID"
+        ]
+      },
+      "to": {
+        "table": "F03B13",
+        "columns": [
+          "RYPYID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "jde_so",
+        "input": "F4201",
+        "namespace": "jde",
+        "object_type": "sales order",
+        "key": [
+          "SHDOCO",
+          "SHDCTO",
+          "SHKCOO"
+        ],
+        "attributes": [
+          {
+            "column": "SHAN8",
+            "name": "customer"
+          },
+          {
+            "column": "SHKCOO",
+            "name": "company"
+          }
+        ]
+      },
+      {
+        "id": "jde_so_line",
+        "input": "F4211",
+        "namespace": "jde",
+        "object_type": "sales order line",
+        "key": [
+          "SDDOCO",
+          "SDDCTO",
+          "SDKCOO",
+          "SDLNID"
+        ],
+        "attributes": [
+          {
+            "column": "SDLITM",
+            "name": "item"
+          },
+          {
+            "column": "SDUORG",
+            "name": "quantity"
+          },
+          {
+            "column": "SDUPRC",
+            "name": "unit price"
+          }
+        ]
+      },
+      {
+        "id": "jde_invoice",
+        "input": "F03B11",
+        "namespace": "jde",
+        "object_type": "customer invoice",
+        "key": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ],
+        "attributes": [
+          {
+            "column": "RPAG",
+            "name": "amount"
+          }
+        ],
+        "where": [
+          {
+            "column": "RPSFX",
+            "in": [
+              "001"
+            ]
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "jde_so_entered",
+        "input": "F4201",
+        "namespace": "jde",
+        "key": [
+          "SHDOCO",
+          "SHDCTO",
+          "SHKCOO"
+        ],
+        "activity": {
+          "value": "Enter sales order"
+        },
+        "timestamp": {
+          "date": "SHTRDJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "SHUSER",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_so",
+            "columns": [
+              "SHDOCO",
+              "SHDCTO",
+              "SHKCOO"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "jde_so_status",
+        "input": "F42199",
+        "namespace": "jde",
+        "key": [
+          "SLDOCO",
+          "SLDCTO",
+          "SLKCOO",
+          "SLLNID",
+          "SLLTTR",
+          "SLUPMJ",
+          "SLTDAY"
+        ],
+        "activity": {
+          "column": "SLLTTR",
+          "prefix": "Status "
+        },
+        "timestamp": {
+          "date": "SLUPMJ",
+          "offset": "{setting:offset}",
+          "time": "SLTDAY"
+        },
+        "attributes": [
+          {
+            "column": "SLUSER",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_so_line",
+            "columns": [
+              "SLDOCO",
+              "SLDCTO",
+              "SLKCOO",
+              "SLLNID"
+            ],
+            "qualifier": "sales order line"
+          }
+        ]
+      },
+      {
+        "id": "jde_so_shipped",
+        "input": "F4211",
+        "namespace": "jde",
+        "key": [
+          "SDDOCO",
+          "SDDCTO",
+          "SDKCOO",
+          "SDLNID"
+        ],
+        "activity": {
+          "value": "Ship goods"
+        },
+        "timestamp": {
+          "date": "SDADDJ",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "jde_so_line",
+            "columns": [
+              "SDDOCO",
+              "SDDCTO",
+              "SDKCOO",
+              "SDLNID"
+            ],
+            "qualifier": "sales order line"
+          }
+        ]
+      },
+      {
+        "id": "jde_invoice_created",
+        "input": "F03B11",
+        "namespace": "jde",
+        "key": [
+          "RPDOC",
+          "RPDCT",
+          "RPKCO"
+        ],
+        "where": [
+          {
+            "column": "RPSFX",
+            "in": [
+              "001"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create customer invoice"
+        },
+        "timestamp": {
+          "date": "RPDIVJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "RPAG",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_invoice",
+            "columns": [
+              "RPDOC",
+              "RPDCT",
+              "RPKCO"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      },
+      {
+        "id": "jde_payment_received",
+        "input": "F03B14",
+        "namespace": "jde",
+        "key": [
+          "RZPYID",
+          "RZRC5"
+        ],
+        "activity": {
+          "value": "Receive customer payment"
+        },
+        "lookup": {
+          "input": "F03B13",
+          "key": [
+            "RYPYID"
+          ],
+          "matching": [
+            "RZPYID"
+          ],
+          "columns": [
+            "RYDMTJ",
+            "RYCKNU"
+          ]
+        },
+        "timestamp": {
+          "date": "RYDMTJ",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "RYCKNU",
+            "name": "receipt number"
+          },
+          {
+            "column": "RZPAAP",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jde_invoice",
+            "columns": [
+              "RZDOC",
+              "RZDCT",
+              "RZKCO"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "jde_so_has_line",
+        "input": "F4211",
+        "source": {
+          "object": "jde_so",
+          "columns": [
+            "SDDOCO",
+            "SDDCTO",
+            "SDKCOO"
+          ],
+          "qualifier": "sales order"
+        },
+        "target": {
+          "object": "jde_so_line",
+          "columns": [
+            "SDDOCO",
+            "SDDCTO",
+            "SDKCOO",
+            "SDLNID"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "jde_invoice_for_line",
+        "input": "F4211",
+        "where": [
+          {
+            "column": "SDDOC",
+            "not_in": [
+              "",
+              "0"
+            ]
+          }
+        ],
+        "source": {
+          "object": "jde_invoice",
+          "columns": [
+            "SDDOC",
+            "SDDCT",
+            "SDKCO"
+          ],
+          "qualifier": "customer invoice"
+        },
+        "target": {
+          "object": "jde_so_line",
+          "columns": [
+            "SDDOCO",
+            "SDDCTO",
+            "SDKCOO",
+            "SDLNID"
+          ],
+          "qualifier": "sales order line"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "jde_so_entered_lines",
+        "event": "jde_so_entered",
+        "through": "jde_so",
+        "relationship": "jde_so_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "jde_invoice_created_lines",
+        "event": "jde_invoice_created",
+        "through": "jde_invoice",
+        "relationship": "jde_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "jde_payment_received_lines",
+        "event": "jde_payment_received",
+        "through": "jde_invoice",
+        "relationship": "jde_invoice_for_line",
+        "qualifier": "sales order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "JD Edwards sales order number",
+      "object": "jde_so",
+      "table": "F4201",
+      "key": [
+        "SHDOCO"
+      ],
+      "example": "7781",
+      "carry": [
+        "jde_so_has_line"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+# Rust
+/target/
+/dist/
+/reports/
+**/*.rs.bk
+*.pdb
+
+# Node / TypeScript UI
+node_modules/
+ui/dist/
+ui/.vite/
+*.tsbuildinfo
+
+# Local analysis projects
+*.duckdb
+*.duckdb.wal
+/projects/
+/exports/
+*.mcp-exposure.json
+mcp-exposure.json
+
+# Event data is never committed
+*.xes
+*.xes.gz
+testdata/private/
+/data/
+
+# Dev-only reference environment
+tools/reference/.venv/
+__pycache__/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp

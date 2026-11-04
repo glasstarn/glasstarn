@@ -1,0 +1,37 @@
+{
+  "name": "glasstarn",
+  "version": "1.0.0",
+  "description": "Local process mining: see how your work really flows. Your process data stays on your computer.",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Tropical Glacier LLC",
+    "email": "hello@glasstarn.com"
+  },
+  "bin": {
+    "glasstarn": "bin/glasstarn.js"
+  },
+  "files": [
+    "bin",
+    "native",
+    "plugin",
+    "THIRD_PARTY_NOTICES.txt",
+    "FONTS-OFL.txt"
+  ],
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "homepage": "https://glasstarn.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/glasstarn/glasstarn.git"
+  },
+  "bugs": {
+    "url": "https://github.com/glasstarn/glasstarn/issues",
+    "email": "hello@glasstarn.com"
+  }
+}

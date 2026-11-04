@@ -1,0 +1,549 @@
+{
+  "id": "salesforce-ncino-loan-origination",
+  "version": 1,
+  "name": "Loan origination (nCino on Salesforce)",
+  "system": "nCino Bank Operating System on Salesforce",
+  "process": "loan origination",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of nCino's loan object (LLC_BI namespace), Salesforce field history and approval processes. Not yet confirmed on a real org; tested only on made-up extracts. nCino's object reference is not public, so field names must be confirmed with discovery; newer orgs may use the nCino__ namespace instead of LLC_BI__. Stage and status steps need field history tracking on the loan's stage and status.",
+  "case_object_type": "loan",
+  "size_check": {
+    "ask": "How many loans were created in the period?",
+    "unit": "loan",
+    "steps_per_unit": 9
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "tables": [
+    {
+      "name": "LLC_BI__Loan__c",
+      "noun": "loans",
+      "date_label": "the loan was created",
+      "label": "nCino loans",
+      "export": "Loans created in the period: Id, Name, CreatedDate, LLC_BI__Stage__c, LLC_BI__Status__c, LLC_BI__Amount__c, LLC_BI__Product_Line__c, LLC_BI__Product__c and the bank's own fields. No borrower names.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "LLC_BI__Stage__c",
+        "LLC_BI__Status__c"
+      ],
+      "fields": [
+        "Name",
+        "LLC_BI__Amount__c",
+        "LLC_BI__Product_Line__c",
+        "LLC_BI__Product__c",
+        "LLC_BI__Branch__c"
+      ],
+      "date_field": "CreatedDate",
+      "object": "ncino_loan",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "LLC_BI__Loan__History",
+      "label": "nCino loan field history",
+      "export": "Field history of those loans (LLC_BI__Loan__History): Id, ParentId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "ParentId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "LLC_BI__Loan__c",
+      "needs_tracked": [
+        "LLC_BI__Stage__c",
+        "LLC_BI__Status__c"
+      ]
+    },
+    {
+      "name": "ProcessInstance",
+      "label": "Approval requests",
+      "export": "Approval requests whose target is one of those loans (ProcessInstance): Id, TargetObjectId, Status, CreatedDate and CompletedDate.",
+      "required": [
+        "Id",
+        "TargetObjectId",
+        "Status",
+        "CreatedDate"
+      ],
+      "fields": [
+        "CompletedDate",
+        "ProcessDefinitionId"
+      ],
+      "date_field": "CreatedDate",
+      "optional": true
+    },
+    {
+      "name": "ProcessInstanceStep",
+      "label": "Approval steps",
+      "export": "Approval steps created in the period (ProcessInstanceStep): Id, ProcessInstanceId, StepStatus, CreatedDate and ActorId. No comments. Steps of approvals on other objects are skipped.",
+      "required": [
+        "Id",
+        "ProcessInstanceId",
+        "StepStatus",
+        "CreatedDate"
+      ],
+      "fields": [
+        "ActorId",
+        "OriginalActorId"
+      ],
+      "date_field": "CreatedDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ncino-loan",
+      "table": "LLC_BI__Loan__c",
+      "columns": [
+        "Id"
+      ],
+      "label": "loans listed once"
+    },
+    {
+      "id": "one-ncino-loan-history-row",
+      "table": "LLC_BI__Loan__History",
+      "columns": [
+        "Id"
+      ],
+      "label": "loan history rows listed once"
+    },
+    {
+      "id": "one-sf-approval-request",
+      "table": "ProcessInstance",
+      "columns": [
+        "Id"
+      ],
+      "label": "approval requests listed once"
+    },
+    {
+      "id": "one-sf-approval-step",
+      "table": "ProcessInstanceStep",
+      "columns": [
+        "Id"
+      ],
+      "label": "approval steps listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "loan-history-has-loans",
+      "label": "loan history rows whose loan is in the export",
+      "from": {
+        "table": "LLC_BI__Loan__History",
+        "columns": [
+          "ParentId"
+        ]
+      },
+      "to": {
+        "table": "LLC_BI__Loan__c",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "approval-requests-have-loans",
+      "label": "approval requests whose loan is in the export",
+      "from": {
+        "table": "ProcessInstance",
+        "columns": [
+          "TargetObjectId"
+        ]
+      },
+      "to": {
+        "table": "LLC_BI__Loan__c",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "ncino_loan",
+        "input": "LLC_BI__Loan__c",
+        "namespace": "salesforce",
+        "object_type": "loan",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "LLC_BI__Product_Line__c",
+            "name": "product line"
+          },
+          {
+            "column": "LLC_BI__Product__c",
+            "name": "product"
+          },
+          {
+            "column": "LLC_BI__Amount__c",
+            "name": "amount"
+          },
+          {
+            "column": "LLC_BI__Stage__c",
+            "name": "stage"
+          },
+          {
+            "column": "LLC_BI__Status__c",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ncino_loan_created",
+        "input": "LLC_BI__Loan__c",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create loan"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "LLC_BI__Amount__c",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_stage_reached",
+        "input": "LLC_BI__Loan__History",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "LLC_BI__Stage__c"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue",
+          "prefix": "Stage: "
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "ParentId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_status_changed",
+        "input": "LLC_BI__Loan__History",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "LLC_BI__Status__c"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue",
+          "prefix": "Status: "
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "ParentId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_amount_changed",
+        "input": "LLC_BI__Loan__History",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "LLC_BI__Amount__c"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change loan amount"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "ParentId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_submitted",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Started"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Submit for credit approval"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_approved",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Approved"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve loan"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_rejected",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Rejected"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Decline loan"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      },
+      {
+        "id": "ncino_recalled",
+        "input": "ProcessInstanceStep",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "StepStatus",
+            "in": [
+              "Removed"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Recall approval request"
+        },
+        "lookup": {
+          "input": "ProcessInstance",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ProcessInstanceId"
+          ],
+          "columns": [
+            "TargetObjectId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ActorId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ncino_loan",
+            "columns": [
+              "TargetObjectId"
+            ],
+            "qualifier": "loan"
+          }
+        ]
+      }
+    ]
+  }
+}

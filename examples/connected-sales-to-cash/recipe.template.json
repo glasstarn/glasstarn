@@ -1,0 +1,258 @@
+{
+  "version": 1,
+  "format": "ocel",
+  "inputs": [
+    {
+      "id": "opportunities",
+      "sha256": "<inventory SHA-256 for opportunities>"
+    },
+    {
+      "id": "orders",
+      "sha256": "<inventory SHA-256 for orders>"
+    },
+    {
+      "id": "invoices",
+      "sha256": "<inventory SHA-256 for invoices>"
+    },
+    {
+      "id": "payments",
+      "sha256": "<inventory SHA-256 for payments>"
+    },
+    {
+      "id": "payment_invoices",
+      "sha256": "<inventory SHA-256 for payment_invoices>"
+    }
+  ],
+  "objects": [
+    {
+      "id": "opportunities",
+      "input": "opportunities",
+      "namespace": "salesforce:demo",
+      "object_type": "opportunity",
+      "key": [
+        "opportunity_id"
+      ],
+      "attributes": [
+        {
+          "column": "discount",
+          "name": "discount"
+        }
+      ]
+    },
+    {
+      "id": "orders",
+      "input": "orders",
+      "namespace": "erp:demo",
+      "object_type": "order",
+      "key": [
+        "company",
+        "order_number"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "invoices",
+      "input": "invoices",
+      "namespace": "erp:demo",
+      "object_type": "invoice",
+      "key": [
+        "company",
+        "invoice_number"
+      ],
+      "attributes": []
+    },
+    {
+      "id": "payments",
+      "input": "payments",
+      "namespace": "erp:demo",
+      "object_type": "payment",
+      "key": [
+        "payment_id"
+      ],
+      "attributes": []
+    }
+  ],
+  "events": [
+    {
+      "id": "opportunities-events",
+      "input": "opportunities",
+      "namespace": "salesforce:demo",
+      "key": [
+        "opportunity_id"
+      ],
+      "activity": {
+        "value": "Deal closed"
+      },
+      "timestamp": "closed_at",
+      "objects": [
+        {
+          "object": "opportunities",
+          "columns": [
+            "opportunity_id"
+          ],
+          "qualifier": "opportunity"
+        }
+      ]
+    },
+    {
+      "id": "orders-events",
+      "input": "orders",
+      "namespace": "erp:demo",
+      "key": [
+        "company",
+        "order_number"
+      ],
+      "activity": {
+        "value": "Order created"
+      },
+      "timestamp": "created_at",
+      "objects": [
+        {
+          "object": "orders",
+          "columns": [
+            "company",
+            "order_number"
+          ],
+          "qualifier": "order"
+        },
+        {
+          "object": "opportunities",
+          "columns": [
+            "opportunity_id"
+          ],
+          "qualifier": "from deal"
+        }
+      ]
+    },
+    {
+      "id": "invoices-events",
+      "input": "invoices",
+      "namespace": "erp:demo",
+      "key": [
+        "company",
+        "invoice_number"
+      ],
+      "activity": {
+        "value": "Invoice issued"
+      },
+      "timestamp": "issued_at",
+      "objects": [
+        {
+          "object": "invoices",
+          "columns": [
+            "company",
+            "invoice_number"
+          ],
+          "qualifier": "invoice"
+        },
+        {
+          "object": "orders",
+          "columns": [
+            "company",
+            "order_number"
+          ],
+          "qualifier": "billed order"
+        }
+      ]
+    },
+    {
+      "id": "payments-events",
+      "input": "payments",
+      "namespace": "erp:demo",
+      "key": [
+        "payment_id"
+      ],
+      "activity": {
+        "value": "Payment recorded"
+      },
+      "timestamp": "paid_at",
+      "objects": [
+        {
+          "object": "payments",
+          "columns": [
+            "payment_id"
+          ],
+          "qualifier": "payment"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "id": "order-deal",
+      "input": "orders",
+      "source": {
+        "object": "orders",
+        "columns": [
+          "company",
+          "order_number"
+        ],
+        "qualifier": "order"
+      },
+      "target": {
+        "object": "opportunities",
+        "columns": [
+          "opportunity_id"
+        ],
+        "qualifier": "from deal"
+      }
+    },
+    {
+      "id": "invoice-order",
+      "input": "invoices",
+      "source": {
+        "object": "invoices",
+        "columns": [
+          "company",
+          "invoice_number"
+        ],
+        "qualifier": "invoice"
+      },
+      "target": {
+        "object": "orders",
+        "columns": [
+          "company",
+          "order_number"
+        ],
+        "qualifier": "bills order"
+      }
+    },
+    {
+      "id": "payment-invoice",
+      "input": "payment_invoices",
+      "source": {
+        "object": "payments",
+        "columns": [
+          "payment_id"
+        ],
+        "qualifier": "payment"
+      },
+      "target": {
+        "object": "invoices",
+        "columns": [
+          "company",
+          "invoice_number"
+        ],
+        "qualifier": "settles invoice"
+      }
+    }
+  ],
+  "event_links": [
+    {
+      "id": "payment-event-invoices",
+      "input": "payment_invoices",
+      "event": "payments-events",
+      "event_key": [
+        "payment_id"
+      ],
+      "target": {
+        "object": "invoices",
+        "columns": [
+          "company",
+          "invoice_number"
+        ],
+        "qualifier": "paid invoice"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1632 @@
+{
+  "id": "sap-business-one-order-to-cash",
+  "version": 1,
+  "name": "Order to cash (SAP Business One)",
+  "system": "SAP Business One",
+  "process": "order to cash",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the SAP Business One database tables. Not yet confirmed on a real company database; tested only on made-up tables in the standard layout. Approval steps need the approval procedures' tables (OWDD, WDD1); approval times are read as HHMMSS.",
+  "case_object_type": "sales order line",
+  "size_check": {
+    "ask": "How many sales order lines were created in the period?",
+    "unit": "sales order line",
+    "steps_per_unit": 4
+  },
+  "custom_prefixes": [
+    "U_*"
+  ],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "What time zone is the SAP Business One server set to? Business One stores creation times without a time zone. Give it as an offset from UTC, for example +01:00.",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "OQUT",
+      "label": "Sales quotations",
+      "export": "Sales quotations created in the period (OQUT). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate",
+      "object": "b1_s_request",
+      "key": [
+        "DocEntry"
+      ],
+      "optional": true
+    },
+    {
+      "name": "QUT1",
+      "label": "Sales quotation lines",
+      "export": "The lines of those sales quotations (QUT1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ],
+      "optional": true
+    },
+    {
+      "name": "ORDR",
+      "label": "Sales orders",
+      "export": "Sales orders created in the period (ORDR). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate",
+      "noun": "sales orders",
+      "date_label": "the order was created",
+      "object": "b1_s_order",
+      "key": [
+        "DocEntry"
+      ]
+    },
+    {
+      "name": "RDR1",
+      "label": "Sales order lines",
+      "export": "The lines of those orders (RDR1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ],
+      "noun": "sales order lines",
+      "object": "b1_s_order_line",
+      "key": [
+        "DocEntry",
+        "LineNum"
+      ]
+    },
+    {
+      "name": "ODLN",
+      "label": "Deliverys",
+      "export": "Deliverys based on those orders (ODLN). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate"
+    },
+    {
+      "name": "DLN1",
+      "label": "Delivery lines",
+      "export": "The lines of those documents (DLN1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ],
+      "object": "b1_s_receipt_line",
+      "key": [
+        "DocEntry",
+        "LineNum"
+      ]
+    },
+    {
+      "name": "OINV",
+      "label": "Customer invoices",
+      "export": "Customer invoices for those orders or documents (OINV). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate",
+      "noun": "customer invoices",
+      "object": "b1_s_invoice",
+      "key": [
+        "DocEntry"
+      ]
+    },
+    {
+      "name": "INV1",
+      "label": "Customer invoice lines",
+      "export": "The lines of those invoices (INV1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ]
+    },
+    {
+      "name": "ORCT",
+      "label": "Payments",
+      "export": "Payments that pay those invoices (ORCT): DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, Canceled and DocTotal. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "Canceled"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign"
+      ],
+      "date_field": "CreateDate",
+      "optional": true
+    },
+    {
+      "name": "RCT2",
+      "label": "Paid invoices",
+      "export": "The invoices each of those payments pays (RCT2): DocNum (the payment's DocEntry), InvoiceId, DocEntry (the invoice), InvType and SumApplied.",
+      "required": [
+        "DocNum",
+        "InvoiceId",
+        "DocEntry",
+        "InvType"
+      ],
+      "fields": [
+        "SumApplied"
+      ],
+      "optional": true
+    },
+    {
+      "name": "OWDD",
+      "label": "Approval requests",
+      "export": "Approval requests for sales orders (OWDD, ObjType 17): WddCode, ObjType, DocEntry (the draft), Status, CreateDate and CreateTime (as HHMMSS).",
+      "required": [
+        "WddCode",
+        "ObjType",
+        "DocEntry",
+        "Status",
+        "CreateDate",
+        "CreateTime"
+      ],
+      "fields": [
+        "OwnerID"
+      ],
+      "date_field": "CreateDate",
+      "optional": true
+    },
+    {
+      "name": "WDD1",
+      "label": "Approval decisions",
+      "export": "The decisions on those requests (WDD1): WddCode, StepCode, UserID, Status (Y approved, N rejected), UpdateDate and UpdateTime (as HHMMSS).",
+      "required": [
+        "WddCode",
+        "StepCode",
+        "UserID",
+        "Status",
+        "UpdateDate",
+        "UpdateTime"
+      ],
+      "fields": [],
+      "date_field": "UpdateDate",
+      "optional": true
+    },
+    {
+      "name": "OCRD",
+      "noun": "customers",
+      "label": "Customers",
+      "export": "The customers on those documents (OCRD): CardCode, CardType, GroupCode, Country and the company's own fields. No names or contact details.",
+      "required": [
+        "CardCode",
+        "CardType"
+      ],
+      "fields": [
+        "GroupCode",
+        "Country"
+      ],
+      "object": "b1_s_partner",
+      "key": [
+        "CardCode"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-oqut",
+      "table": "OQUT",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "sales quotations listed once"
+    },
+    {
+      "id": "one-qut1",
+      "table": "QUT1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "sales quotation lines listed once"
+    },
+    {
+      "id": "one-ordr",
+      "table": "ORDR",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "sales orders listed once"
+    },
+    {
+      "id": "one-rdr1",
+      "table": "RDR1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "sales order lines listed once"
+    },
+    {
+      "id": "one-odln",
+      "table": "ODLN",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "deliverys listed once"
+    },
+    {
+      "id": "one-dln1",
+      "table": "DLN1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "delivery lines listed once"
+    },
+    {
+      "id": "one-oinv",
+      "table": "OINV",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "customer invoices listed once"
+    },
+    {
+      "id": "one-inv1",
+      "table": "INV1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "customer invoice lines listed once"
+    },
+    {
+      "id": "one-orct",
+      "table": "ORCT",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "payments listed once"
+    },
+    {
+      "id": "one-paid-invoice",
+      "table": "RCT2",
+      "columns": [
+        "DocNum",
+        "InvoiceId"
+      ],
+      "label": "paid invoices listed once"
+    },
+    {
+      "id": "one-partner",
+      "table": "OCRD",
+      "columns": [
+        "CardCode"
+      ],
+      "label": "customers listed once"
+    },
+    {
+      "id": "one-approval-request",
+      "table": "OWDD",
+      "columns": [
+        "WddCode"
+      ],
+      "label": "approval requests listed once"
+    },
+    {
+      "id": "one-approval-per-draft",
+      "table": "OWDD",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "one approval request per draft",
+      "where": [
+        {
+          "column": "ObjType",
+          "in": [
+            "17"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-approval-decision",
+      "table": "WDD1",
+      "columns": [
+        "WddCode",
+        "StepCode",
+        "UserID"
+      ],
+      "label": "approval decisions listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "request-lines-have-requests",
+      "label": "request lines whose document is in the export",
+      "from": {
+        "table": "QUT1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "OQUT",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "order-lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "RDR1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "ORDR",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-lines-have-documents",
+      "label": "lines whose document is in the export",
+      "from": {
+        "table": "DLN1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "ODLN",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "INV1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "OINV",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-lines-have-order-lines",
+      "label": "lines based on an order line in the export",
+      "from": {
+        "table": "DLN1",
+        "columns": [
+          "BaseEntry",
+          "BaseLine"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "17"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "RDR1",
+        "columns": [
+          "DocEntry",
+          "LineNum"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} lines are based on orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "decisions-have-requests",
+      "label": "approval decisions whose request is in the export",
+      "from": {
+        "table": "WDD1",
+        "columns": [
+          "WddCode"
+        ]
+      },
+      "to": {
+        "table": "OWDD",
+        "columns": [
+          "WddCode"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "paid-invoices-have-payments",
+      "label": "paid invoices whose payment is in the export",
+      "from": {
+        "table": "RCT2",
+        "columns": [
+          "DocNum"
+        ]
+      },
+      "to": {
+        "table": "ORCT",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "paid-invoices-are-exported",
+      "label": "paid invoices that are in the export",
+      "from": {
+        "table": "RCT2",
+        "columns": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "InvType",
+            "in": [
+              "13"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "OINV",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "b1_s_request",
+        "input": "OQUT",
+        "namespace": "sap-b1",
+        "object_type": "sales quotation",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "DocNum",
+            "name": "number"
+          }
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_s_order",
+        "input": "ORDR",
+        "namespace": "sap-b1",
+        "object_type": "sales order",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "DocNum",
+            "name": "number"
+          },
+          {
+            "column": "CardCode",
+            "name": "customer"
+          }
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_s_order_line",
+        "input": "RDR1",
+        "namespace": "sap-b1",
+        "object_type": "sales order line",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "attributes": [
+          {
+            "column": "ItemCode",
+            "name": "item"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "Price",
+            "name": "price"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_receipt_line",
+        "input": "DLN1",
+        "namespace": "sap-b1",
+        "object_type": "delivery line",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "attributes": [
+          {
+            "column": "ItemCode",
+            "name": "item"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "not_in": [
+              "15"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_s_approval",
+        "input": "OWDD",
+        "namespace": "sap-b1",
+        "object_type": "approval request",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ],
+        "where": [
+          {
+            "column": "ObjType",
+            "in": [
+              "17"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_s_invoice",
+        "input": "OINV",
+        "namespace": "sap-b1",
+        "object_type": "customer invoice",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "DocNum",
+            "name": "number"
+          },
+          {
+            "column": "DocTotal",
+            "name": "total"
+          }
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_s_partner",
+        "input": "OCRD",
+        "namespace": "sap-b1",
+        "object_type": "customer",
+        "key": [
+          "CardCode"
+        ],
+        "attributes": [
+          {
+            "column": "GroupCode",
+            "name": "group"
+          },
+          {
+            "column": "Country",
+            "name": "country"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "b1_s_request_created",
+        "input": "OQUT",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create sales quotation"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_request",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "sales quotation"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_order_created",
+        "input": "ORDR",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create sales order"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          },
+          {
+            "column": "DocTotal",
+            "name": "total"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_order",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "sales order"
+          },
+          {
+            "object": "b1_s_partner",
+            "columns": [
+              "CardCode"
+            ],
+            "qualifier": "customer",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "b1_s_approval_requested",
+        "input": "OWDD",
+        "namespace": "sap-b1",
+        "key": [
+          "WddCode"
+        ],
+        "where": [
+          {
+            "column": "ObjType",
+            "in": [
+              "17"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Request approval"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTime"
+        },
+        "objects": [
+          {
+            "object": "b1_s_approval",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_approved",
+        "input": "WDD1",
+        "namespace": "sap-b1",
+        "key": [
+          "WddCode",
+          "StepCode",
+          "UserID"
+        ],
+        "where": [
+          {
+            "column": "Status",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve sales order"
+        },
+        "lookup": {
+          "input": "OWDD",
+          "key": [
+            "WddCode"
+          ],
+          "matching": [
+            "WddCode"
+          ],
+          "columns": [
+            "DocEntry"
+          ]
+        },
+        "timestamp": {
+          "date": "UpdateDate",
+          "offset": "{setting:offset}",
+          "time": "UpdateTime"
+        },
+        "attributes": [
+          {
+            "column": "UserID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_approval",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_rejected",
+        "input": "WDD1",
+        "namespace": "sap-b1",
+        "key": [
+          "WddCode",
+          "StepCode",
+          "UserID"
+        ],
+        "where": [
+          {
+            "column": "Status",
+            "in": [
+              "N"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject sales order"
+        },
+        "lookup": {
+          "input": "OWDD",
+          "key": [
+            "WddCode"
+          ],
+          "matching": [
+            "WddCode"
+          ],
+          "columns": [
+            "DocEntry"
+          ]
+        },
+        "timestamp": {
+          "date": "UpdateDate",
+          "offset": "{setting:offset}",
+          "time": "UpdateTime"
+        },
+        "attributes": [
+          {
+            "column": "UserID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_approval",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_order_cancelled",
+        "input": "ORDR",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel sales order"
+        },
+        "timestamp": {
+          "date": "CancelDate",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "b1_s_order",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_goods_moved",
+        "input": "DLN1",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "not_in": [
+              "15"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Deliver goods"
+        },
+        "lookup": {
+          "input": "ODLN",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocEntry"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "UserSign"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_receipt_line",
+            "columns": [
+              "DocEntry",
+              "LineNum"
+            ],
+            "qualifier": "delivery line"
+          },
+          {
+            "object": "b1_s_order_line",
+            "columns": [
+              "BaseEntry",
+              "BaseLine"
+            ],
+            "qualifier": "sales order line",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "b1_s_goods_movement_cancelled",
+        "input": "DLN1",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "15"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel delivery"
+        },
+        "lookup": {
+          "input": "ODLN",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocEntry"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "UserSign"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_receipt_line",
+            "columns": [
+              "BaseEntry",
+              "BaseLine"
+            ],
+            "qualifier": "delivery line"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_invoice_cancelled",
+        "input": "INV1",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "13"
+            ]
+          },
+          {
+            "column": "LineNum",
+            "in": [
+              "0"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel customer invoice"
+        },
+        "lookup": {
+          "input": "OINV",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocEntry"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "UserSign"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_invoice",
+            "columns": [
+              "BaseEntry"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      },
+      {
+        "id": "b1_s_invoice_created",
+        "input": "OINV",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create customer invoice"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          },
+          {
+            "column": "DocTotal",
+            "name": "total"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_invoice",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "customer invoice"
+          },
+          {
+            "object": "b1_s_partner",
+            "columns": [
+              "CardCode"
+            ],
+            "qualifier": "customer",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "b1_s_invoice_paid",
+        "input": "RCT2",
+        "namespace": "sap-b1",
+        "key": [
+          "DocNum",
+          "InvoiceId"
+        ],
+        "where": [
+          {
+            "column": "InvType",
+            "in": [
+              "13"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive customer payment"
+        },
+        "lookup": {
+          "input": "ORCT",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocNum"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "Canceled"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "SumApplied",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_s_invoice",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "b1_s_order_has_line",
+        "input": "RDR1",
+        "source": {
+          "object": "b1_s_order",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "sales order"
+        },
+        "target": {
+          "object": "b1_s_order_line",
+          "columns": [
+            "DocEntry",
+            "LineNum"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "b1_s_approval_became_order",
+        "input": "ORDR",
+        "where": [
+          {
+            "column": "draftKey",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_s_approval",
+          "columns": [
+            "draftKey"
+          ],
+          "qualifier": "approval request"
+        },
+        "target": {
+          "object": "b1_s_order",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "sales order"
+        }
+      },
+      {
+        "id": "b1_s_request_became_line",
+        "input": "RDR1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "23"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_s_request",
+          "columns": [
+            "BaseEntry"
+          ],
+          "qualifier": "sales quotation"
+        },
+        "target": {
+          "object": "b1_s_order_line",
+          "columns": [
+            "DocEntry",
+            "LineNum"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "b1_s_invoice_for_line",
+        "input": "INV1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "17"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_s_invoice",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "customer invoice"
+        },
+        "target": {
+          "object": "b1_s_order_line",
+          "columns": [
+            "BaseEntry",
+            "BaseLine"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "b1_s_invoice_for_receipt",
+        "input": "INV1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "15"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_s_invoice",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "customer invoice"
+        },
+        "target": {
+          "object": "b1_s_receipt_line",
+          "columns": [
+            "BaseEntry",
+            "BaseLine"
+          ],
+          "qualifier": "delivery line"
+        }
+      },
+      {
+        "id": "b1_s_receipt_for_line",
+        "input": "DLN1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "17"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_s_receipt_line",
+          "columns": [
+            "DocEntry",
+            "LineNum"
+          ],
+          "qualifier": "delivery line"
+        },
+        "target": {
+          "object": "b1_s_order_line",
+          "columns": [
+            "BaseEntry",
+            "BaseLine"
+          ],
+          "qualifier": "sales order line"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "b1_s_request_created_lines",
+        "event": "b1_s_request_created",
+        "through": "b1_s_request",
+        "relationship": "b1_s_request_became_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_order_created_lines",
+        "event": "b1_s_order_created",
+        "through": "b1_s_order",
+        "relationship": "b1_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_approval_requested_order",
+        "event": "b1_s_approval_requested",
+        "through": "b1_s_approval",
+        "relationship": "b1_s_approval_became_order",
+        "qualifier": "sales order"
+      },
+      {
+        "id": "b1_s_approved_order",
+        "event": "b1_s_approved",
+        "through": "b1_s_approval",
+        "relationship": "b1_s_approval_became_order",
+        "qualifier": "sales order"
+      },
+      {
+        "id": "b1_s_approval_requested_lines",
+        "event": "b1_s_approval_requested",
+        "through": "b1_s_order",
+        "relationship": "b1_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_approved_lines",
+        "event": "b1_s_approved",
+        "through": "b1_s_order",
+        "relationship": "b1_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_order_cancelled_lines",
+        "event": "b1_s_order_cancelled",
+        "through": "b1_s_order",
+        "relationship": "b1_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_goods_movement_cancelled_lines",
+        "event": "b1_s_goods_movement_cancelled",
+        "through": "b1_s_receipt_line",
+        "relationship": "b1_s_receipt_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_invoice_cancelled_lines",
+        "event": "b1_s_invoice_cancelled",
+        "through": "b1_s_invoice",
+        "relationship": "b1_s_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_invoice_cancelled_receipts",
+        "event": "b1_s_invoice_cancelled",
+        "through": "b1_s_invoice",
+        "relationship": "b1_s_invoice_for_receipt",
+        "qualifier": "delivery line"
+      },
+      {
+        "id": "b1_s_invoice_cancelled_receipt_lines",
+        "event": "b1_s_invoice_cancelled",
+        "through": "b1_s_receipt_line",
+        "relationship": "b1_s_receipt_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_invoice_created_receipts",
+        "event": "b1_s_invoice_created",
+        "through": "b1_s_invoice",
+        "relationship": "b1_s_invoice_for_receipt",
+        "qualifier": "delivery line"
+      },
+      {
+        "id": "b1_s_invoice_created_lines",
+        "event": "b1_s_invoice_created",
+        "through": "b1_s_invoice",
+        "relationship": "b1_s_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_invoice_created_receipt_lines",
+        "event": "b1_s_invoice_created",
+        "through": "b1_s_receipt_line",
+        "relationship": "b1_s_receipt_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_invoice_paid_receipts",
+        "event": "b1_s_invoice_paid",
+        "through": "b1_s_invoice",
+        "relationship": "b1_s_invoice_for_receipt",
+        "qualifier": "delivery line"
+      },
+      {
+        "id": "b1_s_invoice_paid_lines",
+        "event": "b1_s_invoice_paid",
+        "through": "b1_s_invoice",
+        "relationship": "b1_s_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "b1_s_invoice_paid_receipt_lines",
+        "event": "b1_s_invoice_paid",
+        "through": "b1_s_receipt_line",
+        "relationship": "b1_s_receipt_for_line",
+        "qualifier": "sales order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "Business One sales order number",
+      "object": "b1_s_order",
+      "table": "ORDR",
+      "key": [
+        "DocNum"
+      ],
+      "example": "10045",
+      "carry": [
+        "b1_s_order_has_line"
+      ]
+    }
+  ]
+}

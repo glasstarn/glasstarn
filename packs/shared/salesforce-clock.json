@@ -1,0 +1,13 @@
+{
+  "id": "salesforce-clock",
+  "note": "The Salesforce org's time zone, for date-only fields.",
+  "tables": [],
+  "settings": [
+    {
+      "id": "salesforce_offset",
+      "question": "Which time zone is the Salesforce org set to (Setup, Company Information)? Date-only fields such as a lead's conversion date are in that time zone. Give it as an offset from UTC, for example -05:00.",
+      "example": "-05:00"
+    }
+  ],
+  "recipe": {}
+}

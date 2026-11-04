@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "system": "jira",
+  "site": "https://your-site.atlassian.net",
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "projects": [
+    "OPS"
+  ],
+  "issue_types": [
+    "Bug"
+  ],
+  "fields": [
+    "issuetype",
+    "status",
+    "priority",
+    "resolution",
+    "updated",
+    "resolutiondate",
+    "assignee"
+  ],
+  "history_fields": [
+    "status",
+    "assignee",
+    "priority",
+    "resolution"
+  ],
+  "history_gaps": []
+}

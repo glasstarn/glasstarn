@@ -1,0 +1,9 @@
+case_id,activity,timestamp
+INV-2,Approve,2026-11-04 14:00:00
+INV-1,Receive,2026-11-02 09:00:00
+INV-2,Receive,2026-11-03 10:00:00
+INV-1,Pay,2026-11-05 16:00:00
+INV-1,Approve,2026-11-03 11:00:00
+INV-2,Pay,2026-11-06 09:00:00
+INV-1,Match,2026-11-02 15:00:00
+INV-2,Match,2026-11-03 16:00:00

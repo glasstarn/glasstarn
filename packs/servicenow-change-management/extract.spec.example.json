@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "system": "servicenow",
+  "instance": "https://your-instance.service-now.com",
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "tables": [
+    {
+      "table": "change_request",
+      "fields": [
+        "state",
+        "type",
+        "risk",
+        "approval",
+        "assignment_group",
+        "start_date",
+        "end_date"
+      ],
+      "label_fields": [
+        "state",
+        "type",
+        "approval",
+        "assignment_group"
+      ]
+    },
+    {
+      "table": "change_task",
+      "fields": [
+        "state",
+        "assignment_group"
+      ],
+      "label_fields": [
+        "state",
+        "assignment_group"
+      ],
+      "parent": {
+        "field": "change_request",
+        "table": "change_request"
+      }
+    }
+  ],
+  "history_fields": [
+    "state",
+    "approval",
+    "assignment_group",
+    "start_date",
+    "end_date",
+    "risk"
+  ],
+  "history_gaps": []
+}

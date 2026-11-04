@@ -1,0 +1,84 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "Contract",
+      "fields": [
+        "Id",
+        "ContractNumber",
+        "AccountId",
+        "Status",
+        "StartDate",
+        "EndDate",
+        "ContractTerm",
+        "ActivatedDate",
+        "CreatedDate"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "ContractHistory",
+      "fields": [
+        "Id",
+        "ContractId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "ContractId",
+      "parent": "Contract",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "Opportunity",
+      "fields": [
+        "Id",
+        "Name",
+        "AccountId",
+        "CreatedDate",
+        "StageName",
+        "IsClosed",
+        "IsWon",
+        "CloseDate",
+        "Amount",
+        "Type",
+        "ContractId"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "OpportunityFieldHistory",
+      "fields": [
+        "Id",
+        "OpportunityId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ],
+      "item_field": "OpportunityId",
+      "parent": "Opportunity"
+    }
+  ]
+}

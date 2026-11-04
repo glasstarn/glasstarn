@@ -1,0 +1,15 @@
+{
+  "id": "sap-clock",
+  "note": "The SAP system clock.",
+  "tables": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "What time zone is the SAP system's clock set to? SAP stores entry times without a time zone. Give it as an offset from UTC, for example +01:00 for Central European winter time.",
+      "example": "+01:00"
+    }
+  ],
+  "unique": [],
+  "checks": [],
+  "recipe": {}
+}

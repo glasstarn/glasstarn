@@ -1,0 +1,1017 @@
+{
+  "id": "d365-business-central-purchase-to-pay",
+  "version": 2,
+  "name": "Purchase to pay (Dynamics 365 Business Central)",
+  "system": "Microsoft Dynamics 365 Business Central",
+  "process": "purchase to pay",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a Business Central online CRONUS demo company (2026-10-16), from the standard configuration-package export, with order archiving off and on: check and build passed and every step count matched the source tables; not certified or endorsed by Microsoft. Without the order archive, fully invoiced orders are followed from their receipts and invoices without their creation and approval steps. SystemCreatedAt is left out by that export, so order and posting dates are used, to the day. Approvals were not exercised (the demo has none).",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period?",
+    "unit": "purchase order line",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "Date-only fields (such as the date an invoice was closed by payment) are in the company's time zone. Which offset from UTC is that, for example +01:00?",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "Purchase Header",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase orders",
+      "export": "Orders (Document Type Order) created in the period, open ones from Purchase Header and invoiced ones from Purchase Header Archive (latest version), in one file (other document types, such as quotes and invoices, may stay in the file; only orders are read): No., Document Type, Buy-from Vendor No., Order Date, Status and SystemCreatedAt. SystemCreatedAt and date-times in UTC as stored (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "No.",
+        "Document Type",
+        "Buy-from Vendor No.",
+        "SystemCreatedAt"
+      ],
+      "fields": [
+        "Order Date",
+        "Status",
+        "Amount"
+      ],
+      "date_field": "SystemCreatedAt",
+      "object": "bc_p_order",
+      "key": [
+        "No."
+      ],
+      "fallbacks": [
+        {
+          "field": "SystemCreatedAt",
+          "column": "Order Date",
+          "date_only": true
+        }
+      ],
+      "archive": {
+        "table": "Purchase Header Archive",
+        "key": [
+          "Document Type",
+          "No."
+        ],
+        "version": "Version No."
+      }
+    },
+    {
+      "name": "Purchase Line",
+      "noun": "purchase order lines",
+      "label": "Purchase order lines",
+      "export": "The lines of those orders, from Purchase Line and Purchase Line Archive (latest version) in one file: Document Type, Document No., Line No., Type, No. (item), Quantity and SystemCreatedAt.",
+      "required": [
+        "Document Type",
+        "Document No.",
+        "Line No.",
+        "No.",
+        "Quantity"
+      ],
+      "fields": [
+        "Type",
+        "Line Amount",
+        "SystemCreatedAt"
+      ],
+      "object": "bc_p_line",
+      "key": [
+        "Document No.",
+        "Line No."
+      ],
+      "archive": {
+        "table": "Purchase Line Archive",
+        "key": [
+          "Document Type",
+          "Document No.",
+          "Line No."
+        ],
+        "version": "Version No."
+      }
+    },
+    {
+      "name": "Approval Entry",
+      "label": "Approval entries",
+      "export": "Approval entries of those orders (Table ID 38): Entry No., Table ID, Document Type, Document No., Sequence No., Approver ID, Status, Date-Time Sent for Approval and Last Date-Time Modified.",
+      "required": [
+        "Entry No.",
+        "Table ID",
+        "Document Type",
+        "Document No.",
+        "Status",
+        "Date-Time Sent for Approval",
+        "Last Date-Time Modified"
+      ],
+      "fields": [
+        "Sequence No.",
+        "Approver ID"
+      ],
+      "date_field": "Date-Time Sent for Approval",
+      "optional": true
+    },
+    {
+      "name": "Purch. Rcpt. Line",
+      "label": "Receipt lines",
+      "export": "Posted receipt lines of those orders: Document No., Line No., Order No., Order Line No., Quantity, Posting Date and SystemCreatedAt.",
+      "required": [
+        "Document No.",
+        "Line No.",
+        "Order No.",
+        "Order Line No.",
+        "SystemCreatedAt"
+      ],
+      "fields": [
+        "Quantity",
+        "Posting Date"
+      ],
+      "date_field": "SystemCreatedAt",
+      "fallbacks": [
+        {
+          "field": "SystemCreatedAt",
+          "column": "Posting Date",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "Purch. Inv. Header",
+      "noun": "posted purchase invoices",
+      "label": "Posted purchase invoices",
+      "export": "Posted invoices for those orders: No., Order No., Posting Date, Amount and SystemCreatedAt. SystemCreatedAt and date-times in UTC as stored (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "No.",
+        "Order No.",
+        "SystemCreatedAt"
+      ],
+      "fields": [
+        "Posting Date",
+        "Amount",
+        "Vendor Invoice No."
+      ],
+      "date_field": "SystemCreatedAt",
+      "object": "bc_p_invoice",
+      "key": [
+        "No."
+      ],
+      "fallbacks": [
+        {
+          "field": "SystemCreatedAt",
+          "column": "Posting Date",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "Purch. Inv. Line",
+      "label": "Posted purchase invoice lines",
+      "export": "Their lines: Document No., Line No., Order No., Order Line No. and Quantity.",
+      "required": [
+        "Document No.",
+        "Line No.",
+        "Order No.",
+        "Order Line No."
+      ],
+      "fields": [
+        "Quantity",
+        "Amount"
+      ]
+    },
+    {
+      "name": "Vendor Ledger Entry",
+      "label": "Ledger entries",
+      "export": "The vendor ledger entries of those invoices (Document Type Invoice): Entry No., Document Type, Document No., Open and Closed at Date.",
+      "required": [
+        "Entry No.",
+        "Document Type",
+        "Document No.",
+        "Open",
+        "Closed at Date"
+      ],
+      "fields": [
+        "Amount",
+        "Due Date"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-purchase-header",
+      "table": "Purchase Header",
+      "columns": [
+        "No."
+      ],
+      "label": "purchase orders listed once",
+      "where": [
+        {
+          "column": "Document Type",
+          "in": [
+            "Order"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-purchase-line",
+      "table": "Purchase Line",
+      "columns": [
+        "Document No.",
+        "Line No."
+      ],
+      "label": "purchase order lines listed once",
+      "where": [
+        {
+          "column": "Document Type",
+          "in": [
+            "Order"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-approval-entry",
+      "table": "Approval Entry",
+      "columns": [
+        "Entry No."
+      ],
+      "label": "approval entries listed once"
+    },
+    {
+      "id": "one-purch-rcpt-line",
+      "table": "Purch. Rcpt. Line",
+      "columns": [
+        "Document No.",
+        "Line No."
+      ],
+      "label": "receipt lines listed once"
+    },
+    {
+      "id": "one-purch-inv-header",
+      "table": "Purch. Inv. Header",
+      "columns": [
+        "No."
+      ],
+      "label": "posted purchase invoices listed once"
+    },
+    {
+      "id": "one-purch-inv-line",
+      "table": "Purch. Inv. Line",
+      "columns": [
+        "Document No.",
+        "Line No."
+      ],
+      "label": "posted purchase invoice lines listed once"
+    },
+    {
+      "id": "one-vendor-ledger-entry",
+      "table": "Vendor Ledger Entry",
+      "columns": [
+        "Entry No."
+      ],
+      "label": "ledger entries listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "Purchase Line",
+        "columns": [
+          "Document No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Purchase Header",
+        "columns": [
+          "No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "approvals-have-orders",
+      "label": "approval entries whose order is in the export",
+      "from": {
+        "table": "Approval Entry",
+        "columns": [
+          "Document No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "38"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Purchase Header",
+        "columns": [
+          "No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 1.0,
+      "question": {
+        "text": "{missing} of {total} approval entries belong to orders that are not in the export ({missing_share}), usually fully invoiced orders deleted because order archiving is off. Keep the approvals on the order known from its receipts and invoices, or re-export with the order archive?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them on the order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the order archive"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "posted-lines-have-order-lines",
+      "label": "posted lines whose order line is in the export",
+      "from": {
+        "table": "Purch. Rcpt. Line",
+        "columns": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Purchase Line",
+        "columns": [
+          "Document No.",
+          "Line No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 1.0,
+      "question": {
+        "text": "{missing} of {total} receipt lines belong to orders that are not in the export ({missing_share}), usually fully invoiced orders, which Business Central deletes unless order archiving is on. Follow them from their receipts and invoices, without the order's own creation and approval steps, or re-export with the order archive?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Follow them from their receipts and invoices"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the order archive"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "Purch. Inv. Line",
+        "columns": [
+          "Document No."
+        ]
+      },
+      "to": {
+        "table": "Purch. Inv. Header",
+        "columns": [
+          "No."
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-order-lines",
+      "label": "invoice lines whose order line is in the export",
+      "from": {
+        "table": "Purch. Inv. Line",
+        "columns": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Purchase Line",
+        "columns": [
+          "Document No.",
+          "Line No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines bill orders that are not in the export: orders created before the period, or fully invoiced orders deleted because order archiving is off. Follow them from their invoices without the order, or re-export with the older orders and the order archive?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "bc_p_order",
+        "input": "Purchase Header",
+        "namespace": "bc",
+        "object_type": "purchase order",
+        "key": [
+          "No."
+        ],
+        "attributes": [
+          {
+            "column": "Buy-from Vendor No.",
+            "name": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_p_order_from_posted",
+        "input": "Purch. Rcpt. Line",
+        "namespace": "bc",
+        "object_type": "purchase order",
+        "key": [
+          "Order No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_p_order_from_invoice",
+        "input": "Purch. Inv. Header",
+        "namespace": "bc",
+        "object_type": "purchase order",
+        "key": [
+          "Order No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_p_line",
+        "input": "Purchase Line",
+        "namespace": "bc",
+        "object_type": "purchase order line",
+        "key": [
+          "Document No.",
+          "Line No."
+        ],
+        "attributes": [
+          {
+            "column": "No.",
+            "name": "item"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "Line Amount",
+            "name": "amount"
+          }
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_p_line_from_posted",
+        "input": "Purch. Rcpt. Line",
+        "namespace": "bc",
+        "object_type": "purchase order line",
+        "key": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_p_line_from_invoice",
+        "input": "Purch. Inv. Line",
+        "namespace": "bc",
+        "object_type": "purchase order line",
+        "key": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_p_invoice",
+        "input": "Purch. Inv. Header",
+        "namespace": "bc",
+        "object_type": "posted purchase invoice",
+        "key": [
+          "No."
+        ],
+        "attributes": [
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "bc_p_order_created",
+        "input": "Purchase Header",
+        "namespace": "bc",
+        "key": [
+          "No."
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": "SystemCreatedAt",
+        "objects": [
+          {
+            "object": "bc_p_order",
+            "columns": [
+              "No."
+            ],
+            "qualifier": "purchase order"
+          }
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_p_approval_sent",
+        "input": "Approval Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "38"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Send for approval"
+        },
+        "timestamp": "Date-Time Sent for Approval",
+        "attributes": [
+          {
+            "column": "Approver ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_p_order",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "bc_p_approved",
+        "input": "Approval Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "38"
+            ]
+          },
+          {
+            "column": "Status",
+            "in": [
+              "Approved"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve purchase order"
+        },
+        "timestamp": "Last Date-Time Modified",
+        "attributes": [
+          {
+            "column": "Approver ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_p_order",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "bc_p_rejected",
+        "input": "Approval Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "38"
+            ]
+          },
+          {
+            "column": "Status",
+            "in": [
+              "Rejected"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject purchase order"
+        },
+        "timestamp": "Last Date-Time Modified",
+        "attributes": [
+          {
+            "column": "Approver ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_p_order",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "bc_p_goods_moved",
+        "input": "Purch. Rcpt. Line",
+        "namespace": "bc",
+        "key": [
+          "Document No.",
+          "Line No."
+        ],
+        "activity": {
+          "value": "Post receipt"
+        },
+        "timestamp": "SystemCreatedAt",
+        "attributes": [
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_p_line",
+            "columns": [
+              "Order No.",
+              "Order Line No."
+            ],
+            "qualifier": "purchase order line"
+          }
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_p_invoice_posted",
+        "input": "Purch. Inv. Header",
+        "namespace": "bc",
+        "key": [
+          "No."
+        ],
+        "activity": {
+          "value": "Post purchase invoice"
+        },
+        "timestamp": "SystemCreatedAt",
+        "attributes": [
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_p_invoice",
+            "columns": [
+              "No."
+            ],
+            "qualifier": "posted purchase invoice"
+          }
+        ]
+      },
+      {
+        "id": "bc_p_invoice_paid",
+        "input": "Vendor Ledger Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Invoice"
+            ]
+          },
+          {
+            "column": "Open",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Pay invoice"
+        },
+        "timestamp": {
+          "date": "Closed at Date",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "bc_p_invoice",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "posted purchase invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "bc_p_order_has_line",
+        "input": "Purchase Line",
+        "source": {
+          "object": "bc_p_order",
+          "columns": [
+            "Document No."
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "bc_p_line",
+          "columns": [
+            "Document No.",
+            "Line No."
+          ],
+          "qualifier": "purchase order line"
+        },
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_p_invoice_for_line",
+        "input": "Purch. Inv. Line",
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "bc_p_invoice",
+          "columns": [
+            "Document No."
+          ],
+          "qualifier": "posted purchase invoice"
+        },
+        "target": {
+          "object": "bc_p_line",
+          "columns": [
+            "Order No.",
+            "Order Line No."
+          ],
+          "qualifier": "purchase order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "bc_p_order_created_lines",
+        "event": "bc_p_order_created",
+        "through": "bc_p_order",
+        "relationship": "bc_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "bc_p_approval_sent_lines",
+        "event": "bc_p_approval_sent",
+        "through": "bc_p_order",
+        "relationship": "bc_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "bc_p_approved_lines",
+        "event": "bc_p_approved",
+        "through": "bc_p_order",
+        "relationship": "bc_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "bc_p_rejected_lines",
+        "event": "bc_p_rejected",
+        "through": "bc_p_order",
+        "relationship": "bc_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "bc_p_invoice_posted_lines",
+        "event": "bc_p_invoice_posted",
+        "through": "bc_p_invoice",
+        "relationship": "bc_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "bc_p_invoice_paid_lines",
+        "event": "bc_p_invoice_paid",
+        "through": "bc_p_invoice",
+        "relationship": "bc_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "Business Central purchase order number",
+      "object": "bc_p_order",
+      "table": "Purchase Header",
+      "key": [
+        "No."
+      ],
+      "example": "106001",
+      "carry": [
+        "bc_p_order_has_line"
+      ]
+    }
+  ]
+}

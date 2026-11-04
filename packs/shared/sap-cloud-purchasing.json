@@ -1,0 +1,441 @@
+{
+  "id": "sap-cloud-purchasing",
+  "note": "Purchase orders and goods movements from SAP S/4HANA Public Cloud data views.",
+  "custom_prefixes": [
+    "YY1_"
+  ],
+  "tables": [
+    {
+      "name": "PurchaseOrder",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase orders",
+      "export": "Purchase orders of the company code created in the period, including the company's own fields (names starting with YY1_).",
+      "required": [
+        "PurchaseOrder",
+        "CompanyCode",
+        "Supplier",
+        "CreationDate"
+      ],
+      "fields": [
+        "PurchaseOrderType",
+        "CreatedByUser",
+        "PurchasingOrganization",
+        "PurchasingGroup",
+        "DocumentCurrency"
+      ],
+      "date_field": "CreationDate",
+      "object": "order",
+      "key": [
+        "PurchaseOrder"
+      ],
+      "scope_field": "CompanyCode",
+      "fan_out": [
+        {
+          "input": "PurchaseOrderItem",
+          "event_key": [
+            "PurchaseOrder"
+          ],
+          "target": {
+            "object": "order_item",
+            "columns": [
+              "PurchaseOrder",
+              "PurchaseOrderItem"
+            ],
+            "qualifier": "order line"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PurchaseOrderItem",
+      "noun": "purchase order items",
+      "label": "Purchase order items",
+      "export": "All items of the exported purchase orders.",
+      "required": [
+        "PurchaseOrder",
+        "PurchaseOrderItem",
+        "PurchasingDocumentDeletionCode",
+        "Material",
+        "Plant",
+        "NetAmount"
+      ],
+      "fields": [
+        "PurchaseOrderItemText",
+        "OrderQuantity",
+        "NetPriceAmount"
+      ],
+      "object": "order_item",
+      "key": [
+        "PurchaseOrder",
+        "PurchaseOrderItem"
+      ]
+    },
+    {
+      "name": "MaterialDocumentItem",
+      "label": "Goods movements for the orders",
+      "export": "Goods movement items that refer to the exported purchase orders, up to the export date.",
+      "required": [
+        "MaterialDocumentYear",
+        "MaterialDocument",
+        "MaterialDocumentItem",
+        "GoodsMovementType",
+        "PurchaseOrder",
+        "PurchaseOrderItem",
+        "PostingDate"
+      ],
+      "fields": [
+        "QuantityInEntryUnit"
+      ],
+      "date_field": "PostingDate"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-order",
+      "table": "PurchaseOrder",
+      "columns": [
+        "PurchaseOrder"
+      ],
+      "label": "purchase orders listed once"
+    },
+    {
+      "id": "one-order-item",
+      "table": "PurchaseOrderItem",
+      "columns": [
+        "PurchaseOrder",
+        "PurchaseOrderItem"
+      ],
+      "label": "order items listed once"
+    },
+    {
+      "id": "one-goods-movement",
+      "table": "MaterialDocumentItem",
+      "columns": [
+        "MaterialDocumentYear",
+        "MaterialDocument",
+        "MaterialDocumentItem"
+      ],
+      "label": "goods movement items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "items-have-orders",
+      "label": "order items whose purchase order is in the export",
+      "from": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrder"
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrder",
+        "columns": [
+          "PurchaseOrder"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "movements-match-items",
+      "label": "goods movements that belong to an exported order item",
+      "from": {
+        "table": "MaterialDocumentItem",
+        "columns": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "orders-have-suppliers",
+      "label": "purchase orders whose supplier is in the supplier list",
+      "from": {
+        "table": "PurchaseOrder",
+        "columns": [
+          "Supplier"
+        ]
+      },
+      "to": {
+        "table": "Supplier",
+        "columns": [
+          "Supplier"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "order",
+        "input": "PurchaseOrder",
+        "namespace": "sap",
+        "object_type": "purchase order",
+        "key": [
+          "PurchaseOrder"
+        ],
+        "attributes": [
+          {
+            "column": "CompanyCode",
+            "name": "company code"
+          }
+        ]
+      },
+      {
+        "id": "order_item",
+        "input": "PurchaseOrderItem",
+        "namespace": "sap",
+        "object_type": "purchase order item",
+        "key": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ],
+        "attributes": [
+          {
+            "column": "Material",
+            "name": "material"
+          },
+          {
+            "column": "Plant",
+            "name": "plant"
+          },
+          {
+            "column": "NetAmount",
+            "name": "net value"
+          },
+          {
+            "column": "PurchasingDocumentDeletionCode",
+            "name": "deletion flag"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "order_created",
+        "input": "PurchaseOrder",
+        "namespace": "sap",
+        "key": [
+          "PurchaseOrder"
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order",
+            "columns": [
+              "PurchaseOrder"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "Supplier"
+            ],
+            "qualifier": "vendor"
+          }
+        ]
+      },
+      {
+        "id": "goods_received",
+        "input": "MaterialDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "MaterialDocumentYear",
+          "MaterialDocument",
+          "MaterialDocumentItem"
+        ],
+        "where": [
+          {
+            "column": "GoodsMovementType",
+            "in": [
+              "101",
+              "103",
+              "105"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Record goods receipt"
+        },
+        "timestamp": {
+          "date": "PostingDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              "PurchaseOrder",
+              "PurchaseOrderItem"
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "goods_receipt_reversed",
+        "input": "MaterialDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "MaterialDocumentYear",
+          "MaterialDocument",
+          "MaterialDocumentItem"
+        ],
+        "where": [
+          {
+            "column": "GoodsMovementType",
+            "in": [
+              "102",
+              "104",
+              "106",
+              "162"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reverse goods receipt"
+        },
+        "timestamp": {
+          "date": "PostingDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              "PurchaseOrder",
+              "PurchaseOrderItem"
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "goods_returned",
+        "input": "MaterialDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "MaterialDocumentYear",
+          "MaterialDocument",
+          "MaterialDocumentItem"
+        ],
+        "where": [
+          {
+            "column": "GoodsMovementType",
+            "in": [
+              "122",
+              "161"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Return goods to vendor"
+        },
+        "timestamp": {
+          "date": "PostingDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              "PurchaseOrder",
+              "PurchaseOrderItem"
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "item_of_order",
+        "input": "PurchaseOrderItem",
+        "source": {
+          "object": "order_item",
+          "columns": [
+            "PurchaseOrder",
+            "PurchaseOrderItem"
+          ],
+          "qualifier": "order line"
+        },
+        "target": {
+          "object": "order",
+          "columns": [
+            "PurchaseOrder"
+          ],
+          "qualifier": "belongs to order"
+        }
+      },
+      {
+        "id": "order_lines",
+        "input": "PurchaseOrderItem",
+        "source": {
+          "object": "order",
+          "columns": [
+            "PurchaseOrder"
+          ],
+          "qualifier": "order"
+        },
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "PurchaseOrder",
+            "PurchaseOrderItem"
+          ],
+          "qualifier": "has line"
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "order_created_lines",
+        "input": "PurchaseOrderItem",
+        "event": "order_created",
+        "event_key": [
+          "PurchaseOrder"
+        ],
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "PurchaseOrder",
+            "PurchaseOrderItem"
+          ],
+          "qualifier": "order line"
+        }
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "SAP purchase order number",
+      "object": "order",
+      "table": "PurchaseOrder",
+      "key": [
+        "PurchaseOrder"
+      ],
+      "example": "4500001234",
+      "carry": [
+        "order_lines"
+      ]
+    }
+  ]
+}

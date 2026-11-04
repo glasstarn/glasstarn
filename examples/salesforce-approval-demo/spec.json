@@ -1,0 +1,4 @@
+{"version":2,"system":"salesforce","target_org":"demo-org","api_version":66,
+ "start":"2026-01-01T00:00:00Z","end":"2026-04-01T00:00:00Z","objects":[
+ {"name":"Opportunity","fields":["Id","Name","CreatedDate","CloseDate","Amount","ERP_Order_ID__c"],"time_field":"CreatedDate","kind":"records","history_gaps":[]},
+ {"name":"OpportunityFieldHistory","fields":["Id","OpportunityId","CreatedDate","Field","OldValue","NewValue"],"time_field":"CreatedDate","kind":"history","item_field":"OpportunityId","parent":"Opportunity","filters":[{"field":"Field","equals":"StageName"}],"history_gaps":["Stage history tracking is assumed on for the whole period; check this in a real org."]}]}

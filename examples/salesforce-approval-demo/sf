@@ -1,0 +1,19 @@
+#!/bin/sh
+# Stand-in for the Salesforce CLI, for the approval demo only. It answers the
+# four queries of spec.json with the invented files in ./salesforce, the rows a
+# real org would return for them. It never contacts Salesforce.
+here=$(cd "$(dirname "$0")" && pwd)
+while [ "$#" -gt 0 ]; do
+  case "$1" in --output-file) shift; output="$1" ;; --query) shift; query="$1" ;; esac
+  shift
+done
+case "$query" in
+  "SELECT Id FROM Opportunity WHERE"*) file=scan-Opportunity.csv ;;
+  "SELECT Id,OpportunityId FROM OpportunityFieldHistory WHERE"*) file=scan-OpportunityFieldHistory.csv ;;
+  "SELECT Id,Name,CreatedDate,CloseDate,Amount,ERP_Order_ID__c FROM Opportunity WHERE Id IN"*) file=Opportunity.csv ;;
+  "SELECT Id,OpportunityId,CreatedDate,Field,OldValue,NewValue FROM OpportunityFieldHistory WHERE OpportunityId IN"*) file=OpportunityFieldHistory.csv ;;
+  *) printf '{"status":1,"message":"the stand-in only answers the demo spec"}'; exit 1 ;;
+esac
+cp "$here/salesforce/$file" "$output"
+rows=$(($(wc -l < "$output") - 1))
+printf '{"status":0,"result":{"totalSize":%s}}' "$rows"

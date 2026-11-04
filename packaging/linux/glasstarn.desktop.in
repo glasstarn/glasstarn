@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Glasstarn
+Comment=Local-first process mining
+Exec="@EXECUTABLE@"
+Icon=applications-office
+Terminal=false
+Categories=Office;Development;
+StartupNotify=true

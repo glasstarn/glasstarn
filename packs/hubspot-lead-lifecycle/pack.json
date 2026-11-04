@@ -1,0 +1,310 @@
+{
+  "id": "hubspot-lead-lifecycle",
+  "version": 1,
+  "name": "Lead lifecycle (HubSpot)",
+  "system": "HubSpot",
+  "process": "lead to customer",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a HubSpot developer test account. Five planted contacts produced 17 events. Creation, lifecycle progression, lead-status changes and a return to an earlier lead status matched independent HubSpot histories, including first assignments made after contact creation. This is scoped trial coverage, not certification or proof of complete vendor history retention. See the pack README.",
+  "case_object_type": "contact",
+  "size_check": {
+    "ask": "How many contacts were created or changed in the period?",
+    "unit": "contact",
+    "steps_per_unit": 3
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "HubSpotContact",
+      "noun": "contacts",
+      "date_label": "the contact was created",
+      "label": "HubSpot contacts",
+      "export": "Contacts changed in the period, from the HubSpot extract: id, created, lifecyclestage, hs_lead_status, hubspot_owner_id, with the lifecycle stage label.",
+      "required": [
+        "id",
+        "created",
+        "lifecyclestage",
+        "hs_lead_status",
+        "hubspot_owner_id",
+        "lifecyclestage_label"
+      ],
+      "fields": [],
+      "date_field": "created",
+      "object": "hs_contact",
+      "key": [
+        "id"
+      ]
+    },
+    {
+      "name": "HubSpotHistory",
+      "label": "HubSpot property history",
+      "export": "The history of the listed properties of those records, from the HubSpot extract: object, record, property, value, label, timestamp, source, user and whether the first value was present at record creation. A first assignment made later is a change.",
+      "required": [
+        "object",
+        "record",
+        "property",
+        "value",
+        "label",
+        "timestamp",
+        "first"
+      ],
+      "fields": [
+        "source",
+        "user"
+      ],
+      "date_field": "timestamp"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-HubSpotContact",
+      "table": "HubSpotContact",
+      "columns": [
+        "id"
+      ],
+      "label": "contacts listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "history-has-contact",
+      "label": "history rows whose contact is in the extract",
+      "from": {
+        "table": "HubSpotHistory",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "contacts"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "HubSpotContact",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "hs_contact",
+        "input": "HubSpotContact",
+        "namespace": "hubspot",
+        "object_type": "contact",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "lifecyclestage_label",
+            "name": "lifecycle stage"
+          },
+          {
+            "column": "hs_lead_status",
+            "name": "lead status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "contact_created",
+        "input": "HubSpotContact",
+        "namespace": "hubspot",
+        "key": [
+          "id"
+        ],
+        "activity": {
+          "value": "Create contact"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "hs_contact",
+            "columns": [
+              "id"
+            ],
+            "qualifier": "contact"
+          }
+        ]
+      },
+      {
+        "id": "lifecycle_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "contacts"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "lifecyclestage"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_contact",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "contact"
+          }
+        ],
+        "activity": {
+          "column": "label",
+          "prefix": "Lifecycle: "
+        }
+      },
+      {
+        "id": "lead_status_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "contacts"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hs_lead_status"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_contact",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "contact"
+          }
+        ],
+        "activity": {
+          "column": "label",
+          "prefix": "Lead status: "
+        }
+      },
+      {
+        "id": "owner_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "contacts"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hubspot_owner_id"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_contact",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "contact"
+          }
+        ],
+        "activity": {
+          "value": "Reassign contact"
+        }
+      }
+    ]
+  }
+}

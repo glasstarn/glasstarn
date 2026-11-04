@@ -1,0 +1,63 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "Case",
+      "fields": [
+        "Id",
+        "CaseNumber",
+        "CreatedDate",
+        "Status",
+        "Priority",
+        "Origin",
+        "Type",
+        "IsClosed",
+        "ClosedDate",
+        "IsEscalated",
+        "OwnerId"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "CaseHistory",
+      "fields": [
+        "Id",
+        "CaseId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "CaseId",
+      "parent": "Case",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "EmailMessage",
+      "fields": [
+        "Id",
+        "ParentId",
+        "Incoming",
+        "MessageDate",
+        "Status"
+      ],
+      "time_field": "MessageDate",
+      "kind": "history",
+      "item_field": "ParentId",
+      "parent": "Case",
+      "history_gaps": []
+    }
+  ]
+}

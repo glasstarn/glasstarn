@@ -1,0 +1,758 @@
+{
+  "id": "d365-finance-operations-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (Dynamics 365 Finance and Operations)",
+  "system": "Microsoft Dynamics 365 Finance and Supply Chain Management",
+  "process": "purchase to pay",
+  "status": "tested",
+  "note": "Live tested in a demo company for one order line, two distinct confirmations, two partial receipts, split invoices and open unsettled items; the accounts-payable variant was separately reconciled. Source step/time/object links and row/hash lineage matched independent expectations. Confirmation and receipt document dates have day precision when creation timestamps are unavailable. Approval rejection/resubmission and actual settlement remain untested live. Export one legal entity per build.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period for the legal entity?",
+    "unit": "purchase order line",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "Date-only fields (such as the date an invoice was settled) are in the legal entity's time zone. Which offset from UTC is that, for example +01:00?",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "PurchTable",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase orders",
+      "export": "Purchase orders created in the period for the legal entity (PurchTable): PurchId, OrderAccount, DataAreaId, CreatedDateTime and the status. Date-times in UTC as the system stores them (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "PurchId",
+        "DataAreaId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "OrderAccount",
+        "PurchStatus",
+        "DocumentState"
+      ],
+      "date_field": "CreatedDateTime",
+      "object": "d365_p_order",
+      "key": [
+        "PurchId"
+      ],
+      "scope_field": "DataAreaId"
+    },
+    {
+      "name": "PurchLine",
+      "noun": "purchase order lines",
+      "label": "Purchase order lines",
+      "export": "The lines of those orders (PurchLine): PurchId, LineNumber, InventTransId, ItemId, quantity and CreatedDateTime.",
+      "required": [
+        "PurchId",
+        "InventTransId"
+      ],
+      "fields": [
+        "LineNumber",
+        "ItemId",
+        "PurchQty",
+        "LineAmount",
+        "CreatedDateTime"
+      ],
+      "object": "d365_p_line",
+      "key": [
+        "InventTransId"
+      ]
+    },
+    {
+      "name": "WorkflowTrackingTable",
+      "label": "Approval workflow history",
+      "export": "Workflow history of those orders: WorkflowTrackingTable joined to WorkflowTrackingStatusTable and PurchTable to name the order: RecId, PurchId, TrackingType, TrackingContext, User and CreatedDateTime.",
+      "required": [
+        "RecId",
+        "PurchId",
+        "TrackingType",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "TrackingContext",
+        "User"
+      ],
+      "date_field": "CreatedDateTime",
+      "optional": true
+    },
+    {
+      "name": "VendPurchOrderJour",
+      "label": "Order confirmations",
+      "export": "Confirmations of those orders (VendPurchOrderJour): RecId, PurchId, PurchOrderDocNum, and PurchOrderDate (document date). Include CreatedDateTime only when the source actually exposes it; otherwise the pack uses the document date with day precision. Preserve every confirmation row, including repeats on the same date.",
+      "required": [
+        "RecId",
+        "PurchId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "PurchOrderDocNum",
+        "PurchOrderDate"
+      ],
+      "date_field": "CreatedDateTime",
+      "optional": true,
+      "fallbacks": [
+        {
+          "field": "CreatedDateTime",
+          "column": "PurchOrderDate",
+          "date_only": true
+        },
+        {
+          "field": "RecId",
+          "column": "PurchOrderDocNum"
+        }
+      ]
+    },
+    {
+      "name": "VendPackingSlipTrans",
+      "label": "Receipt lines",
+      "export": "Product receipt lines for those orders (VendPackingSlipTrans): RecId, PackingSlipId, InventTransId, quantity, DeliveryDate and CreatedDateTime.",
+      "required": [
+        "RecId",
+        "InventTransId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "PackingSlipId",
+        "Qty",
+        "DeliveryDate"
+      ],
+      "date_field": "CreatedDateTime",
+      "fallbacks": [
+        {
+          "field": "CreatedDateTime",
+          "column": "DeliveryDate",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "VendInvoiceJour",
+      "noun": "vendor invoices",
+      "label": "Vendor invoices",
+      "export": "Posted invoices for those orders (VendInvoiceJour): InternalInvoiceId, InvoiceId, InvoiceDate, PurchId, LedgerVoucher, CreatedDateTime and the amount. Date-times in UTC as the system stores them (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "InternalInvoiceId",
+        "LedgerVoucher",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "InvoiceId",
+        "InvoiceDate",
+        "PurchId",
+        "InvoiceAmount"
+      ],
+      "date_field": "CreatedDateTime",
+      "object": "d365_p_invoice",
+      "key": [
+        "InternalInvoiceId"
+      ],
+      "fallbacks": [
+        {
+          "field": "CreatedDateTime",
+          "column": "InvoiceDate",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "VendInvoiceTrans",
+      "label": "Vendor invoice lines",
+      "export": "The lines of those invoices (VendInvoiceTrans): InternalInvoiceId, LineNum, InventTransId and quantity.",
+      "required": [
+        "InternalInvoiceId",
+        "LineNum",
+        "InventTransId"
+      ],
+      "fields": [
+        "Qty",
+        "LineAmount"
+      ]
+    },
+    {
+      "name": "VendTrans",
+      "label": "Open and settled items",
+      "export": "The vendor transactions of those invoices (VendTrans): RecId, Voucher, Invoice, AccountNum, TransDate, Closed (the date it was fully settled, blank or 1900-01-01 while open) and AmountCur.",
+      "required": [
+        "RecId",
+        "Voucher",
+        "Closed"
+      ],
+      "fields": [
+        "AccountNum",
+        "Invoice",
+        "TransDate",
+        "AmountCur"
+      ],
+      "date_field": "TransDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-purchtable",
+      "table": "PurchTable",
+      "columns": [
+        "PurchId"
+      ],
+      "label": "purchase orders listed once"
+    },
+    {
+      "id": "one-purchline",
+      "table": "PurchLine",
+      "columns": [
+        "InventTransId"
+      ],
+      "label": "purchase order lines listed once"
+    },
+    {
+      "id": "one-workflowtrackingtable",
+      "table": "WorkflowTrackingTable",
+      "columns": [
+        "RecId"
+      ],
+      "label": "approval workflow history listed once"
+    },
+    {
+      "id": "one-vendpurchorderjour",
+      "table": "VendPurchOrderJour",
+      "columns": [
+        "RecId"
+      ],
+      "label": "order confirmations listed once"
+    },
+    {
+      "id": "one-vendpackingsliptrans",
+      "table": "VendPackingSlipTrans",
+      "columns": [
+        "RecId"
+      ],
+      "label": "receipt lines listed once"
+    },
+    {
+      "id": "one-vendinvoicejour",
+      "table": "VendInvoiceJour",
+      "columns": [
+        "InternalInvoiceId"
+      ],
+      "label": "vendor invoices listed once"
+    },
+    {
+      "id": "one-vendinvoicetrans",
+      "table": "VendInvoiceTrans",
+      "columns": [
+        "InternalInvoiceId",
+        "LineNum"
+      ],
+      "label": "vendor invoice lines listed once"
+    },
+    {
+      "id": "one-vendtrans",
+      "table": "VendTrans",
+      "columns": [
+        "RecId"
+      ],
+      "label": "open and settled items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "PurchLine",
+        "columns": [
+          "PurchId"
+        ]
+      },
+      "to": {
+        "table": "PurchTable",
+        "columns": [
+          "PurchId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "workflow-has-orders",
+      "label": "workflow history whose order is in the export",
+      "from": {
+        "table": "WorkflowTrackingTable",
+        "columns": [
+          "PurchId"
+        ]
+      },
+      "to": {
+        "table": "PurchTable",
+        "columns": [
+          "PurchId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "confirmations-have-orders",
+      "label": "confirmations whose order is in the export",
+      "from": {
+        "table": "VendPurchOrderJour",
+        "columns": [
+          "PurchId"
+        ]
+      },
+      "to": {
+        "table": "PurchTable",
+        "columns": [
+          "PurchId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipts-have-lines",
+      "label": "receipt or packing slip lines whose order line is in the export",
+      "from": {
+        "table": "VendPackingSlipTrans",
+        "columns": [
+          "InventTransId"
+        ]
+      },
+      "to": {
+        "table": "PurchLine",
+        "columns": [
+          "InventTransId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "VendInvoiceTrans",
+        "columns": [
+          "InternalInvoiceId"
+        ]
+      },
+      "to": {
+        "table": "VendInvoiceJour",
+        "columns": [
+          "InternalInvoiceId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-order-lines",
+      "label": "invoice lines whose order line is in the export",
+      "from": {
+        "table": "VendInvoiceTrans",
+        "columns": [
+          "InventTransId"
+        ],
+        "where": [
+          {
+            "column": "InventTransId",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PurchLine",
+        "columns": [
+          "InventTransId"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines bill orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "d365_p_order",
+        "input": "PurchTable",
+        "namespace": "d365",
+        "object_type": "purchase order",
+        "key": [
+          "PurchId"
+        ],
+        "attributes": [
+          {
+            "column": "OrderAccount",
+            "name": "vendor"
+          },
+          {
+            "column": "DataAreaId",
+            "name": "legal entity"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_line",
+        "input": "PurchLine",
+        "namespace": "d365",
+        "object_type": "purchase order line",
+        "key": [
+          "InventTransId"
+        ],
+        "attributes": [
+          {
+            "column": "ItemId",
+            "name": "item"
+          },
+          {
+            "column": "PurchQty",
+            "name": "quantity"
+          },
+          {
+            "column": "LineAmount",
+            "name": "amount"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_invoice",
+        "input": "VendInvoiceJour",
+        "namespace": "d365",
+        "object_type": "vendor invoice",
+        "key": [
+          "InternalInvoiceId"
+        ],
+        "attributes": [
+          {
+            "column": "InvoiceId",
+            "name": "invoice number"
+          },
+          {
+            "column": "InvoiceAmount",
+            "name": "amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "d365_p_order_created",
+        "input": "PurchTable",
+        "namespace": "d365",
+        "key": [
+          "PurchId"
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": "CreatedDateTime",
+        "objects": [
+          {
+            "object": "d365_p_order",
+            "columns": [
+              "PurchId"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_workflow",
+        "input": "WorkflowTrackingTable",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "where": [
+          {
+            "column": "TrackingType",
+            "in": [
+              "Submission",
+              "Approval",
+              "Rejection",
+              "RequestChange",
+              "Delegation",
+              "Escalation",
+              "Cancellation"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "TrackingType",
+          "prefix": "Workflow: "
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "User",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "d365_p_order",
+            "columns": [
+              "PurchId"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_order_confirmed",
+        "input": "VendPurchOrderJour",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Confirm purchase order"
+        },
+        "timestamp": "CreatedDateTime",
+        "objects": [
+          {
+            "object": "d365_p_order",
+            "columns": [
+              "PurchId"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_goods_moved",
+        "input": "VendPackingSlipTrans",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Receive goods (product receipt)"
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "Qty",
+            "name": "quantity"
+          },
+          {
+            "column": "PackingSlipId",
+            "name": "document"
+          }
+        ],
+        "objects": [
+          {
+            "object": "d365_p_line",
+            "columns": [
+              "InventTransId"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_invoice_posted",
+        "input": "VendInvoiceJour",
+        "namespace": "d365",
+        "key": [
+          "InternalInvoiceId"
+        ],
+        "activity": {
+          "value": "Post vendor invoice"
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "InvoiceAmount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "d365_p_invoice",
+            "columns": [
+              "InternalInvoiceId"
+            ],
+            "qualifier": "vendor invoice"
+          }
+        ]
+      },
+      {
+        "id": "d365_p_invoice_settled",
+        "input": "VendTrans",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Settle vendor invoice"
+        },
+        "lookup": {
+          "input": "VendInvoiceJour",
+          "key": [
+            "LedgerVoucher"
+          ],
+          "matching": [
+            "Voucher"
+          ],
+          "columns": [
+            "InternalInvoiceId"
+          ]
+        },
+        "timestamp": {
+          "date": "Closed",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "d365_p_invoice",
+            "columns": [
+              "InternalInvoiceId"
+            ],
+            "qualifier": "vendor invoice"
+          }
+        ],
+        "where": [
+          {
+            "column": "Closed",
+            "not_in": [
+              "1900-01-01"
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "d365_p_order_has_line",
+        "input": "PurchLine",
+        "source": {
+          "object": "d365_p_order",
+          "columns": [
+            "PurchId"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "d365_p_line",
+          "columns": [
+            "InventTransId"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "d365_p_invoice_for_line",
+        "input": "VendInvoiceTrans",
+        "where": [
+          {
+            "column": "InventTransId",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "d365_p_invoice",
+          "columns": [
+            "InternalInvoiceId"
+          ],
+          "qualifier": "vendor invoice"
+        },
+        "target": {
+          "object": "d365_p_line",
+          "columns": [
+            "InventTransId"
+          ],
+          "qualifier": "purchase order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "d365_p_order_created_lines",
+        "event": "d365_p_order_created",
+        "through": "d365_p_order",
+        "relationship": "d365_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "d365_p_workflow_lines",
+        "event": "d365_p_workflow",
+        "through": "d365_p_order",
+        "relationship": "d365_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "d365_p_order_confirmed_lines",
+        "event": "d365_p_order_confirmed",
+        "through": "d365_p_order",
+        "relationship": "d365_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "d365_p_invoice_posted_lines",
+        "event": "d365_p_invoice_posted",
+        "through": "d365_p_invoice",
+        "relationship": "d365_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "d365_p_invoice_settled_lines",
+        "event": "d365_p_invoice_settled",
+        "through": "d365_p_invoice",
+        "relationship": "d365_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "accounts-payable",
+      "name": "Accounts payable: invoice to settlement",
+      "case_object_type": "vendor invoice",
+      "tables": [
+        "VendInvoiceJour",
+        "VendInvoiceTrans",
+        "VendTrans"
+      ]
+    }
+  ],
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "Dynamics 365 purchase order number",
+      "object": "d365_p_order",
+      "table": "PurchTable",
+      "key": [
+        "PurchId"
+      ],
+      "example": "PO-000123",
+      "carry": [
+        "d365_p_order_has_line"
+      ]
+    }
+  ]
+}

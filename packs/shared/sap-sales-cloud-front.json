@@ -1,0 +1,540 @@
+{
+  "id": "sap-sales-cloud-front",
+  "note": "Opportunities and quotes from SAP Sales Cloud report exports, linked to the SAP sales order by the ERP sales order number on the quote. Needs a sales part that defines sales_order and sales_order_lines.",
+  "tables": [
+    {
+      "name": "SalesCloudOpportunity",
+      "noun": "opportunities",
+      "date_label": "the opportunity was created",
+      "label": "Sales Cloud opportunities",
+      "export": "An opportunity report for the period: Opportunity ID, Name, Account ID, Created On, Status (Won, Lost or Open) and Closed On, dates with their time.",
+      "required": [
+        "Opportunity ID",
+        "Created On",
+        "Status",
+        "Closed On"
+      ],
+      "fields": [
+        "Name",
+        "Account ID"
+      ],
+      "date_field": "Created On",
+      "object": "c4c_opportunity",
+      "key": [
+        "Opportunity ID"
+      ]
+    },
+    {
+      "name": "SalesCloudQuote",
+      "noun": "quotes",
+      "date_label": "the quote was created",
+      "label": "Sales Cloud quotes",
+      "export": "A quote report for those opportunities: Quote ID, Opportunity ID, Created On, Submitted On, Approved On, Sent On, Accepted On, ERP Sales Order ID and Status, dates with their time.",
+      "required": [
+        "Quote ID",
+        "Opportunity ID",
+        "Created On",
+        "Submitted On",
+        "Approved On",
+        "Sent On",
+        "Accepted On",
+        "ERP Sales Order ID"
+      ],
+      "fields": [
+        "Status"
+      ],
+      "date_field": "Created On",
+      "object": "c4c_quote",
+      "key": [
+        "Quote ID"
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "id": "sales_cloud_offset",
+      "question": "Which time zone are the dates in the Sales Cloud reports in? They show the time zone of the person who ran the report. Give it as an offset from UTC, for example +01:00.",
+      "example": "+01:00"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-opportunity",
+      "table": "SalesCloudOpportunity",
+      "columns": [
+        "Opportunity ID"
+      ],
+      "label": "opportunities listed once"
+    },
+    {
+      "id": "one-quote",
+      "table": "SalesCloudQuote",
+      "columns": [
+        "Quote ID"
+      ],
+      "label": "quotes listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "quotes-have-opportunities",
+      "label": "quotes whose opportunity is in the export",
+      "from": {
+        "table": "SalesCloudQuote",
+        "columns": [
+          "Opportunity ID"
+        ]
+      },
+      "to": {
+        "table": "SalesCloudOpportunity",
+        "columns": [
+          "Opportunity ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "c4c_opportunity",
+        "input": "SalesCloudOpportunity",
+        "namespace": "sales-cloud",
+        "object_type": "opportunity",
+        "key": [
+          "Opportunity ID"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ]
+      },
+      {
+        "id": "c4c_quote",
+        "input": "SalesCloudQuote",
+        "namespace": "sales-cloud",
+        "object_type": "quote",
+        "key": [
+          "Quote ID"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "opportunity_created",
+        "input": "SalesCloudOpportunity",
+        "namespace": "sales-cloud",
+        "key": [
+          "Opportunity ID"
+        ],
+        "activity": {
+          "value": "Create opportunity"
+        },
+        "timestamp": {
+          "date": "Created On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_opportunity",
+            "columns": [
+              "Opportunity ID"
+            ],
+            "qualifier": "opportunity"
+          }
+        ]
+      },
+      {
+        "id": "opportunity_won",
+        "input": "SalesCloudOpportunity",
+        "namespace": "sales-cloud",
+        "key": [
+          "Opportunity ID"
+        ],
+        "activity": {
+          "value": "Win opportunity"
+        },
+        "timestamp": {
+          "date": "Closed On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_opportunity",
+            "columns": [
+              "Opportunity ID"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "where": [
+          {
+            "column": "Status",
+            "in": [
+              "Won"
+            ]
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "opportunity_lost",
+        "input": "SalesCloudOpportunity",
+        "namespace": "sales-cloud",
+        "key": [
+          "Opportunity ID"
+        ],
+        "activity": {
+          "value": "Lose opportunity"
+        },
+        "timestamp": {
+          "date": "Closed On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_opportunity",
+            "columns": [
+              "Opportunity ID"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "where": [
+          {
+            "column": "Status",
+            "in": [
+              "Lost"
+            ]
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "quote_created",
+        "input": "SalesCloudQuote",
+        "namespace": "sales-cloud",
+        "key": [
+          "Quote ID"
+        ],
+        "activity": {
+          "value": "Create quote"
+        },
+        "timestamp": {
+          "date": "Created On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_quote",
+            "columns": [
+              "Quote ID"
+            ],
+            "qualifier": "quote"
+          }
+        ]
+      },
+      {
+        "id": "quote_submitted",
+        "input": "SalesCloudQuote",
+        "namespace": "sales-cloud",
+        "key": [
+          "Quote ID"
+        ],
+        "activity": {
+          "value": "Submit quote for approval"
+        },
+        "timestamp": {
+          "date": "Submitted On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_quote",
+            "columns": [
+              "Quote ID"
+            ],
+            "qualifier": "quote"
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "quote_approved",
+        "input": "SalesCloudQuote",
+        "namespace": "sales-cloud",
+        "key": [
+          "Quote ID"
+        ],
+        "activity": {
+          "value": "Approve quote"
+        },
+        "timestamp": {
+          "date": "Approved On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_quote",
+            "columns": [
+              "Quote ID"
+            ],
+            "qualifier": "quote"
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "quote_sent",
+        "input": "SalesCloudQuote",
+        "namespace": "sales-cloud",
+        "key": [
+          "Quote ID"
+        ],
+        "activity": {
+          "value": "Send quote to customer"
+        },
+        "timestamp": {
+          "date": "Sent On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_quote",
+            "columns": [
+              "Quote ID"
+            ],
+            "qualifier": "quote"
+          }
+        ],
+        "optional_timestamp": true
+      },
+      {
+        "id": "quote_accepted",
+        "input": "SalesCloudQuote",
+        "namespace": "sales-cloud",
+        "key": [
+          "Quote ID"
+        ],
+        "activity": {
+          "value": "Customer accepts quote"
+        },
+        "timestamp": {
+          "date": "Accepted On",
+          "offset": "{setting:sales_cloud_offset}"
+        },
+        "objects": [
+          {
+            "object": "c4c_quote",
+            "columns": [
+              "Quote ID"
+            ],
+            "qualifier": "quote"
+          }
+        ],
+        "optional_timestamp": true
+      }
+    ],
+    "relationships": [
+      {
+        "id": "opportunity_quotes",
+        "input": "SalesCloudQuote",
+        "source": {
+          "object": "c4c_opportunity",
+          "columns": [
+            "Opportunity ID"
+          ],
+          "qualifier": "opportunity"
+        },
+        "target": {
+          "object": "c4c_quote",
+          "columns": [
+            "Quote ID"
+          ],
+          "qualifier": "has quote"
+        }
+      },
+      {
+        "id": "quote_of_opportunity",
+        "input": "SalesCloudQuote",
+        "source": {
+          "object": "c4c_quote",
+          "columns": [
+            "Quote ID"
+          ],
+          "qualifier": "quote"
+        },
+        "target": {
+          "object": "c4c_opportunity",
+          "columns": [
+            "Opportunity ID"
+          ],
+          "qualifier": "for opportunity"
+        }
+      },
+      {
+        "id": "quote_order",
+        "input": "SalesCloudQuote",
+        "source": {
+          "object": "c4c_quote",
+          "columns": [
+            "Quote ID"
+          ],
+          "qualifier": "quote"
+        },
+        "target": {
+          "object": "sales_order",
+          "columns": [
+            "ERP Sales Order ID"
+          ],
+          "qualifier": "became order",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "opportunity_created_quotes",
+        "event": "opportunity_created",
+        "through": "c4c_opportunity",
+        "relationship": "opportunity_quotes",
+        "qualifier": "quote"
+      },
+      {
+        "id": "opportunity_won_quotes",
+        "event": "opportunity_won",
+        "through": "c4c_opportunity",
+        "relationship": "opportunity_quotes",
+        "qualifier": "quote"
+      },
+      {
+        "id": "opportunity_lost_quotes",
+        "event": "opportunity_lost",
+        "through": "c4c_opportunity",
+        "relationship": "opportunity_quotes",
+        "qualifier": "quote"
+      },
+      {
+        "id": "opportunity_created_order",
+        "event": "opportunity_created",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "opportunity_won_order",
+        "event": "opportunity_won",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "opportunity_lost_order",
+        "event": "opportunity_lost",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "quote_created_order",
+        "event": "quote_created",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "quote_submitted_order",
+        "event": "quote_submitted",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "quote_approved_order",
+        "event": "quote_approved",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "quote_sent_order",
+        "event": "quote_sent",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "quote_accepted_order",
+        "event": "quote_accepted",
+        "through": "c4c_quote",
+        "relationship": "quote_order",
+        "qualifier": "order"
+      },
+      {
+        "id": "opportunity_created_lines",
+        "event": "opportunity_created",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "opportunity_won_lines",
+        "event": "opportunity_won",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "opportunity_lost_lines",
+        "event": "opportunity_lost",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "quote_created_lines",
+        "event": "quote_created",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "quote_submitted_lines",
+        "event": "quote_submitted",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "quote_approved_lines",
+        "event": "quote_approved",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "quote_sent_lines",
+        "event": "quote_sent",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "quote_accepted_lines",
+        "event": "quote_accepted",
+        "through": "sales_order",
+        "relationship": "sales_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

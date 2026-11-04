@@ -1,0 +1,177 @@
+{
+  "id": "sap-ecc-requisitions",
+  "note": "Purchase requisitions from SAP ECC or S/4HANA tables.",
+  "tables": [
+    {
+      "name": "EBAN",
+      "noun": "requisition lines",
+      "date_label": "the requisition was created",
+      "label": "Purchase requisition lines",
+      "export": "Requisition lines turned into the exported orders, plus requisitions created in the period.",
+      "required": [
+        "BANFN",
+        "BNFPO",
+        "BADAT",
+        "FRGDT",
+        "EBELN",
+        "EBELP"
+      ],
+      "fields": [
+        "BSART",
+        "ERNAM",
+        "MATNR",
+        "MENGE"
+      ],
+      "date_field": "BADAT",
+      "object": "requisition",
+      "key": [
+        "BANFN",
+        "BNFPO"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-requisition-line",
+      "table": "EBAN",
+      "columns": [
+        "BANFN",
+        "BNFPO"
+      ],
+      "label": "requisition lines listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "requisitions-reach-orders",
+      "label": "requisition lines turned into an exported order line",
+      "from": {
+        "table": "EBAN",
+        "columns": [
+          "EBELN",
+          "EBELP"
+        ],
+        "where": [
+          {
+            "column": "EBELN",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "EKPO",
+        "columns": [
+          "EBELN",
+          "EBELP"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} requisition lines ({missing_share}) were turned into orders that are not in the export, usually orders created after the period or in another company code. They stay in the analysis as requisitions without an order. Is that fine?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Fine, keep them as they are"
+          },
+          {
+            "id": "widen",
+            "label": "Ask the SAP admin to export those orders too"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "requisition",
+        "input": "EBAN",
+        "namespace": "sap",
+        "object_type": "purchase requisition line",
+        "key": [
+          "BANFN",
+          "BNFPO"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "requisition_created",
+        "input": "EBAN",
+        "namespace": "sap",
+        "key": [
+          "BANFN",
+          "BNFPO"
+        ],
+        "activity": {
+          "value": "Create purchase requisition"
+        },
+        "timestamp": {
+          "date": "BADAT",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "requisition",
+            "columns": [
+              "BANFN",
+              "BNFPO"
+            ],
+            "qualifier": "requisition line"
+          },
+          {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "requisition_released",
+        "input": "EBAN",
+        "namespace": "sap",
+        "key": [
+          "BANFN",
+          "BNFPO"
+        ],
+        "activity": {
+          "value": "Release purchase requisition"
+        },
+        "timestamp": {
+          "date": "FRGDT",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "requisition",
+            "columns": [
+              "BANFN",
+              "BNFPO"
+            ],
+            "qualifier": "requisition line"
+          },
+          {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ]
+  }
+}

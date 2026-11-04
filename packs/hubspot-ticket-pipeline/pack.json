@@ -1,0 +1,310 @@
+{
+  "id": "hubspot-ticket-pipeline",
+  "version": 1,
+  "name": "Support tickets (HubSpot)",
+  "system": "HubSpot",
+  "process": "ticket handling",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a HubSpot developer test account. Five planted tickets produced 18 events. Status changes, priority changes and a waiting-state loop matched independent HubSpot histories and saved rework analysis. This is scoped trial coverage, not certification or proof of complete vendor history retention. See the pack README.",
+  "case_object_type": "ticket",
+  "size_check": {
+    "ask": "How many tickets were created or changed in the period?",
+    "unit": "ticket",
+    "steps_per_unit": 4
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "HubSpotTicket",
+      "noun": "tickets",
+      "date_label": "the ticket was created",
+      "label": "HubSpot tickets",
+      "export": "Tickets changed in the period, from the HubSpot extract: id, created, hs_pipeline_stage, hs_pipeline, hs_ticket_priority, hubspot_owner_id, with the status label.",
+      "required": [
+        "id",
+        "created",
+        "hs_pipeline_stage",
+        "hs_pipeline",
+        "hs_ticket_priority",
+        "hubspot_owner_id",
+        "hs_pipeline_stage_label"
+      ],
+      "fields": [],
+      "date_field": "created",
+      "object": "hs_ticket",
+      "key": [
+        "id"
+      ]
+    },
+    {
+      "name": "HubSpotHistory",
+      "label": "HubSpot property history",
+      "export": "The history of the listed properties of those records, from the HubSpot extract: object, record, property, value, label, timestamp, source, user and whether the first value was present at record creation. A first assignment made later is a change.",
+      "required": [
+        "object",
+        "record",
+        "property",
+        "value",
+        "label",
+        "timestamp",
+        "first"
+      ],
+      "fields": [
+        "source",
+        "user"
+      ],
+      "date_field": "timestamp"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-HubSpotTicket",
+      "table": "HubSpotTicket",
+      "columns": [
+        "id"
+      ],
+      "label": "tickets listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "history-has-ticket",
+      "label": "history rows whose ticket is in the extract",
+      "from": {
+        "table": "HubSpotHistory",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "tickets"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "HubSpotTicket",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "hs_ticket",
+        "input": "HubSpotTicket",
+        "namespace": "hubspot",
+        "object_type": "ticket",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "hs_pipeline_stage_label",
+            "name": "status"
+          },
+          {
+            "column": "hs_ticket_priority",
+            "name": "priority"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ticket_created",
+        "input": "HubSpotTicket",
+        "namespace": "hubspot",
+        "key": [
+          "id"
+        ],
+        "activity": {
+          "value": "Create ticket"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "hs_ticket",
+            "columns": [
+              "id"
+            ],
+            "qualifier": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "status_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "tickets"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hs_pipeline_stage"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "column": "label",
+          "prefix": "Status: "
+        }
+      },
+      {
+        "id": "priority_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "tickets"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hs_ticket_priority"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Change priority"
+        }
+      },
+      {
+        "id": "owner_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "tickets"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hubspot_owner_id"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Reassign ticket"
+        }
+      }
+    ]
+  }
+}

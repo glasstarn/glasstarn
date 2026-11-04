@@ -1,0 +1,106 @@
+{
+  "version": 1,
+  "process": "order to cash",
+  "status": "untested",
+  "case_object_type": "sales order item",
+  "size_check": {
+    "ask": "How many sales order items were created in the period for the company code?",
+    "unit": "sales order item",
+    "steps_per_unit": 5
+  },
+  "id": "sap-sales-cloud-s4-cloud-order-to-cash",
+  "name": "Order to cash (SAP Sales Cloud with S/4HANA Public Cloud)",
+  "system": "SAP Sales Cloud with SAP S/4HANA Cloud, public edition",
+  "note": "Written by the Glasstarn project from public knowledge of the front end's standard exports and of the standard SAP S/4HANA Cloud data views. Not yet confirmed on a real system; tested only on made-up files in this layout.",
+  "include": [
+    "sap-clock",
+    "sap-cloud-customers",
+    "sap-cloud-sales",
+    "sap-cloud-billing",
+    "sap-cloud-receivables",
+    "sap-cloud-sales-changes",
+    "sap-sales-cloud-front"
+  ],
+  "checks": [
+    {
+      "id": "front-orders-in-sap",
+      "label": "won quotes whose SAP order is in the export",
+      "from": {
+        "table": "SalesCloudQuote",
+        "columns": [
+          "ERP Sales Order ID"
+        ],
+        "where": [
+          {
+            "column": "ERP Sales Order ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SalesOrder",
+        "columns": [
+          "SalesOrder"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} quotes ({missing_share}) point to SAP orders that are not in the SAP export, usually orders from another period or company code. Should the SAP export cover them?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Yes, export those orders too"
+          },
+          {
+            "id": "keep",
+            "label": "No, keep them without their order"
+          }
+        ],
+        "recommended": "widen"
+      }
+    },
+    {
+      "id": "sap-orders-came-from-front",
+      "label": "SAP standard orders that came from the front-end system",
+      "from": {
+        "table": "SalesOrder",
+        "columns": [
+          "SalesOrder"
+        ],
+        "where": [
+          {
+            "column": "SalesOrderType",
+            "in": [
+              "OR"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SalesCloudQuote",
+        "columns": [
+          "ERP Sales Order ID"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.9,
+      "question": {
+        "text": "{missing} of {total} SAP sales orders ({missing_share}) did not come from the front-end system; they were entered directly in SAP. Is that allowed for some sales, or should it be looked at?",
+        "options": [
+          {
+            "id": "allowed",
+            "label": "Allowed for some sales"
+          },
+          {
+            "id": "finding",
+            "label": "Not expected; treat it as a finding"
+          }
+        ],
+        "recommended": "allowed"
+      }
+    }
+  ]
+}

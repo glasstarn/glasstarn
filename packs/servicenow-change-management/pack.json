@@ -1,0 +1,664 @@
+{
+  "id": "servicenow-change-management",
+  "version": 1,
+  "name": "Change management (ServiceNow)",
+  "system": "ServiceNow",
+  "process": "change management",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of ServiceNow's Table API, its standard tables and the audit history (sys_audit). Checked on a real ServiceNow instance on 2026-10-15 with planted records; see the README. Steps come from audited fields; a field excluded from auditing leaves no steps.",
+  "case_object_type": "change request",
+  "size_check": {
+    "ask": "How many change requests were raised in the period?",
+    "unit": "change request",
+    "steps_per_unit": 12
+  },
+  "custom_prefixes": [
+    "u_"
+  ],
+  "tables": [
+    {
+      "name": "ServiceNowChangeRequest",
+      "noun": "change requests",
+      "date_label": "the change was raised",
+      "label": "ServiceNow change requests",
+      "export": "Change requests with activity in the period, from the ServiceNow extract (table change_request): sys_id, number, created, state, type, risk, approval, assignment_group, start_date, end_date and the company's own fields, with state, type, approval and assignment group labels.",
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "state",
+        "type",
+        "approval",
+        "state_label",
+        "type_label",
+        "approval_label"
+      ],
+      "fields": [
+        "risk",
+        "assignment_group",
+        "start_date",
+        "end_date",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_change",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowChangeTask",
+      "noun": "change tasks",
+      "date_label": "the task was created",
+      "label": "ServiceNow change tasks",
+      "export": "The change tasks of those change requests (table change_task, by change_request): sys_id, number, created, change_request, state, assignment_group, with state and assignment group labels.",
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "change_request",
+        "state",
+        "state_label"
+      ],
+      "fields": [
+        "assignment_group",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_change_task",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowAudit",
+      "label": "ServiceNow audit history",
+      "export": "The audit history (sys_audit) of those records, one row per changed field, from the ServiceNow extract: table, record, audit_id, created, user, field, old and new stored values and their display labels.",
+      "required": [
+        "table",
+        "record",
+        "audit_id",
+        "created",
+        "field",
+        "old_value",
+        "old_label",
+        "new_value",
+        "new_label"
+      ],
+      "fields": [
+        "user"
+      ],
+      "date_field": "created"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ServiceNowChangeRequest",
+      "table": "ServiceNowChangeRequest",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "change requests listed once"
+    },
+    {
+      "id": "one-ServiceNowChangeTask",
+      "table": "ServiceNowChangeTask",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "change tasks listed once"
+    },
+    {
+      "id": "one-audit-row",
+      "table": "ServiceNowAudit",
+      "columns": [
+        "audit_id"
+      ],
+      "label": "audit rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "audit-has-change-request",
+      "label": "audit rows whose change request is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_request"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowChangeRequest",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "audit-has-change-task",
+      "label": "audit rows whose change task is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_task"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowChangeTask",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "tasks-have-changes",
+      "label": "change tasks whose change request is in the extract",
+      "from": {
+        "table": "ServiceNowChangeTask",
+        "columns": [
+          "change_request"
+        ]
+      },
+      "to": {
+        "table": "ServiceNowChangeRequest",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sn_change",
+        "input": "ServiceNowChangeRequest",
+        "namespace": "servicenow",
+        "object_type": "change request",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "type_label",
+            "name": "type"
+          },
+          {
+            "column": "risk",
+            "name": "risk"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      },
+      {
+        "id": "sn_change_task",
+        "input": "ServiceNowChangeTask",
+        "namespace": "servicenow",
+        "object_type": "change task",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "task_of_change",
+        "input": "ServiceNowChangeTask",
+        "source": {
+          "object": "sn_change_task",
+          "columns": [
+            "sys_id"
+          ],
+          "qualifier": "task"
+        },
+        "target": {
+          "object": "sn_change",
+          "columns": [
+            "change_request"
+          ],
+          "qualifier": "of change"
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "change_raised",
+        "input": "ServiceNowChangeRequest",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Raise change"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_change",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "change"
+          }
+        ]
+      },
+      {
+        "id": "change_state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_request"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_change",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "change"
+          }
+        ],
+        "activity": {
+          "column": "new_label"
+        }
+      },
+      {
+        "id": "change_approval",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_request"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "approval"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_change",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "change"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Approval "
+        }
+      },
+      {
+        "id": "change_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_request"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_change",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "change"
+          }
+        ],
+        "activity": {
+          "value": "Reassign change"
+        }
+      },
+      {
+        "id": "change_field_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_request"
+            ]
+          },
+          {
+            "column": "field",
+            "not_in": [
+              "state",
+              "approval",
+              "assignment_group",
+              "assigned_to",
+              "work_notes",
+              "comments"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_change",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "change"
+          }
+        ],
+        "activity": {
+          "column": "field",
+          "prefix": "Change "
+        }
+      },
+      {
+        "id": "task_created",
+        "input": "ServiceNowChangeTask",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Create change task"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_change_task",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_change",
+            "columns": [
+              "change_request"
+            ],
+            "qualifier": "change"
+          }
+        ]
+      },
+      {
+        "id": "task_state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_task"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_change_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_change",
+            "columns": [
+              "change_request"
+            ],
+            "qualifier": "change"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Change task "
+        },
+        "lookup": {
+          "input": "ServiceNowChangeTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "change_request"
+          ]
+        }
+      },
+      {
+        "id": "task_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "change_task"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_change_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_change",
+            "columns": [
+              "change_request"
+            ],
+            "qualifier": "change"
+          }
+        ],
+        "activity": {
+          "value": "Reassign change task"
+        },
+        "lookup": {
+          "input": "ServiceNowChangeTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "change_request"
+          ]
+        }
+      }
+    ]
+  }
+}

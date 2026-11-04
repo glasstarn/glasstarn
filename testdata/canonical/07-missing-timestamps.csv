@@ -1,0 +1,13 @@
+case_id,activity,timestamp
+REQ-1,Submit,2026-09-01 09:00:00
+REQ-1,Review,
+REQ-1,Approve,2026-09-02 14:00:00
+REQ-2,Submit,2026-09-01 10:00:00
+REQ-2,Review,2026-09-01 15:00:00
+REQ-2,Approve,2026-09-02 09:00:00
+REQ-3,Submit,
+REQ-3,Review,
+REQ-3,Approve,
+REQ-4,Submit,2026-09-02 08:00:00
+REQ-4,Review,2026-09-02 13:00:00
+REQ-4,Approve,2026-09-03 10:00:00

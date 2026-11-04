@@ -1,0 +1,277 @@
+{
+  "id": "sap-ariba-purchase-to-pay",
+  "version": 2,
+  "name": "Purchase to pay (SAP Ariba with SAP ECC or S/4HANA)",
+  "system": "SAP Ariba Buying with SAP ECC or SAP S/4HANA (on-premise or private cloud)",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of SAP Ariba reporting and the standard SAP tables. Requisitions, approvals and supplier invoices received in Ariba come from Ariba report exports; orders, goods receipts, invoices and payments from the SAP tables, linked by the ERP order number Ariba stores on each order. Not yet confirmed on a real Ariba site; tested only on made-up files. Ariba report column names depend on how the report is set up, so the checklist names the columns to include.",
+  "case_object_type": "purchase order item",
+  "size_check": {
+    "ask": "How many purchase order lines (table EKPO) were created in the period for the company code?",
+    "unit": "purchase order line",
+    "steps_per_unit": 4
+  },
+  "include": [
+    "sap-clock",
+    "sap-ariba-buying",
+    "sap-ariba-invoicing",
+    "sap-ecc-vendors",
+    "sap-ecc-purchasing",
+    "sap-ecc-payables",
+    "sap-ecc-purchasing-changes"
+  ],
+  "checks": [
+    {
+      "id": "requisitions-reach-sap-orders",
+      "label": "Ariba requisitions whose SAP order is in the export",
+      "from": {
+        "table": "AribaRequisition",
+        "columns": [
+          "ERP Order ID"
+        ],
+        "where": [
+          {
+            "column": "ERP Order ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "EKKO",
+        "columns": [
+          "EBELN"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} Ariba requisitions ({missing_share}) point to SAP orders that are not in the SAP export, usually orders created after the period or in another company code. They stay in the analysis as requisitions without an order. Is that fine?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Fine, keep them as they are"
+          },
+          {
+            "id": "widen",
+            "label": "Ask the SAP admin to export those orders too"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "ariba-orders-in-sap",
+      "label": "Ariba orders found in SAP",
+      "from": {
+        "table": "AribaOrder",
+        "columns": [
+          "ERP Order ID"
+        ]
+      },
+      "to": {
+        "table": "EKKO",
+        "columns": [
+          "EBELN"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} Ariba orders ({missing_share}) have no matching order in the SAP export. Either the SAP export misses them (another company code or period) or they failed to reach SAP. Which is it?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "The SAP export misses them; export them too"
+          },
+          {
+            "id": "failed",
+            "label": "They did not reach SAP; treat that as a finding"
+          }
+        ],
+        "recommended": "widen"
+      }
+    },
+    {
+      "id": "sap-orders-came-through-ariba",
+      "label": "SAP orders that came through Ariba",
+      "from": {
+        "table": "EKKO",
+        "columns": [
+          "EBELN"
+        ]
+      },
+      "to": {
+        "table": "AribaOrder",
+        "columns": [
+          "ERP Order ID"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.99,
+      "question": {
+        "text": "{missing} of {total} SAP orders ({missing_share}) were created directly in SAP, not through Ariba. Is that allowed for some purchases, or is it buying outside the agreed process?",
+        "options": [
+          {
+            "id": "allowed",
+            "label": "Allowed for some purchases"
+          },
+          {
+            "id": "finding",
+            "label": "Not allowed; treat it as a finding"
+          }
+        ],
+        "recommended": "allowed"
+      }
+    },
+    {
+      "id": "ariba-invoices-in-sap",
+      "label": "approved Ariba invoices found in SAP",
+      "from": {
+        "table": "AribaInvoice",
+        "columns": [
+          "ERP Invoice ID",
+          "ERP Fiscal Year"
+        ],
+        "where": [
+          {
+            "column": "ERP Invoice ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "RBKP",
+        "columns": [
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} invoices approved in Ariba ({missing_share}) have no matching invoice in the SAP export. Either the SAP export misses them (another period or company code) or they did not reach SAP. Which is it?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "The SAP export misses them; export them too"
+          },
+          {
+            "id": "failed",
+            "label": "They did not reach SAP; treat that as a finding"
+          }
+        ],
+        "recommended": "widen"
+      }
+    }
+  ],
+  "tables": [
+    {
+      "name": "EKKO",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase order headers",
+      "export": "Orders of the company code created in the period (filter BUKRS and AEDAT), including those that came from Ariba.",
+      "required": [
+        "EBELN",
+        "BUKRS",
+        "LIFNR",
+        "AEDAT"
+      ],
+      "fields": [
+        "BSART",
+        "ERNAM",
+        "EKORG",
+        "EKGRP",
+        "WAERS",
+        "FRGKE"
+      ],
+      "date_field": "AEDAT",
+      "object": "order",
+      "key": [
+        "EBELN"
+      ],
+      "scope_field": "BUKRS",
+      "fan_out": [
+        {
+          "input": "EKPO",
+          "event_key": [
+            "EBELN"
+          ],
+          "target": {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line"
+          }
+        }
+      ]
+    }
+  ],
+  "recipe": {
+    "carried_links": [
+      {
+        "id": "ariba_invoice_received_lines",
+        "event": "ariba_invoice_received",
+        "through": "invoice",
+        "relationship": "invoice_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "ariba_invoice_received_lines_orders",
+        "event": "ariba_invoice_received",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_invoice_exception_resolved_lines",
+        "event": "ariba_invoice_exception_resolved",
+        "through": "invoice",
+        "relationship": "invoice_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "ariba_invoice_exception_resolved_lines_orders",
+        "event": "ariba_invoice_exception_resolved",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_invoice_approved_lines",
+        "event": "ariba_invoice_approved",
+        "through": "invoice",
+        "relationship": "invoice_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "ariba_invoice_approved_lines_orders",
+        "event": "ariba_invoice_approved",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "ariba_invoice_rejected_lines",
+        "event": "ariba_invoice_rejected",
+        "through": "invoice",
+        "relationship": "invoice_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "ariba_invoice_rejected_lines_orders",
+        "event": "ariba_invoice_rejected",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

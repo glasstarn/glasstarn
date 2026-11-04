@@ -1,0 +1,1033 @@
+{
+  "id": "sap-ecc-payables",
+  "note": "Supplier invoices and their payment from SAP ECC or S/4HANA tables.",
+  "tables": [
+    {
+      "name": "RBKP",
+      "noun": "supplier invoices",
+      "date_label": "the invoice was entered",
+      "label": "Supplier invoice headers",
+      "export": "Invoices of the company code entered in the period or later, up to the export date (filter BUKRS and CPUDT). Include invoice origin, status and reversal references; account-maintenance documents must not be classified as credit memos.",
+      "required": [
+        "BELNR",
+        "GJAHR",
+        "BUKRS",
+        "LIFNR",
+        "CPUDT",
+        "CPUTM",
+        "RMWWR",
+        "XRECH",
+        "IVTYP",
+        "RBSTAT",
+        "STBLG",
+        "STJAH"
+      ],
+      "fields": [
+        "BLART",
+        "BLDAT",
+        "BUDAT",
+        "USNAM",
+        "WAERS",
+        "XBLNR"
+      ],
+      "date_field": "CPUDT",
+      "object": "invoice",
+      "key": [
+        "BELNR",
+        "GJAHR"
+      ],
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "RSEG",
+      "label": "Supplier invoice lines",
+      "export": "Lines of the exported invoices (filter BELNR and GJAHR by the RBKP export).",
+      "required": [
+        "BELNR",
+        "GJAHR",
+        "BUZEI",
+        "EBELN",
+        "EBELP"
+      ],
+      "fields": [
+        "MENGE",
+        "WRBTR"
+      ]
+    },
+    {
+      "name": "BKPF",
+      "label": "Accounting document headers",
+      "export": "Vendor invoice documents of the company code in the same period as RBKP (filter BUKRS, CPUDT, and document types for invoices, usually RE and KR).",
+      "required": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "AWTYP",
+        "AWKEY"
+      ],
+      "fields": [
+        "BLART",
+        "BLDAT",
+        "BUDAT",
+        "CPUDT",
+        "CPUTM",
+        "USNAM"
+      ],
+      "date_field": "CPUDT",
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "BSAK",
+      "label": "Paid (cleared) vendor items",
+      "export": "Cleared vendor items of the company code for the exported accounting documents, cleared up to the export date.",
+      "required": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR",
+        "LIFNR",
+        "SHKZG",
+        "AUGDT"
+      ],
+      "fields": [
+        "AUGBL",
+        "BUZEI",
+        "BLART",
+        "BUDAT",
+        "ZFBDT",
+        "ZBD1T",
+        "DMBTR",
+        "WAERS"
+      ],
+      "date_field": "AUGDT",
+      "scope_field": "BUKRS"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-invoice",
+      "table": "RBKP",
+      "columns": [
+        "BELNR",
+        "GJAHR"
+      ],
+      "label": "invoices listed once (number plus fiscal year)"
+    },
+    {
+      "id": "one-invoice-item",
+      "table": "RSEG",
+      "columns": [
+        "BELNR",
+        "GJAHR",
+        "BUZEI"
+      ],
+      "label": "invoice items listed once (invoice, fiscal year and item)"
+    },
+    {
+      "id": "one-accounting-document",
+      "table": "BKPF",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR"
+      ],
+      "label": "accounting documents listed once"
+    },
+    {
+      "id": "one-payment-per-invoice",
+      "table": "BSAK",
+      "columns": [
+        "BUKRS",
+        "BELNR",
+        "GJAHR"
+      ],
+      "where": [
+        {
+          "column": "SHKZG",
+          "in": [
+            "H"
+          ]
+        }
+      ],
+      "label": "each invoice document paid in one line"
+    }
+  ],
+  "checks": [
+    {
+      "id": "invoices-have-vendors",
+      "label": "invoices whose vendor is in the vendor list",
+      "from": {
+        "table": "RBKP",
+        "columns": [
+          "LIFNR"
+        ],
+        "where": [
+          {
+            "column": "IVTYP",
+            "not_in": [
+              "C",
+              "E",
+              "5"
+            ]
+          },
+          {
+            "column": "RBSTAT",
+            "in": [
+              "5"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "LFA1",
+        "columns": [
+          "LIFNR"
+        ]
+      },
+      "expect": "all",
+      "require_nonblank": true
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice header is in the export",
+      "from": {
+        "table": "RSEG",
+        "columns": [
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "to": {
+        "table": "RBKP",
+        "columns": [
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "accounting-matches-invoices",
+      "label": "accounting documents from purchasing that match an exported invoice",
+      "from": {
+        "table": "BKPF",
+        "columns": [
+          {
+            "column": "AWKEY",
+            "start": 0,
+            "length": 10
+          },
+          {
+            "column": "AWKEY",
+            "start": 10,
+            "length": 4
+          }
+        ],
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "RMRP"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "RBKP",
+        "columns": [
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-reach-orders",
+      "label": "invoice lines whose order line is in the export",
+      "from": {
+        "table": "RSEG",
+        "columns": [
+          "EBELN",
+          "EBELP"
+        ]
+      },
+      "to": {
+        "table": "EKPO",
+        "columns": [
+          "EBELN",
+          "EBELP"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines ({missing_share}) charge orders that are not in the export, usually orders created before the period. Those invoices will show without their order's earlier steps. Should the SAP admin export older orders too?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Yes, export orders from earlier months as well"
+          },
+          {
+            "id": "keep",
+            "label": "No, analyse the invoices without those orders"
+          }
+        ],
+        "recommended": "widen"
+      }
+    },
+    {
+      "id": "invoices-have-order-lines",
+      "label": "invoices with at least one order line",
+      "from": {
+        "table": "RBKP",
+        "columns": [
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "to": {
+        "table": "RSEG",
+        "columns": [
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95
+    },
+    {
+      "id": "paid-invoices-came-through-purchasing",
+      "label": "paid vendor invoices that came through purchasing",
+      "from": {
+        "table": "BSAK",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "SHKZG",
+            "in": [
+              "H"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "BKPF",
+        "columns": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "RMRP"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.98,
+      "question": {
+        "text": "{missing} of {total} paid vendor invoices ({missing_share}) were posted straight in accounting with no purchase order. They show as payments to the vendor only, outside the order-to-payment flow. Is that how your company handles some invoices, for example utilities or rent?",
+        "options": [
+          {
+            "id": "expected",
+            "label": "Yes, that is expected"
+          },
+          {
+            "id": "investigate",
+            "label": "No, they should have orders; treat them as a finding"
+          }
+        ],
+        "recommended": "expected"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "invoice",
+        "input": "RBKP",
+        "namespace": "sap",
+        "object_type": "invoice verification document",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "attributes": [
+          {
+            "column": "BUKRS",
+            "name": "company code"
+          },
+          {
+            "column": "RMWWR",
+            "name": "invoice amount"
+          },
+          {
+            "column": "IVTYP",
+            "name": "document origin"
+          },
+          {
+            "column": "RBSTAT",
+            "name": "document status"
+          }
+        ]
+      },
+      {
+        "id": "payable",
+        "input": "BKPF",
+        "namespace": "sap",
+        "object_type": "payable posting",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ]
+      },
+      {
+        "id": "invoice_item",
+        "input": "RSEG",
+        "namespace": "sap",
+        "object_type": "supplier invoice item",
+        "key": [
+          "BELNR",
+          "GJAHR",
+          "BUZEI"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "invoice_recorded",
+        "input": "RBKP",
+        "namespace": "sap",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Record invoice"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "XRECH",
+            "in": [
+              "X"
+            ]
+          },
+          {
+            "column": "IVTYP",
+            "not_in": [
+              "C",
+              "E",
+              "5"
+            ]
+          },
+          {
+            "column": "RBSTAT",
+            "in": [
+              "5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "credit_memo_recorded",
+        "input": "RBKP",
+        "namespace": "sap",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Receive credit memo"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "credit memo"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "XRECH",
+            "in": [
+              ""
+            ]
+          },
+          {
+            "column": "IVTYP",
+            "not_in": [
+              "C",
+              "E",
+              "5"
+            ]
+          },
+          {
+            "column": "RBSTAT",
+            "in": [
+              "5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "invoice_paid",
+        "input": "BSAK",
+        "namespace": "sap",
+        "key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "SHKZG",
+            "in": [
+              "H"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Clear vendor item"
+        },
+        "timestamp": {
+          "date": "AUGDT",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor"
+          }
+        ]
+      },
+      {
+        "id": "account_maintenance_recorded",
+        "input": "RBKP",
+        "namespace": "sap",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Maintain GR/IR account"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor",
+            "optional": true
+          }
+        ],
+        "where": [
+          {
+            "column": "IVTYP",
+            "in": [
+              "C",
+              "E"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "invoice_reversal_recorded",
+        "input": "RBKP",
+        "namespace": "sap",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Record invoice reversal"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor",
+            "optional": true
+          },
+          {
+            "object": "invoice",
+            "columns": [
+              "STBLG",
+              "STJAH"
+            ],
+            "qualifier": "reverses",
+            "allow_unmatched": true
+          }
+        ],
+        "where": [
+          {
+            "column": "IVTYP",
+            "in": [
+              "5"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "parked_invoice_entered",
+        "input": "RBKP",
+        "namespace": "sap",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Enter parked invoice"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor",
+            "optional": true
+          }
+        ],
+        "where": [
+          {
+            "column": "RBSTAT",
+            "in": [
+              "A",
+              "B"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "held_invoice_entered",
+        "input": "RBKP",
+        "namespace": "sap",
+        "key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "activity": {
+          "value": "Enter held invoice"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "invoice",
+            "columns": [
+              "BELNR",
+              "GJAHR"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor",
+            "optional": true
+          }
+        ],
+        "where": [
+          {
+            "column": "RBSTAT",
+            "in": [
+              "D"
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "invoice_order_lines",
+        "input": "RSEG",
+        "source": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "EBELN",
+            "EBELP"
+          ],
+          "qualifier": "charges order line",
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "payable_invoice",
+        "input": "BKPF",
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "RMRP"
+            ]
+          }
+        ],
+        "source": {
+          "object": "payable",
+          "columns": [
+            "BUKRS",
+            "BELNR",
+            "GJAHR"
+          ],
+          "qualifier": "posting"
+        },
+        "target": {
+          "object": "invoice",
+          "columns": [
+            {
+              "column": "AWKEY",
+              "start": 0,
+              "length": 10
+            },
+            {
+              "column": "AWKEY",
+              "start": 10,
+              "length": 4
+            }
+          ],
+          "qualifier": "posts invoice"
+        }
+      },
+      {
+        "id": "invoice_items",
+        "input": "RSEG",
+        "source": {
+          "object": "invoice",
+          "columns": [
+            "BELNR",
+            "GJAHR"
+          ],
+          "qualifier": "invoice"
+        },
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "invoice_lines",
+        "input": "RSEG",
+        "event": "invoice_recorded",
+        "event_key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "optional_event": true
+      },
+      {
+        "id": "credit_memo_lines",
+        "input": "RSEG",
+        "event": "credit_memo_recorded",
+        "event_key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "optional_event": true
+      },
+      {
+        "id": "payment_of_invoice",
+        "input": "BKPF",
+        "event": "invoice_paid",
+        "event_key": [
+          "BUKRS",
+          "BELNR",
+          "GJAHR"
+        ],
+        "where": [
+          {
+            "column": "AWTYP",
+            "in": [
+              "RMRP"
+            ]
+          }
+        ],
+        "optional_event": true,
+        "target": {
+          "object": "invoice",
+          "columns": [
+            {
+              "column": "AWKEY",
+              "start": 0,
+              "length": 10
+            },
+            {
+              "column": "AWKEY",
+              "start": 10,
+              "length": 4
+            }
+          ],
+          "qualifier": "paid invoice"
+        }
+      },
+      {
+        "id": "account_maintenance_recorded_items",
+        "input": "RSEG",
+        "event": "account_maintenance_recorded",
+        "event_key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "optional_event": true
+      },
+      {
+        "id": "invoice_reversal_recorded_items",
+        "input": "RSEG",
+        "event": "invoice_reversal_recorded",
+        "event_key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "optional_event": true
+      },
+      {
+        "id": "parked_invoice_entered_items",
+        "input": "RSEG",
+        "event": "parked_invoice_entered",
+        "event_key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "optional_event": true
+      },
+      {
+        "id": "held_invoice_entered_items",
+        "input": "RSEG",
+        "event": "held_invoice_entered",
+        "event_key": [
+          "BELNR",
+          "GJAHR"
+        ],
+        "target": {
+          "object": "invoice_item",
+          "columns": [
+            "BELNR",
+            "GJAHR",
+            "BUZEI"
+          ],
+          "qualifier": "invoice item"
+        },
+        "optional_event": true
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "payment_invoice_items",
+        "event": "invoice_paid",
+        "through": "invoice",
+        "relationship": "invoice_items",
+        "qualifier": "paid invoice item"
+      },
+      {
+        "id": "reversal_invoice_items",
+        "event": "invoice_reversal_recorded",
+        "through": "invoice",
+        "relationship": "invoice_items",
+        "qualifier": "reversed invoice item"
+      },
+      {
+        "id": "payment_order_lines",
+        "event": "invoice_paid",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "paid order line"
+      },
+      {
+        "id": "invoice_lines_orders",
+        "event": "invoice_recorded",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "invoiced order line"
+      },
+      {
+        "id": "credit_memo_lines_orders",
+        "event": "credit_memo_recorded",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "credited order line"
+      },
+      {
+        "id": "account_maintenance_recorded_orders",
+        "event": "account_maintenance_recorded",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "invoice_reversal_recorded_orders",
+        "event": "invoice_reversal_recorded",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "parked_invoice_entered_orders",
+        "event": "parked_invoice_entered",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "held_invoice_entered_orders",
+        "event": "held_invoice_entered",
+        "through": "invoice_item",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

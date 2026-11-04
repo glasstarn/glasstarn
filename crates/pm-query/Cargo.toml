@@ -1,0 +1,28 @@
+[package]
+name = "pm-query"
+description = "The shared query layer. Browser, CLI, and MCP all call this and nothing below it."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-ingest = { path = "../pm-ingest" }
+pm-project = { path = "../pm-project" }
+thiserror.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+sha2 = "0.10"
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+csv = "1.4.0"
+tempfile = "3"
+
+[dev-dependencies]
+pm-testgen = { path = "../pm-testgen" }
+
+[lints.rust]
+unsafe_code = "forbid"

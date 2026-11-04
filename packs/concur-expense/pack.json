@@ -1,0 +1,350 @@
+{
+  "id": "concur-expense",
+  "version": 1,
+  "name": "Expense reports (SAP Concur)",
+  "system": "SAP Concur Expense",
+  "process": "expense reporting",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of SAP Concur Expense reports, entries and approval workflow. Not yet confirmed on a real Concur site; tested only on made-up extracts. Step names in the workflow come from the site's own approval workflow.",
+  "case_object_type": "expense report",
+  "size_check": {
+    "ask": "How many expense reports were created in the period?",
+    "unit": "expense report",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "Custom*",
+    "OrgUnit*"
+  ],
+  "settings": [
+    {
+      "id": "concur_offset",
+      "question": "Expense transaction dates are dates without a time. Which time zone should they be read in? Give it as an offset from UTC, for example +01:00.",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "Report",
+      "noun": "expense reports",
+      "date_label": "the report was created",
+      "label": "Expense reports",
+      "export": "Expense reports created in the period: ReportId, CreateDate, SubmitDate, ApprovalStatusCode, PaymentStatusCode, Total, CurrencyCode, PaidDate, PolicyName, OwnerId and the site's own fields. Times in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "ReportId",
+        "CreateDate",
+        "ApprovalStatusCode",
+        "PaymentStatusCode",
+        "Total",
+        "CurrencyCode"
+      ],
+      "fields": [
+        "SubmitDate",
+        "PaidDate",
+        "PolicyName",
+        "OwnerId"
+      ],
+      "date_field": "CreateDate",
+      "object": "expense_report",
+      "key": [
+        "ReportId"
+      ]
+    },
+    {
+      "name": "Entry",
+      "noun": "expense entries",
+      "label": "Expense entries",
+      "export": "The expenses on those reports: EntryId, ReportId, ExpenseTypeName, TransactionDate, TransactionAmount, TransactionCurrencyCode, HasExceptions and IsPersonal. No descriptions or receipts.",
+      "required": [
+        "EntryId",
+        "ReportId",
+        "ExpenseTypeName",
+        "TransactionDate",
+        "TransactionAmount"
+      ],
+      "fields": [
+        "TransactionCurrencyCode",
+        "HasExceptions",
+        "IsPersonal"
+      ],
+      "date_field": "TransactionDate",
+      "object": "expense_entry",
+      "key": [
+        "EntryId"
+      ]
+    },
+    {
+      "name": "WorkflowAction",
+      "label": "Approval workflow actions",
+      "export": "The approval history of those reports (the audit trail of workflow actions): ActionId, ReportId, Action, ActionDate and ActorRole. Times in UTC.",
+      "required": [
+        "ActionId",
+        "ReportId",
+        "Action",
+        "ActionDate"
+      ],
+      "fields": [
+        "ActorRole",
+        "ActorId"
+      ],
+      "date_field": "ActionDate"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-report",
+      "table": "Report",
+      "columns": [
+        "ReportId"
+      ],
+      "label": "reports listed once"
+    },
+    {
+      "id": "one-entry",
+      "table": "Entry",
+      "columns": [
+        "EntryId"
+      ],
+      "label": "entries listed once"
+    },
+    {
+      "id": "one-workflow-action",
+      "table": "WorkflowAction",
+      "columns": [
+        "ActionId"
+      ],
+      "label": "workflow actions listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "entries-have-reports",
+      "label": "entries whose report is in the export",
+      "from": {
+        "table": "Entry",
+        "columns": [
+          "ReportId"
+        ]
+      },
+      "to": {
+        "table": "Report",
+        "columns": [
+          "ReportId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "actions-have-reports",
+      "label": "workflow actions whose report is in the export",
+      "from": {
+        "table": "WorkflowAction",
+        "columns": [
+          "ReportId"
+        ]
+      },
+      "to": {
+        "table": "Report",
+        "columns": [
+          "ReportId"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "expense_report",
+        "input": "Report",
+        "namespace": "concur",
+        "object_type": "expense report",
+        "key": [
+          "ReportId"
+        ],
+        "attributes": [
+          {
+            "column": "PolicyName",
+            "name": "policy"
+          },
+          {
+            "column": "Total",
+            "name": "total"
+          },
+          {
+            "column": "CurrencyCode",
+            "name": "currency"
+          },
+          {
+            "column": "ApprovalStatusCode",
+            "name": "approval status"
+          }
+        ]
+      },
+      {
+        "id": "expense_entry",
+        "input": "Entry",
+        "namespace": "concur",
+        "object_type": "expense entry",
+        "key": [
+          "EntryId"
+        ],
+        "attributes": [
+          {
+            "column": "ExpenseTypeName",
+            "name": "expense type"
+          },
+          {
+            "column": "TransactionAmount",
+            "name": "amount"
+          },
+          {
+            "column": "HasExceptions",
+            "name": "has exceptions"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "report_created",
+        "input": "Report",
+        "namespace": "concur",
+        "key": [
+          "ReportId"
+        ],
+        "activity": {
+          "value": "Create expense report"
+        },
+        "timestamp": "CreateDate",
+        "objects": [
+          {
+            "object": "expense_report",
+            "columns": [
+              "ReportId"
+            ],
+            "qualifier": "report"
+          }
+        ]
+      },
+      {
+        "id": "expense_incurred",
+        "input": "Entry",
+        "namespace": "concur",
+        "key": [
+          "EntryId"
+        ],
+        "activity": {
+          "value": "Incur expense"
+        },
+        "timestamp": {
+          "date": "TransactionDate",
+          "offset": "{setting:concur_offset}"
+        },
+        "attributes": [
+          {
+            "column": "ExpenseTypeName",
+            "name": "expense type"
+          },
+          {
+            "column": "TransactionAmount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "expense_entry",
+            "columns": [
+              "EntryId"
+            ],
+            "qualifier": "expense"
+          },
+          {
+            "object": "expense_report",
+            "columns": [
+              "ReportId"
+            ],
+            "qualifier": "report"
+          }
+        ]
+      },
+      {
+        "id": "workflow_action",
+        "input": "WorkflowAction",
+        "namespace": "concur",
+        "key": [
+          "ActionId"
+        ],
+        "activity": {
+          "column": "Action"
+        },
+        "timestamp": "ActionDate",
+        "attributes": [
+          {
+            "column": "ActorRole",
+            "name": "role"
+          }
+        ],
+        "objects": [
+          {
+            "object": "expense_report",
+            "columns": [
+              "ReportId"
+            ],
+            "qualifier": "report"
+          }
+        ]
+      },
+      {
+        "id": "employee_paid",
+        "input": "Report",
+        "namespace": "concur",
+        "key": [
+          "ReportId"
+        ],
+        "activity": {
+          "value": "Pay employee"
+        },
+        "timestamp": "PaidDate",
+        "optional_timestamp": true,
+        "attributes": [
+          {
+            "column": "Total",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "expense_report",
+            "columns": [
+              "ReportId"
+            ],
+            "qualifier": "report"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "entry_on_report",
+        "input": "Entry",
+        "source": {
+          "object": "expense_entry",
+          "columns": [
+            "EntryId"
+          ],
+          "qualifier": "expense"
+        },
+        "target": {
+          "object": "expense_report",
+          "columns": [
+            "ReportId"
+          ],
+          "qualifier": "on report"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "id": "d365-human-resources-leave",
+  "version": 1,
+  "name": "Leave requests (Dynamics 365 Human Resources)",
+  "system": "Microsoft Dynamics 365 Human Resources",
+  "process": "leave and absence",
+  "status": "tested",
+  "note": "Live demo validation covered an open draft and a separate request submitted then canceled through the requester workflow. Four events, two requests and four links matched independently recorded source timestamps, IDs, hashes and rows. Manual approval/rejection and other Human Resources workloads remain untested.",
+  "case_object_type": "leave request",
+  "size_check": {
+    "ask": "How many leave requests were created in the period?",
+    "unit": "leave request",
+    "steps_per_unit": 3
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "LeaveRequest",
+      "noun": "leave requests",
+      "label": "Leave requests",
+      "export": "Requests in scope from one legal entity: RecId, CreatedDateTime (UTC). Optional RequestId, DataAreaId, Status and LeaveClassification. Exclude worker names, health reasons, comments and attachments. Preserve the original source workbook and verify the exporting user timezone before normalizing timestamps.",
+      "required": [
+        "RecId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "RequestId",
+        "DataAreaId",
+        "Status",
+        "LeaveClassification"
+      ],
+      "date_field": "CreatedDateTime",
+      "object": "hr_leave_request",
+      "key": [
+        "RecId"
+      ]
+    },
+    {
+      "name": "WorkflowTrackingTable",
+      "label": "Leave request workflow history",
+      "export": "All workflow tracking rows linked to those leave requests, including canceled and earlier instances. Export RecId, LeaveRequestRecId, TrackingType (label), CreatedDateTime (UTC), with optional TrackingContext and User. Derive LeaveRequestRecId by joining WorkflowTrackingTable.WorkflowTrackingStatusTable to WorkflowTrackingStatusTable.RecId, then ContextRecId to LeaveRequest.RecId, requiring the actual LeaveRequest ContextTableId and matching ContextCompanyId. Static table-browser exports display the workflow reference as InstanceNumber; resolve that representation through the status table before joining. Never assign every workflow in a company to every request.",
+      "required": [
+        "RecId",
+        "LeaveRequestRecId",
+        "TrackingType",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "TrackingContext",
+        "User"
+      ],
+      "date_field": "CreatedDateTime",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-request",
+      "table": "LeaveRequest",
+      "columns": [
+        "RecId"
+      ],
+      "label": "leave requests listed once"
+    },
+    {
+      "id": "one-tracking-row",
+      "table": "WorkflowTrackingTable",
+      "columns": [
+        "RecId"
+      ],
+      "label": "workflow tracking rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "history-has-request",
+      "label": "workflow history whose leave request is in the export",
+      "from": {
+        "table": "WorkflowTrackingTable",
+        "columns": [
+          "LeaveRequestRecId"
+        ]
+      },
+      "to": {
+        "table": "LeaveRequest",
+        "columns": [
+          "RecId"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "hr_leave_request",
+        "input": "LeaveRequest",
+        "namespace": "d365",
+        "object_type": "leave request",
+        "key": [
+          "RecId"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "current status"
+          },
+          {
+            "column": "LeaveClassification",
+            "name": "classification"
+          },
+          {
+            "column": "DataAreaId",
+            "name": "legal entity"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "hr_request_created",
+        "input": "LeaveRequest",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Create leave request"
+        },
+        "timestamp": "CreatedDateTime",
+        "objects": [
+          {
+            "object": "hr_leave_request",
+            "columns": [
+              "RecId"
+            ],
+            "qualifier": "leave request"
+          }
+        ]
+      },
+      {
+        "id": "hr_leave_workflow",
+        "input": "WorkflowTrackingTable",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "where": [
+          {
+            "column": "TrackingType",
+            "in": [
+              "Submission",
+              "Approval",
+              "Rejection",
+              "RequestChange",
+              "Delegation",
+              "Escalation",
+              "Cancellation"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "TrackingType",
+          "prefix": "Leave workflow: "
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "User",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hr_leave_request",
+            "columns": [
+              "LeaveRequestRecId"
+            ],
+            "qualifier": "leave request"
+          }
+        ]
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "leave-request",
+      "label": "Internal leave request record ID",
+      "object": "hr_leave_request",
+      "table": "LeaveRequest",
+      "key": [
+        "RecId"
+      ],
+      "example": "5637140000",
+      "carry": []
+    }
+  ]
+}

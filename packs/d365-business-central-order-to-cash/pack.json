@@ -1,0 +1,1017 @@
+{
+  "id": "d365-business-central-order-to-cash",
+  "version": 2,
+  "name": "Order to cash (Dynamics 365 Business Central)",
+  "system": "Microsoft Dynamics 365 Business Central",
+  "process": "order to cash",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a Business Central online CRONUS demo company (2026-10-16), from the standard configuration-package export, with order archiving off and on: check and build passed and every step count matched the source tables; not certified or endorsed by Microsoft. Without the order archive, fully invoiced orders are followed from their shipments and invoices without their creation and approval steps. SystemCreatedAt is left out by that export, so order and posting dates are used, to the day. Approvals were not exercised (the demo has none).",
+  "case_object_type": "sales order line",
+  "size_check": {
+    "ask": "How many sales order lines were created in the period?",
+    "unit": "sales order line",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "Date-only fields (such as the date an invoice was closed by payment) are in the company's time zone. Which offset from UTC is that, for example +01:00?",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "Sales Header",
+      "noun": "sales orders",
+      "date_label": "the order was created",
+      "label": "Sales orders",
+      "export": "Orders (Document Type Order) created in the period, open ones from Sales Header and invoiced ones from Sales Header Archive (latest version), in one file (other document types, such as quotes and invoices, may stay in the file; only orders are read): No., Document Type, Sell-to Customer No., Order Date, Status and SystemCreatedAt. SystemCreatedAt and date-times in UTC as stored (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "No.",
+        "Document Type",
+        "Sell-to Customer No.",
+        "SystemCreatedAt"
+      ],
+      "fields": [
+        "Order Date",
+        "Status",
+        "Amount"
+      ],
+      "date_field": "SystemCreatedAt",
+      "object": "bc_s_order",
+      "key": [
+        "No."
+      ],
+      "fallbacks": [
+        {
+          "field": "SystemCreatedAt",
+          "column": "Order Date",
+          "date_only": true
+        }
+      ],
+      "archive": {
+        "table": "Sales Header Archive",
+        "key": [
+          "Document Type",
+          "No."
+        ],
+        "version": "Version No."
+      }
+    },
+    {
+      "name": "Sales Line",
+      "noun": "sales order lines",
+      "label": "Sales order lines",
+      "export": "The lines of those orders, from Sales Line and Sales Line Archive (latest version) in one file: Document Type, Document No., Line No., Type, No. (item), Quantity and SystemCreatedAt.",
+      "required": [
+        "Document Type",
+        "Document No.",
+        "Line No.",
+        "No.",
+        "Quantity"
+      ],
+      "fields": [
+        "Type",
+        "Line Amount",
+        "SystemCreatedAt"
+      ],
+      "object": "bc_s_line",
+      "key": [
+        "Document No.",
+        "Line No."
+      ],
+      "archive": {
+        "table": "Sales Line Archive",
+        "key": [
+          "Document Type",
+          "Document No.",
+          "Line No."
+        ],
+        "version": "Version No."
+      }
+    },
+    {
+      "name": "Approval Entry",
+      "label": "Approval entries",
+      "export": "Approval entries of those orders (Table ID 36): Entry No., Table ID, Document Type, Document No., Sequence No., Approver ID, Status, Date-Time Sent for Approval and Last Date-Time Modified.",
+      "required": [
+        "Entry No.",
+        "Table ID",
+        "Document Type",
+        "Document No.",
+        "Status",
+        "Date-Time Sent for Approval",
+        "Last Date-Time Modified"
+      ],
+      "fields": [
+        "Sequence No.",
+        "Approver ID"
+      ],
+      "date_field": "Date-Time Sent for Approval",
+      "optional": true
+    },
+    {
+      "name": "Sales Shipment Line",
+      "label": "Shipment lines",
+      "export": "Posted shipment lines of those orders: Document No., Line No., Order No., Order Line No., Quantity, Posting Date and SystemCreatedAt.",
+      "required": [
+        "Document No.",
+        "Line No.",
+        "Order No.",
+        "Order Line No.",
+        "SystemCreatedAt"
+      ],
+      "fields": [
+        "Quantity",
+        "Posting Date"
+      ],
+      "date_field": "SystemCreatedAt",
+      "fallbacks": [
+        {
+          "field": "SystemCreatedAt",
+          "column": "Posting Date",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "Sales Invoice Header",
+      "noun": "posted sales invoices",
+      "label": "Posted sales invoices",
+      "export": "Posted invoices for those orders: No., Order No., Posting Date, Amount and SystemCreatedAt. SystemCreatedAt and date-times in UTC as stored (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "No.",
+        "Order No.",
+        "SystemCreatedAt"
+      ],
+      "fields": [
+        "Posting Date",
+        "Amount",
+        "External Document No."
+      ],
+      "date_field": "SystemCreatedAt",
+      "object": "bc_s_invoice",
+      "key": [
+        "No."
+      ],
+      "fallbacks": [
+        {
+          "field": "SystemCreatedAt",
+          "column": "Posting Date",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "Sales Invoice Line",
+      "label": "Posted sales invoice lines",
+      "export": "Their lines: Document No., Line No., Order No., Order Line No. and Quantity.",
+      "required": [
+        "Document No.",
+        "Line No.",
+        "Order No.",
+        "Order Line No."
+      ],
+      "fields": [
+        "Quantity",
+        "Amount"
+      ]
+    },
+    {
+      "name": "Cust. Ledger Entry",
+      "label": "Ledger entries",
+      "export": "The customer ledger entries of those invoices (Document Type Invoice): Entry No., Document Type, Document No., Open and Closed at Date.",
+      "required": [
+        "Entry No.",
+        "Document Type",
+        "Document No.",
+        "Open",
+        "Closed at Date"
+      ],
+      "fields": [
+        "Amount",
+        "Due Date"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sales-header",
+      "table": "Sales Header",
+      "columns": [
+        "No."
+      ],
+      "label": "sales orders listed once",
+      "where": [
+        {
+          "column": "Document Type",
+          "in": [
+            "Order"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-sales-line",
+      "table": "Sales Line",
+      "columns": [
+        "Document No.",
+        "Line No."
+      ],
+      "label": "sales order lines listed once",
+      "where": [
+        {
+          "column": "Document Type",
+          "in": [
+            "Order"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-approval-entry",
+      "table": "Approval Entry",
+      "columns": [
+        "Entry No."
+      ],
+      "label": "approval entries listed once"
+    },
+    {
+      "id": "one-sales-shipment-line",
+      "table": "Sales Shipment Line",
+      "columns": [
+        "Document No.",
+        "Line No."
+      ],
+      "label": "shipment lines listed once"
+    },
+    {
+      "id": "one-sales-invoice-header",
+      "table": "Sales Invoice Header",
+      "columns": [
+        "No."
+      ],
+      "label": "posted sales invoices listed once"
+    },
+    {
+      "id": "one-sales-invoice-line",
+      "table": "Sales Invoice Line",
+      "columns": [
+        "Document No.",
+        "Line No."
+      ],
+      "label": "posted sales invoice lines listed once"
+    },
+    {
+      "id": "one-cust-ledger-entry",
+      "table": "Cust. Ledger Entry",
+      "columns": [
+        "Entry No."
+      ],
+      "label": "ledger entries listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "Sales Line",
+        "columns": [
+          "Document No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Sales Header",
+        "columns": [
+          "No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "approvals-have-orders",
+      "label": "approval entries whose order is in the export",
+      "from": {
+        "table": "Approval Entry",
+        "columns": [
+          "Document No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "36"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Sales Header",
+        "columns": [
+          "No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 1.0,
+      "question": {
+        "text": "{missing} of {total} approval entries belong to orders that are not in the export ({missing_share}), usually fully invoiced orders deleted because order archiving is off. Keep the approvals on the order known from its shipments and invoices, or re-export with the order archive?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them on the order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the order archive"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "posted-lines-have-order-lines",
+      "label": "posted lines whose order line is in the export",
+      "from": {
+        "table": "Sales Shipment Line",
+        "columns": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Sales Line",
+        "columns": [
+          "Document No.",
+          "Line No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 1.0,
+      "question": {
+        "text": "{missing} of {total} shipment lines belong to orders that are not in the export ({missing_share}), usually fully invoiced orders, which Business Central deletes unless order archiving is on. Follow them from their shipments and invoices, without the order's own creation and approval steps, or re-export with the order archive?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Follow them from their shipments and invoices"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the order archive"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "Sales Invoice Line",
+        "columns": [
+          "Document No."
+        ]
+      },
+      "to": {
+        "table": "Sales Invoice Header",
+        "columns": [
+          "No."
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-order-lines",
+      "label": "invoice lines whose order line is in the export",
+      "from": {
+        "table": "Sales Invoice Line",
+        "columns": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Sales Line",
+        "columns": [
+          "Document No.",
+          "Line No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines bill orders that are not in the export: orders created before the period, or fully invoiced orders deleted because order archiving is off. Follow them from their invoices without the order, or re-export with the older orders and the order archive?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "bc_s_order",
+        "input": "Sales Header",
+        "namespace": "bc",
+        "object_type": "sales order",
+        "key": [
+          "No."
+        ],
+        "attributes": [
+          {
+            "column": "Sell-to Customer No.",
+            "name": "customer"
+          }
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_s_order_from_posted",
+        "input": "Sales Shipment Line",
+        "namespace": "bc",
+        "object_type": "sales order",
+        "key": [
+          "Order No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_s_order_from_invoice",
+        "input": "Sales Invoice Header",
+        "namespace": "bc",
+        "object_type": "sales order",
+        "key": [
+          "Order No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_s_line",
+        "input": "Sales Line",
+        "namespace": "bc",
+        "object_type": "sales order line",
+        "key": [
+          "Document No.",
+          "Line No."
+        ],
+        "attributes": [
+          {
+            "column": "No.",
+            "name": "item"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "Line Amount",
+            "name": "amount"
+          }
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_s_line_from_posted",
+        "input": "Sales Shipment Line",
+        "namespace": "bc",
+        "object_type": "sales order line",
+        "key": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_s_line_from_invoice",
+        "input": "Sales Invoice Line",
+        "namespace": "bc",
+        "object_type": "sales order line",
+        "key": [
+          "Order No.",
+          "Order Line No."
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "existing_ok": true
+      },
+      {
+        "id": "bc_s_invoice",
+        "input": "Sales Invoice Header",
+        "namespace": "bc",
+        "object_type": "posted sales invoice",
+        "key": [
+          "No."
+        ],
+        "attributes": [
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "bc_s_order_created",
+        "input": "Sales Header",
+        "namespace": "bc",
+        "key": [
+          "No."
+        ],
+        "activity": {
+          "value": "Create sales order"
+        },
+        "timestamp": "SystemCreatedAt",
+        "objects": [
+          {
+            "object": "bc_s_order",
+            "columns": [
+              "No."
+            ],
+            "qualifier": "sales order"
+          }
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_s_approval_sent",
+        "input": "Approval Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "36"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Send for approval"
+        },
+        "timestamp": "Date-Time Sent for Approval",
+        "attributes": [
+          {
+            "column": "Approver ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_s_order",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "bc_s_approved",
+        "input": "Approval Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "36"
+            ]
+          },
+          {
+            "column": "Status",
+            "in": [
+              "Approved"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve sales order"
+        },
+        "timestamp": "Last Date-Time Modified",
+        "attributes": [
+          {
+            "column": "Approver ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_s_order",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "bc_s_rejected",
+        "input": "Approval Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Table ID",
+            "in": [
+              "36"
+            ]
+          },
+          {
+            "column": "Status",
+            "in": [
+              "Rejected"
+            ]
+          },
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject sales order"
+        },
+        "timestamp": "Last Date-Time Modified",
+        "attributes": [
+          {
+            "column": "Approver ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_s_order",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "bc_s_goods_moved",
+        "input": "Sales Shipment Line",
+        "namespace": "bc",
+        "key": [
+          "Document No.",
+          "Line No."
+        ],
+        "activity": {
+          "value": "Post shipment"
+        },
+        "timestamp": "SystemCreatedAt",
+        "attributes": [
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_s_line",
+            "columns": [
+              "Order No.",
+              "Order Line No."
+            ],
+            "qualifier": "sales order line"
+          }
+        ],
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_s_invoice_posted",
+        "input": "Sales Invoice Header",
+        "namespace": "bc",
+        "key": [
+          "No."
+        ],
+        "activity": {
+          "value": "Post sales invoice"
+        },
+        "timestamp": "SystemCreatedAt",
+        "attributes": [
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "bc_s_invoice",
+            "columns": [
+              "No."
+            ],
+            "qualifier": "posted sales invoice"
+          }
+        ]
+      },
+      {
+        "id": "bc_s_invoice_paid",
+        "input": "Cust. Ledger Entry",
+        "namespace": "bc",
+        "key": [
+          "Entry No."
+        ],
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Invoice"
+            ]
+          },
+          {
+            "column": "Open",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive payment"
+        },
+        "timestamp": {
+          "date": "Closed at Date",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "bc_s_invoice",
+            "columns": [
+              "Document No."
+            ],
+            "qualifier": "posted sales invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "bc_s_order_has_line",
+        "input": "Sales Line",
+        "source": {
+          "object": "bc_s_order",
+          "columns": [
+            "Document No."
+          ],
+          "qualifier": "sales order"
+        },
+        "target": {
+          "object": "bc_s_line",
+          "columns": [
+            "Document No.",
+            "Line No."
+          ],
+          "qualifier": "sales order line"
+        },
+        "where": [
+          {
+            "column": "Document Type",
+            "in": [
+              "Order"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "bc_s_invoice_for_line",
+        "input": "Sales Invoice Line",
+        "where": [
+          {
+            "column": "Order No.",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "bc_s_invoice",
+          "columns": [
+            "Document No."
+          ],
+          "qualifier": "posted sales invoice"
+        },
+        "target": {
+          "object": "bc_s_line",
+          "columns": [
+            "Order No.",
+            "Order Line No."
+          ],
+          "qualifier": "sales order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "bc_s_order_created_lines",
+        "event": "bc_s_order_created",
+        "through": "bc_s_order",
+        "relationship": "bc_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "bc_s_approval_sent_lines",
+        "event": "bc_s_approval_sent",
+        "through": "bc_s_order",
+        "relationship": "bc_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "bc_s_approved_lines",
+        "event": "bc_s_approved",
+        "through": "bc_s_order",
+        "relationship": "bc_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "bc_s_rejected_lines",
+        "event": "bc_s_rejected",
+        "through": "bc_s_order",
+        "relationship": "bc_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "bc_s_invoice_posted_lines",
+        "event": "bc_s_invoice_posted",
+        "through": "bc_s_invoice",
+        "relationship": "bc_s_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "bc_s_invoice_paid_lines",
+        "event": "bc_s_invoice_paid",
+        "through": "bc_s_invoice",
+        "relationship": "bc_s_invoice_for_line",
+        "qualifier": "sales order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "Business Central sales order number",
+      "object": "bc_s_order",
+      "table": "Sales Header",
+      "key": [
+        "No."
+      ],
+      "example": "106001",
+      "carry": [
+        "bc_s_order_has_line"
+      ]
+    }
+  ]
+}

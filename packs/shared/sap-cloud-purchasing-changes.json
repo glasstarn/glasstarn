@@ -1,0 +1,876 @@
+{
+  "id": "sap-cloud-purchasing-changes",
+  "note": "Order releases, line changes and invoice payment blocks from the change log of SAP S/4HANA Public Cloud (change document views). Needs the purchasing and payables parts.",
+  "tables": [
+    {
+      "name": "ChangeDocument",
+      "label": "Change log headers",
+      "export": "Change documents for object classes EINKBELEG (purchase orders) and BELEG (journal entries) of the exported documents, from the period to the export date.",
+      "required": [
+        "ChangeDocObjectClass",
+        "ChangeDocObject",
+        "ChangeDocument",
+        "CreatedByUser",
+        "CreationDate",
+        "CreationTime"
+      ],
+      "fields": [
+        "ChangeTransactionCode"
+      ],
+      "date_field": "CreationDate",
+      "optional": true
+    },
+    {
+      "name": "ChangeDocumentItem",
+      "label": "Change log items",
+      "export": "The changed fields of those change documents, at least for tables EKKO, EKPO, EKET and BSEG.",
+      "required": [
+        "ChangeDocObjectClass",
+        "ChangeDocObject",
+        "ChangeDocument",
+        "DatabaseTable",
+        "ChangeDocTableKey",
+        "ChangeDocDatabaseTableField",
+        "ChangeDocNewFieldValue",
+        "ChangeDocPreviousFieldValue"
+      ],
+      "fields": [
+        "ChangeDocItemChangeType"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-change-header",
+      "table": "ChangeDocument",
+      "columns": [
+        "ChangeDocObjectClass",
+        "ChangeDocObject",
+        "ChangeDocument"
+      ],
+      "label": "change headers listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "change-items-have-headers",
+      "label": "changed fields whose change header is in the export",
+      "from": {
+        "table": "ChangeDocumentItem",
+        "columns": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument"
+        ]
+      },
+      "to": {
+        "table": "ChangeDocument",
+        "columns": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "events": [
+      {
+        "id": "order_release_step",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "EINKBELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "EKKO"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "FRGZU"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve order release"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "order",
+            "columns": [
+              "ChangeDocObject"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "order_released",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "EINKBELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "EKKO"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "FRGKE"
+            ]
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "in": [
+              "R"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Release purchase order"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "order",
+            "columns": [
+              "ChangeDocObject"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "price_changed",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "EINKBELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "EKPO"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "NETPR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change price"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              {
+                "column": "ChangeDocTableKey",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 13,
+                "length": 5
+              }
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "quantity_changed",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "EINKBELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "EKPO"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "MENGE"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change quantity"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              {
+                "column": "ChangeDocTableKey",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 13,
+                "length": 5
+              }
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "delivery_date_changed",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "EINKBELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "EKET"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "EINDT"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Change delivery date"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              {
+                "column": "ChangeDocTableKey",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 13,
+                "length": 5
+              }
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "order_line_deleted",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "EINKBELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "EKPO"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "LOEKZ"
+            ]
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "in": [
+              "L"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Delete order line"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              {
+                "column": "ChangeDocTableKey",
+                "start": 3,
+                "length": 10
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 13,
+                "length": 5
+              }
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "payment_blocked",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "BELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "BSEG"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "ZLSPR"
+            ]
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Block invoice for payment"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "payable",
+            "columns": [
+              {
+                "column": "ChangeDocTableKey",
+                "start": 3,
+                "length": 4
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 7,
+                "length": 10
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 17,
+                "length": 4
+              }
+            ],
+            "qualifier": "posting"
+          }
+        ]
+      },
+      {
+        "id": "payment_block_released",
+        "input": "ChangeDocumentItem",
+        "namespace": "sap",
+        "key": [
+          "ChangeDocObjectClass",
+          "ChangeDocObject",
+          "ChangeDocument",
+          "DatabaseTable",
+          "ChangeDocTableKey",
+          "ChangeDocDatabaseTableField"
+        ],
+        "where": [
+          {
+            "column": "ChangeDocObjectClass",
+            "in": [
+              "BELEG"
+            ]
+          },
+          {
+            "column": "DatabaseTable",
+            "in": [
+              "BSEG"
+            ]
+          },
+          {
+            "column": "ChangeDocDatabaseTableField",
+            "in": [
+              "ZLSPR"
+            ]
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "in": [
+              ""
+            ]
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Release payment block"
+        },
+        "lookup": {
+          "input": "ChangeDocument",
+          "key": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "matching": [
+            "ChangeDocObjectClass",
+            "ChangeDocObject",
+            "ChangeDocument"
+          ],
+          "columns": [
+            "CreationDate",
+            "CreationTime",
+            "CreatedByUser"
+          ]
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "time": "CreationTime",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CreatedByUser",
+            "name": "resource"
+          },
+          {
+            "column": "ChangeDocNewFieldValue",
+            "name": "new value"
+          },
+          {
+            "column": "ChangeDocPreviousFieldValue",
+            "name": "old value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "payable",
+            "columns": [
+              {
+                "column": "ChangeDocTableKey",
+                "start": 3,
+                "length": 4
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 7,
+                "length": 10
+              },
+              {
+                "column": "ChangeDocTableKey",
+                "start": 17,
+                "length": 4
+              }
+            ],
+            "qualifier": "posting"
+          }
+        ]
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "order_release_step_lines",
+        "event": "order_release_step",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "order_released_lines",
+        "event": "order_released",
+        "through": "order",
+        "relationship": "order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "payment_blocked_invoice",
+        "event": "payment_blocked",
+        "through": "payable",
+        "relationship": "payable_invoice",
+        "qualifier": "invoice"
+      },
+      {
+        "id": "payment_blocked_lines",
+        "event": "payment_blocked",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "payment_block_released_invoice",
+        "event": "payment_block_released",
+        "through": "payable",
+        "relationship": "payable_invoice",
+        "qualifier": "invoice"
+      },
+      {
+        "id": "payment_block_released_lines",
+        "event": "payment_block_released",
+        "through": "invoice",
+        "relationship": "invoice_order_lines",
+        "qualifier": "order line"
+      }
+    ]
+  }
+}

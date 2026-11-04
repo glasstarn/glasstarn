@@ -1,0 +1,757 @@
+{
+  "id": "d365-finance-operations-order-to-cash",
+  "version": 1,
+  "name": "Order to cash (Dynamics 365 Finance and Operations)",
+  "system": "Microsoft Dynamics 365 Finance and Supply Chain Management",
+  "process": "order to cash",
+  "status": "tested",
+  "note": "Live demo validation covered a two-line order, confirmation, partial shipments, split invoices and open customer items. Seven events, five objects and fourteen event links matched independently recorded source facts. The accounts-receivable variant separately matched two invoice postings. Approval rejection/resubmission and settlement remain untested live. Export one legal entity per build; legacy Export to Data Lake is deprecated.",
+  "case_object_type": "sales order line",
+  "size_check": {
+    "ask": "How many sales order lines were created in the period for the legal entity?",
+    "unit": "sales order line",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "Date-only fields (such as the date an invoice was settled) are in the legal entity's time zone. Which offset from UTC is that, for example +01:00?",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "SalesTable",
+      "noun": "sales orders",
+      "date_label": "the order was created",
+      "label": "Sales orders",
+      "export": "Sales orders created in the period for the legal entity (SalesTable): SalesId, CustAccount, DataAreaId, CreatedDateTime and the status. Date-times in UTC as the system stores them (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "SalesId",
+        "DataAreaId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "CustAccount",
+        "SalesStatus",
+        "SalesType"
+      ],
+      "date_field": "CreatedDateTime",
+      "object": "d365_s_order",
+      "key": [
+        "SalesId"
+      ],
+      "scope_field": "DataAreaId"
+    },
+    {
+      "name": "SalesLine",
+      "noun": "sales order lines",
+      "label": "Sales order lines",
+      "export": "The lines of those orders (SalesLine): SalesId, LineNumber, InventTransId, ItemId, quantity and CreatedDateTime.",
+      "required": [
+        "SalesId",
+        "InventTransId"
+      ],
+      "fields": [
+        "LineNumber",
+        "ItemId",
+        "SalesQty",
+        "LineAmount",
+        "CreatedDateTime"
+      ],
+      "object": "d365_s_line",
+      "key": [
+        "InventTransId"
+      ]
+    },
+    {
+      "name": "WorkflowTrackingTable",
+      "label": "Approval workflow history",
+      "export": "Workflow history of those orders: WorkflowTrackingTable joined to WorkflowTrackingStatusTable and SalesTable to name the order: RecId, SalesId, TrackingType, TrackingContext, User and CreatedDateTime.",
+      "required": [
+        "RecId",
+        "SalesId",
+        "TrackingType",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "TrackingContext",
+        "User"
+      ],
+      "date_field": "CreatedDateTime",
+      "optional": true
+    },
+    {
+      "name": "CustConfirmJour",
+      "label": "Order confirmations",
+      "export": "Confirmations of those orders (CustConfirmJour): RecId, SalesId, ConfirmDocNum, and ConfirmDate (document date). Include CreatedDateTime only when the source actually exposes it; otherwise the pack uses the document date with day precision. Preserve every confirmation row, including repeats on the same date.",
+      "required": [
+        "RecId",
+        "SalesId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "ConfirmDocNum",
+        "ConfirmDate"
+      ],
+      "date_field": "CreatedDateTime",
+      "optional": true,
+      "fallbacks": [
+        {
+          "field": "CreatedDateTime",
+          "column": "ConfirmDate",
+          "date_only": true
+        },
+        {
+          "field": "RecId",
+          "column": "ConfirmDocNum"
+        }
+      ]
+    },
+    {
+      "name": "CustPackingSlipTrans",
+      "label": "Packing slip lines",
+      "export": "Packing slip lines for those orders (CustPackingSlipTrans): RecId, PackingSlipId, InventTransId, quantity, DeliveryDate and CreatedDateTime.",
+      "required": [
+        "RecId",
+        "InventTransId",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "PackingSlipId",
+        "Qty",
+        "DeliveryDate"
+      ],
+      "date_field": "CreatedDateTime",
+      "fallbacks": [
+        {
+          "field": "CreatedDateTime",
+          "column": "DeliveryDate",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "CustInvoiceJour",
+      "noun": "customer invoices",
+      "label": "Customer invoices",
+      "export": "Posted invoices for those orders (CustInvoiceJour): InvoiceId, InvoiceDate, SalesId, LedgerVoucher, CreatedDateTime and the amount. Date-times in UTC as the system stores them (2026-01-05T14:30:00Z); dates as YYYY-MM-DD.",
+      "required": [
+        "InvoiceId",
+        "LedgerVoucher",
+        "CreatedDateTime"
+      ],
+      "fields": [
+        "InvoiceDate",
+        "SalesId",
+        "InvoiceAmount"
+      ],
+      "date_field": "CreatedDateTime",
+      "object": "d365_s_invoice",
+      "key": [
+        "InvoiceId"
+      ],
+      "fallbacks": [
+        {
+          "field": "CreatedDateTime",
+          "column": "InvoiceDate",
+          "date_only": true
+        }
+      ]
+    },
+    {
+      "name": "CustInvoiceTrans",
+      "label": "Customer invoice lines",
+      "export": "The lines of those invoices (CustInvoiceTrans): InvoiceId, LineNum, InventTransId and quantity.",
+      "required": [
+        "InvoiceId",
+        "LineNum",
+        "InventTransId"
+      ],
+      "fields": [
+        "Qty",
+        "LineAmount"
+      ]
+    },
+    {
+      "name": "CustTrans",
+      "label": "Open and settled items",
+      "export": "The customer transactions of those invoices (CustTrans): RecId, Voucher, Invoice, AccountNum, TransDate, Closed (the date it was fully settled, blank or 1900-01-01 while open) and AmountCur.",
+      "required": [
+        "RecId",
+        "Voucher",
+        "Closed"
+      ],
+      "fields": [
+        "AccountNum",
+        "Invoice",
+        "TransDate",
+        "AmountCur"
+      ],
+      "date_field": "TransDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-salestable",
+      "table": "SalesTable",
+      "columns": [
+        "SalesId"
+      ],
+      "label": "sales orders listed once"
+    },
+    {
+      "id": "one-salesline",
+      "table": "SalesLine",
+      "columns": [
+        "InventTransId"
+      ],
+      "label": "sales order lines listed once"
+    },
+    {
+      "id": "one-workflowtrackingtable",
+      "table": "WorkflowTrackingTable",
+      "columns": [
+        "RecId"
+      ],
+      "label": "approval workflow history listed once"
+    },
+    {
+      "id": "one-custconfirmjour",
+      "table": "CustConfirmJour",
+      "columns": [
+        "RecId"
+      ],
+      "label": "order confirmations listed once"
+    },
+    {
+      "id": "one-custpackingsliptrans",
+      "table": "CustPackingSlipTrans",
+      "columns": [
+        "RecId"
+      ],
+      "label": "packing slip lines listed once"
+    },
+    {
+      "id": "one-custinvoicejour",
+      "table": "CustInvoiceJour",
+      "columns": [
+        "InvoiceId"
+      ],
+      "label": "customer invoices listed once"
+    },
+    {
+      "id": "one-custinvoicetrans",
+      "table": "CustInvoiceTrans",
+      "columns": [
+        "InvoiceId",
+        "LineNum"
+      ],
+      "label": "customer invoice lines listed once"
+    },
+    {
+      "id": "one-custtrans",
+      "table": "CustTrans",
+      "columns": [
+        "RecId"
+      ],
+      "label": "open and settled items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "SalesLine",
+        "columns": [
+          "SalesId"
+        ]
+      },
+      "to": {
+        "table": "SalesTable",
+        "columns": [
+          "SalesId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "workflow-has-orders",
+      "label": "workflow history whose order is in the export",
+      "from": {
+        "table": "WorkflowTrackingTable",
+        "columns": [
+          "SalesId"
+        ]
+      },
+      "to": {
+        "table": "SalesTable",
+        "columns": [
+          "SalesId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "confirmations-have-orders",
+      "label": "confirmations whose order is in the export",
+      "from": {
+        "table": "CustConfirmJour",
+        "columns": [
+          "SalesId"
+        ]
+      },
+      "to": {
+        "table": "SalesTable",
+        "columns": [
+          "SalesId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipts-have-lines",
+      "label": "receipt or packing slip lines whose order line is in the export",
+      "from": {
+        "table": "CustPackingSlipTrans",
+        "columns": [
+          "InventTransId"
+        ]
+      },
+      "to": {
+        "table": "SalesLine",
+        "columns": [
+          "InventTransId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "CustInvoiceTrans",
+        "columns": [
+          "InvoiceId"
+        ]
+      },
+      "to": {
+        "table": "CustInvoiceJour",
+        "columns": [
+          "InvoiceId"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-order-lines",
+      "label": "invoice lines whose order line is in the export",
+      "from": {
+        "table": "CustInvoiceTrans",
+        "columns": [
+          "InventTransId"
+        ],
+        "where": [
+          {
+            "column": "InventTransId",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "SalesLine",
+        "columns": [
+          "InventTransId"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines bill orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "d365_s_order",
+        "input": "SalesTable",
+        "namespace": "d365",
+        "object_type": "sales order",
+        "key": [
+          "SalesId"
+        ],
+        "attributes": [
+          {
+            "column": "CustAccount",
+            "name": "customer"
+          },
+          {
+            "column": "DataAreaId",
+            "name": "legal entity"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_line",
+        "input": "SalesLine",
+        "namespace": "d365",
+        "object_type": "sales order line",
+        "key": [
+          "InventTransId"
+        ],
+        "attributes": [
+          {
+            "column": "ItemId",
+            "name": "item"
+          },
+          {
+            "column": "SalesQty",
+            "name": "quantity"
+          },
+          {
+            "column": "LineAmount",
+            "name": "amount"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_invoice",
+        "input": "CustInvoiceJour",
+        "namespace": "d365",
+        "object_type": "customer invoice",
+        "key": [
+          "InvoiceId"
+        ],
+        "attributes": [
+          {
+            "column": "InvoiceId",
+            "name": "invoice number"
+          },
+          {
+            "column": "InvoiceAmount",
+            "name": "amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "d365_s_order_created",
+        "input": "SalesTable",
+        "namespace": "d365",
+        "key": [
+          "SalesId"
+        ],
+        "activity": {
+          "value": "Create sales order"
+        },
+        "timestamp": "CreatedDateTime",
+        "objects": [
+          {
+            "object": "d365_s_order",
+            "columns": [
+              "SalesId"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_workflow",
+        "input": "WorkflowTrackingTable",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "where": [
+          {
+            "column": "TrackingType",
+            "in": [
+              "Submission",
+              "Approval",
+              "Rejection",
+              "RequestChange",
+              "Delegation",
+              "Escalation",
+              "Cancellation"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "TrackingType",
+          "prefix": "Workflow: "
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "User",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "d365_s_order",
+            "columns": [
+              "SalesId"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_order_confirmed",
+        "input": "CustConfirmJour",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Confirm sales order"
+        },
+        "timestamp": "CreatedDateTime",
+        "objects": [
+          {
+            "object": "d365_s_order",
+            "columns": [
+              "SalesId"
+            ],
+            "qualifier": "sales order"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_goods_moved",
+        "input": "CustPackingSlipTrans",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Ship goods (packing slip)"
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "Qty",
+            "name": "quantity"
+          },
+          {
+            "column": "PackingSlipId",
+            "name": "document"
+          }
+        ],
+        "objects": [
+          {
+            "object": "d365_s_line",
+            "columns": [
+              "InventTransId"
+            ],
+            "qualifier": "sales order line"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_invoice_posted",
+        "input": "CustInvoiceJour",
+        "namespace": "d365",
+        "key": [
+          "InvoiceId"
+        ],
+        "activity": {
+          "value": "Post customer invoice"
+        },
+        "timestamp": "CreatedDateTime",
+        "attributes": [
+          {
+            "column": "InvoiceAmount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "d365_s_invoice",
+            "columns": [
+              "InvoiceId"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ]
+      },
+      {
+        "id": "d365_s_invoice_settled",
+        "input": "CustTrans",
+        "namespace": "d365",
+        "key": [
+          "RecId"
+        ],
+        "activity": {
+          "value": "Settle customer invoice"
+        },
+        "lookup": {
+          "input": "CustInvoiceJour",
+          "key": [
+            "LedgerVoucher"
+          ],
+          "matching": [
+            "Voucher"
+          ],
+          "columns": [
+            "InvoiceId"
+          ]
+        },
+        "timestamp": {
+          "date": "Closed",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "d365_s_invoice",
+            "columns": [
+              "InvoiceId"
+            ],
+            "qualifier": "customer invoice"
+          }
+        ],
+        "where": [
+          {
+            "column": "Closed",
+            "not_in": [
+              "1900-01-01"
+            ]
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "d365_s_order_has_line",
+        "input": "SalesLine",
+        "source": {
+          "object": "d365_s_order",
+          "columns": [
+            "SalesId"
+          ],
+          "qualifier": "sales order"
+        },
+        "target": {
+          "object": "d365_s_line",
+          "columns": [
+            "InventTransId"
+          ],
+          "qualifier": "sales order line"
+        }
+      },
+      {
+        "id": "d365_s_invoice_for_line",
+        "input": "CustInvoiceTrans",
+        "where": [
+          {
+            "column": "InventTransId",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "d365_s_invoice",
+          "columns": [
+            "InvoiceId"
+          ],
+          "qualifier": "customer invoice"
+        },
+        "target": {
+          "object": "d365_s_line",
+          "columns": [
+            "InventTransId"
+          ],
+          "qualifier": "sales order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "d365_s_order_created_lines",
+        "event": "d365_s_order_created",
+        "through": "d365_s_order",
+        "relationship": "d365_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "d365_s_workflow_lines",
+        "event": "d365_s_workflow",
+        "through": "d365_s_order",
+        "relationship": "d365_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "d365_s_order_confirmed_lines",
+        "event": "d365_s_order_confirmed",
+        "through": "d365_s_order",
+        "relationship": "d365_s_order_has_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "d365_s_invoice_posted_lines",
+        "event": "d365_s_invoice_posted",
+        "through": "d365_s_invoice",
+        "relationship": "d365_s_invoice_for_line",
+        "qualifier": "sales order line"
+      },
+      {
+        "id": "d365_s_invoice_settled_lines",
+        "event": "d365_s_invoice_settled",
+        "through": "d365_s_invoice",
+        "relationship": "d365_s_invoice_for_line",
+        "qualifier": "sales order line"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "accounts-receivable",
+      "name": "Accounts receivable: invoice to settlement",
+      "case_object_type": "customer invoice",
+      "tables": [
+        "CustInvoiceJour",
+        "CustInvoiceTrans",
+        "CustTrans"
+      ]
+    }
+  ],
+  "link_targets": [
+    {
+      "id": "sales_order",
+      "label": "Dynamics 365 sales order number",
+      "object": "d365_s_order",
+      "table": "SalesTable",
+      "key": [
+        "SalesId"
+      ],
+      "example": "SO-000456",
+      "carry": [
+        "d365_s_order_has_line"
+      ]
+    }
+  ]
+}

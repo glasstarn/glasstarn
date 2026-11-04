@@ -1,0 +1,47 @@
+{
+ "version": 1,
+ "system": "servicenow",
+ "instance": "https://your-instance.service-now.com",
+ "start": "2026-01-01T00:00:00Z",
+ "end": "2026-04-01T00:00:00Z",
+ "tables": [
+  {
+   "table": "sn_hr_core_case",
+   "as": "ticket",
+   "fields": [
+    "state",
+    "priority",
+    "assignment_group",
+    "assigned_to"
+   ],
+   "label_fields": [
+    "state",
+    "priority",
+    "assignment_group"
+   ]
+  },
+  {
+   "table": "sn_hr_core_task",
+   "as": "ticket_task",
+   "fields": [
+    "state",
+    "assignment_group"
+   ],
+   "label_fields": [
+    "state",
+    "assignment_group"
+   ],
+   "parent": {
+    "field": "parent",
+    "table": "sn_hr_core_case"
+   }
+  }
+ ],
+ "history_fields": [
+  "state",
+  "priority",
+  "assignment_group",
+  "assigned_to"
+ ],
+ "history_gaps": []
+}

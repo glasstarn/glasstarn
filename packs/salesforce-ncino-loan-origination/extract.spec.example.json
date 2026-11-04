@@ -1,0 +1,75 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "LLC_BI__Loan__c",
+      "fields": [
+        "Id",
+        "Name",
+        "CreatedDate",
+        "LLC_BI__Stage__c",
+        "LLC_BI__Status__c",
+        "LLC_BI__Amount__c",
+        "LLC_BI__Product_Line__c",
+        "LLC_BI__Product__c"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": [
+        "nCino field names not yet confirmed in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "LLC_BI__Loan__History",
+      "fields": [
+        "Id",
+        "ParentId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "ParentId",
+      "parent": "LLC_BI__Loan__c",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "ProcessInstance",
+      "fields": [
+        "Id",
+        "TargetObjectId",
+        "Status",
+        "CreatedDate",
+        "CompletedDate"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "TargetObjectId",
+      "parent": "LLC_BI__Loan__c",
+      "history_gaps": []
+    },
+    {
+      "name": "ProcessInstanceStep",
+      "fields": [
+        "Id",
+        "ProcessInstanceId",
+        "StepStatus",
+        "CreatedDate",
+        "ActorId"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    }
+  ]
+}

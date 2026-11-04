@@ -1,0 +1,430 @@
+{
+  "id": "salesforce-case-handling",
+  "version": 1,
+  "name": "Support case handling (Salesforce)",
+  "system": "Salesforce Service Cloud",
+  "process": "support case handling",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Salesforce's standard Case object, its field history and email messages. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Status, owner and priority steps need field history tracking on those fields; history starts when tracking is switched on.",
+  "case_object_type": "case",
+  "size_check": {
+    "ask": "How many cases were created in the period?",
+    "unit": "case",
+    "steps_per_unit": 7
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "tables": [
+    {
+      "name": "Case",
+      "noun": "cases",
+      "date_label": "the case was created",
+      "label": "Salesforce cases",
+      "export": "Cases created in the period: Id, CaseNumber, CreatedDate, Status, Priority, Origin, Type, IsClosed, ClosedDate, IsEscalated, OwnerId and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "Status",
+        "Priority",
+        "Origin",
+        "IsClosed"
+      ],
+      "fields": [
+        "CaseNumber",
+        "Type",
+        "ClosedDate",
+        "IsEscalated",
+        "OwnerId",
+        "Reason",
+        "AccountId"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_case",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "CaseHistory",
+      "label": "Salesforce case field history",
+      "export": "Field history of those cases (CaseHistory): Id, CaseId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "CaseId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "fields": [
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "Case",
+      "needs_tracked": [
+        "Status",
+        "Owner",
+        "Priority"
+      ]
+    },
+    {
+      "name": "EmailMessage",
+      "label": "Emails on cases",
+      "export": "Email messages whose parent is one of those cases: Id, ParentId, Incoming and MessageDate (no subjects or bodies).",
+      "required": [
+        "Id",
+        "ParentId",
+        "Incoming",
+        "MessageDate"
+      ],
+      "fields": [
+        "Status"
+      ],
+      "date_field": "MessageDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-case",
+      "table": "Case",
+      "columns": [
+        "Id"
+      ],
+      "label": "cases listed once"
+    },
+    {
+      "id": "one-sf-case-history-row",
+      "table": "CaseHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "history rows listed once"
+    },
+    {
+      "id": "one-sf-email",
+      "table": "EmailMessage",
+      "columns": [
+        "Id"
+      ],
+      "label": "emails listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "case-history-has-cases",
+      "label": "case history rows whose case is in the export",
+      "from": {
+        "table": "CaseHistory",
+        "columns": [
+          "CaseId"
+        ]
+      },
+      "to": {
+        "table": "Case",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "emails-have-cases",
+      "label": "emails whose case is in the export",
+      "from": {
+        "table": "EmailMessage",
+        "columns": [
+          "ParentId"
+        ]
+      },
+      "to": {
+        "table": "Case",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sf_case",
+        "input": "Case",
+        "namespace": "salesforce",
+        "object_type": "case",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Origin",
+            "name": "origin"
+          },
+          {
+            "column": "Priority",
+            "name": "priority"
+          },
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_case_created",
+        "input": "Case",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create case"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "sf_case_status_changed",
+        "input": "CaseHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Status"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "CaseId"
+            ],
+            "qualifier": "case"
+          }
+        ],
+        "activity": {
+          "column": "NewValue"
+        }
+      },
+      {
+        "id": "sf_case_reassigned",
+        "input": "CaseHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Owner",
+              "ownerAssignment"
+            ]
+          },
+          {
+            "column": "DataType",
+            "not_in": [
+              "EntityId"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "CaseId"
+            ],
+            "qualifier": "case"
+          }
+        ],
+        "activity": {
+          "value": "Reassign case"
+        }
+      },
+      {
+        "id": "sf_case_priority_changed",
+        "input": "CaseHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Priority"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "CaseId"
+            ],
+            "qualifier": "case"
+          }
+        ],
+        "activity": {
+          "value": "Change priority"
+        }
+      },
+      {
+        "id": "sf_case_escalated",
+        "input": "CaseHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "IsEscalated"
+            ]
+          },
+          {
+            "column": "NewValue",
+            "in": [
+              "true"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "CaseId"
+            ],
+            "qualifier": "case"
+          }
+        ],
+        "activity": {
+          "value": "Escalate case"
+        }
+      },
+      {
+        "id": "sf_email_received",
+        "input": "EmailMessage",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Incoming",
+            "in": [
+              "true"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive customer email"
+        },
+        "timestamp": "MessageDate",
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "ParentId"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      },
+      {
+        "id": "sf_email_sent",
+        "input": "EmailMessage",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Incoming",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Email the customer"
+        },
+        "timestamp": "MessageDate",
+        "objects": [
+          {
+            "object": "sf_case",
+            "columns": [
+              "ParentId"
+            ],
+            "qualifier": "case"
+          }
+        ]
+      }
+    ]
+  }
+}

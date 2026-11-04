@@ -1,0 +1,27 @@
+[package]
+name = "pm-project"
+description = "Saved analysis projects: what was analysed, how it was interpreted, and whether it still reproduces."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-ingest = { path = "../pm-ingest" }
+thiserror.workspace = true
+serde = { workspace = true }
+serde_json.workspace = true
+atomic-write-file = "0.3.0"
+fs2 = "0.4.3"
+sha2 = "0.10"
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+chrono = { version = "0.4.45", default-features = false, features = ["std", "clock"] }
+csv = "1.4.0"
+tempfile = "3"
+
+[lints.rust]
+unsafe_code = "forbid"

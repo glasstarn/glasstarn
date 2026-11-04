@@ -1,0 +1,811 @@
+{
+  "id": "sap-bydesign-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (SAP Business ByDesign)",
+  "system": "SAP Business ByDesign",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the SAP Business ByDesign business objects and their OData services. Not yet confirmed on a real tenant; tested only on made-up extracts. File and field names follow the business objects; the tenant's own OData or report exports may name them differently.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period?",
+    "unit": "purchase order line",
+    "steps_per_unit": 4
+  },
+  "custom_prefixes": [
+    "*_KUT"
+  ],
+  "tables": [
+    {
+      "name": "PurchaseRequest",
+      "label": "Purchase requests",
+      "export": "Purchase requests created in the period: ID, CreationDateTime, SellerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "SellerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "optional": true,
+      "object": "byd_p_request",
+      "key": [
+        "ID"
+      ],
+      "noun": "purchase requests"
+    },
+    {
+      "name": "PurchaseRequestItem",
+      "label": "Purchase request items",
+      "export": "The items of those purchase requests: PurchaseRequestID (the document), ID (the item), ProductID, Quantity.",
+      "required": [
+        "PurchaseRequestID",
+        "ID",
+        "ProductID",
+        "Quantity"
+      ],
+      "fields": [
+        "NetAmount"
+      ],
+      "optional": true
+    },
+    {
+      "name": "PurchaseOrder",
+      "label": "Purchase orders",
+      "export": "Purchase orders created in the period: ID, CreationDateTime, SellerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "SellerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "object": "byd_p_order",
+      "key": [
+        "ID"
+      ],
+      "noun": "purchase orders"
+    },
+    {
+      "name": "PurchaseOrderItem",
+      "label": "Purchase order lines",
+      "export": "The items of those orders, with the request item each came from (blank if none): PurchaseOrderID (the document), ID (the item), ProductID, Quantity, PurchaseRequestID, PurchaseRequestItemID.",
+      "required": [
+        "PurchaseOrderID",
+        "ID",
+        "ProductID",
+        "Quantity",
+        "PurchaseRequestID",
+        "PurchaseRequestItemID"
+      ],
+      "fields": [
+        "NetAmount"
+      ],
+      "object": "byd_p_order_line",
+      "key": [
+        "PurchaseOrderID",
+        "ID"
+      ],
+      "noun": "purchase order lines"
+    },
+    {
+      "name": "GoodsAndServiceAcknowledgement",
+      "label": "Goods receipts",
+      "export": "Goods receipts for those orders: ID, CreationDateTime, SellerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "SellerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime"
+    },
+    {
+      "name": "GoodsAndServiceAcknowledgementItem",
+      "label": "Goods receipt lines",
+      "export": "Their items, with the order item each one is for: GoodsAndServiceAcknowledgementID (the document), ID (the item), ProductID, Quantity, PurchaseOrderID, PurchaseOrderItemID.",
+      "required": [
+        "GoodsAndServiceAcknowledgementID",
+        "ID",
+        "ProductID",
+        "Quantity",
+        "PurchaseOrderID",
+        "PurchaseOrderItemID"
+      ],
+      "fields": [
+        "NetAmount"
+      ],
+      "object": "byd_p_receipt_line",
+      "key": [
+        "GoodsAndServiceAcknowledgementID",
+        "ID"
+      ]
+    },
+    {
+      "name": "SupplierInvoice",
+      "label": "Supplier invoices",
+      "export": "Supplier invoices for those orders: ID, CreationDateTime, SellerPartyID, LifeCycleStatusCode and the tenant's own fields. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "SellerPartyID",
+        "LifeCycleStatusCode",
+        "CurrencyCode",
+        "TotalNetAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "object": "byd_p_invoice",
+      "key": [
+        "ID"
+      ],
+      "noun": "supplier invoices"
+    },
+    {
+      "name": "SupplierInvoiceItem",
+      "label": "Supplier invoice items",
+      "export": "Their items, with the order item each one charges: SupplierInvoiceID (the document), ID (the item), ProductID, Quantity, PurchaseOrderID, PurchaseOrderItemID.",
+      "required": [
+        "SupplierInvoiceID",
+        "ID",
+        "ProductID",
+        "Quantity",
+        "PurchaseOrderID",
+        "PurchaseOrderItemID"
+      ],
+      "fields": [
+        "NetAmount"
+      ]
+    },
+    {
+      "name": "SupplierPayment",
+      "label": "Payments",
+      "export": "Payments of those invoices: ID, CreationDateTime and SellerPartyID. Times in UTC as the OData services return them (2026-01-05T14:30:00Z).",
+      "required": [
+        "ID",
+        "CreationDateTime"
+      ],
+      "fields": [
+        "SellerPartyID",
+        "TotalAmount"
+      ],
+      "date_field": "CreationDateTime",
+      "optional": true
+    },
+    {
+      "name": "SupplierPaymentAllocation",
+      "label": "Payment allocations",
+      "export": "The invoices each payment pays: SupplierPaymentID (the payment), ID (the allocation), SupplierInvoiceID and Amount.",
+      "required": [
+        "SupplierPaymentID",
+        "ID",
+        "SupplierInvoiceID"
+      ],
+      "fields": [
+        "Amount"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-purchaserequest",
+      "table": "PurchaseRequest",
+      "columns": [
+        "ID"
+      ],
+      "label": "purchase requests listed once"
+    },
+    {
+      "id": "one-purchaserequestitem",
+      "table": "PurchaseRequestItem",
+      "columns": [
+        "PurchaseRequestID",
+        "ID"
+      ],
+      "label": "purchase request items listed once"
+    },
+    {
+      "id": "one-purchaseorder",
+      "table": "PurchaseOrder",
+      "columns": [
+        "ID"
+      ],
+      "label": "purchase orders listed once"
+    },
+    {
+      "id": "one-purchaseorderitem",
+      "table": "PurchaseOrderItem",
+      "columns": [
+        "PurchaseOrderID",
+        "ID"
+      ],
+      "label": "purchase order lines listed once"
+    },
+    {
+      "id": "one-goodsandserviceacknowledgement",
+      "table": "GoodsAndServiceAcknowledgement",
+      "columns": [
+        "ID"
+      ],
+      "label": "goods receipts listed once"
+    },
+    {
+      "id": "one-goodsandserviceacknowledgementitem",
+      "table": "GoodsAndServiceAcknowledgementItem",
+      "columns": [
+        "GoodsAndServiceAcknowledgementID",
+        "ID"
+      ],
+      "label": "goods receipt lines listed once"
+    },
+    {
+      "id": "one-supplierinvoice",
+      "table": "SupplierInvoice",
+      "columns": [
+        "ID"
+      ],
+      "label": "supplier invoices listed once"
+    },
+    {
+      "id": "one-supplierinvoiceitem",
+      "table": "SupplierInvoiceItem",
+      "columns": [
+        "SupplierInvoiceID",
+        "ID"
+      ],
+      "label": "supplier invoice items listed once"
+    },
+    {
+      "id": "one-supplierpayment",
+      "table": "SupplierPayment",
+      "columns": [
+        "ID"
+      ],
+      "label": "payments listed once"
+    },
+    {
+      "id": "one-supplierpaymentallocation",
+      "table": "SupplierPaymentAllocation",
+      "columns": [
+        "SupplierPaymentID",
+        "ID"
+      ],
+      "label": "payment allocations listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "request-items-have-requests",
+      "label": "request items whose request is in the export",
+      "from": {
+        "table": "PurchaseRequestItem",
+        "columns": [
+          "PurchaseRequestID"
+        ]
+      },
+      "to": {
+        "table": "PurchaseRequest",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "order-items-have-orders",
+      "label": "order items whose order is in the export",
+      "from": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrderID"
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrder",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-items-have-documents",
+      "label": "items whose document is in the export",
+      "from": {
+        "table": "GoodsAndServiceAcknowledgementItem",
+        "columns": [
+          "GoodsAndServiceAcknowledgementID"
+        ]
+      },
+      "to": {
+        "table": "GoodsAndServiceAcknowledgement",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-items-have-order-items",
+      "label": "items whose order item is in the export",
+      "from": {
+        "table": "GoodsAndServiceAcknowledgementItem",
+        "columns": [
+          "PurchaseOrderID",
+          "PurchaseOrderItemID"
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrderID",
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-items-have-invoices",
+      "label": "invoice items whose invoice is in the export",
+      "from": {
+        "table": "SupplierInvoiceItem",
+        "columns": [
+          "SupplierInvoiceID"
+        ]
+      },
+      "to": {
+        "table": "SupplierInvoice",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-items-have-order-items",
+      "label": "invoice items whose order item is in the export",
+      "from": {
+        "table": "SupplierInvoiceItem",
+        "columns": [
+          "PurchaseOrderID",
+          "PurchaseOrderItemID"
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrderID",
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "allocations-have-payments",
+      "label": "allocations whose payment is in the export",
+      "from": {
+        "table": "SupplierPaymentAllocation",
+        "columns": [
+          "SupplierPaymentID"
+        ]
+      },
+      "to": {
+        "table": "SupplierPayment",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "allocations-have-invoices",
+      "label": "allocations whose invoice is in the export",
+      "from": {
+        "table": "SupplierPaymentAllocation",
+        "columns": [
+          "SupplierInvoiceID"
+        ]
+      },
+      "to": {
+        "table": "SupplierInvoice",
+        "columns": [
+          "ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "byd_p_request",
+        "input": "PurchaseRequest",
+        "namespace": "sap-byd",
+        "object_type": "purchase request",
+        "key": [
+          "ID"
+        ]
+      },
+      {
+        "id": "byd_p_order",
+        "input": "PurchaseOrder",
+        "namespace": "sap-byd",
+        "object_type": "purchase order",
+        "key": [
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "SellerPartyID",
+            "name": "supplier"
+          },
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_order_line",
+        "input": "PurchaseOrderItem",
+        "namespace": "sap-byd",
+        "object_type": "purchase order line",
+        "key": [
+          "PurchaseOrderID",
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "ProductID",
+            "name": "product"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "NetAmount",
+            "name": "net amount"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_receipt_line",
+        "input": "GoodsAndServiceAcknowledgementItem",
+        "namespace": "sap-byd",
+        "object_type": "goods receipt line",
+        "key": [
+          "GoodsAndServiceAcknowledgementID",
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "ProductID",
+            "name": "product"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_invoice",
+        "input": "SupplierInvoice",
+        "namespace": "sap-byd",
+        "object_type": "supplier invoice",
+        "key": [
+          "ID"
+        ],
+        "attributes": [
+          {
+            "column": "SellerPartyID",
+            "name": "supplier"
+          },
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "byd_p_request_created",
+        "input": "PurchaseRequest",
+        "namespace": "sap-byd",
+        "key": [
+          "ID"
+        ],
+        "activity": {
+          "value": "Create purchase request"
+        },
+        "timestamp": "CreationDateTime",
+        "objects": [
+          {
+            "object": "byd_p_request",
+            "columns": [
+              "ID"
+            ],
+            "qualifier": "purchase request"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_order_created",
+        "input": "PurchaseOrder",
+        "namespace": "sap-byd",
+        "key": [
+          "ID"
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "SellerPartyID",
+            "name": "supplier"
+          },
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_p_order",
+            "columns": [
+              "ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_goods_moved",
+        "input": "GoodsAndServiceAcknowledgementItem",
+        "namespace": "sap-byd",
+        "key": [
+          "GoodsAndServiceAcknowledgementID",
+          "ID"
+        ],
+        "activity": {
+          "value": "Receive goods"
+        },
+        "lookup": {
+          "input": "GoodsAndServiceAcknowledgement",
+          "key": [
+            "ID"
+          ],
+          "matching": [
+            "GoodsAndServiceAcknowledgementID"
+          ],
+          "columns": [
+            "CreationDateTime"
+          ]
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_p_receipt_line",
+            "columns": [
+              "GoodsAndServiceAcknowledgementID",
+              "ID"
+            ],
+            "qualifier": "goods receipt line"
+          },
+          {
+            "object": "byd_p_order_line",
+            "columns": [
+              "PurchaseOrderID",
+              "PurchaseOrderItemID"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_invoice_created",
+        "input": "SupplierInvoice",
+        "namespace": "sap-byd",
+        "key": [
+          "ID"
+        ],
+        "activity": {
+          "value": "Record supplier invoice"
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "TotalNetAmount",
+            "name": "net amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_p_invoice",
+            "columns": [
+              "ID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      },
+      {
+        "id": "byd_p_invoice_paid",
+        "input": "SupplierPaymentAllocation",
+        "namespace": "sap-byd",
+        "key": [
+          "SupplierPaymentID",
+          "ID"
+        ],
+        "activity": {
+          "value": "Pay supplier invoice"
+        },
+        "lookup": {
+          "input": "SupplierPayment",
+          "key": [
+            "ID"
+          ],
+          "matching": [
+            "SupplierPaymentID"
+          ],
+          "columns": [
+            "CreationDateTime"
+          ]
+        },
+        "timestamp": "CreationDateTime",
+        "attributes": [
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "byd_p_invoice",
+            "columns": [
+              "SupplierInvoiceID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "byd_p_order_has_line",
+        "input": "PurchaseOrderItem",
+        "source": {
+          "object": "byd_p_order",
+          "columns": [
+            "PurchaseOrderID"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "byd_p_order_line",
+          "columns": [
+            "PurchaseOrderID",
+            "ID"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "byd_p_request_became_line",
+        "input": "PurchaseOrderItem",
+        "where": [
+          {
+            "column": "PurchaseRequestID",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "byd_p_request",
+          "columns": [
+            "PurchaseRequestID"
+          ],
+          "qualifier": "purchase request"
+        },
+        "target": {
+          "object": "byd_p_order_line",
+          "columns": [
+            "PurchaseOrderID",
+            "ID"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "byd_p_invoice_for_line",
+        "input": "SupplierInvoiceItem",
+        "source": {
+          "object": "byd_p_invoice",
+          "columns": [
+            "SupplierInvoiceID"
+          ],
+          "qualifier": "supplier invoice"
+        },
+        "target": {
+          "object": "byd_p_order_line",
+          "columns": [
+            "PurchaseOrderID",
+            "PurchaseOrderItemID"
+          ],
+          "qualifier": "purchase order line"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "byd_p_request_created_lines",
+        "event": "byd_p_request_created",
+        "through": "byd_p_request",
+        "relationship": "byd_p_request_became_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "byd_p_order_created_lines",
+        "event": "byd_p_order_created",
+        "through": "byd_p_order",
+        "relationship": "byd_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "byd_p_invoice_created_lines",
+        "event": "byd_p_invoice_created",
+        "through": "byd_p_invoice",
+        "relationship": "byd_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "byd_p_invoice_paid_lines",
+        "event": "byd_p_invoice_paid",
+        "through": "byd_p_invoice",
+        "relationship": "byd_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "ByDesign purchase order ID",
+      "object": "byd_p_order",
+      "table": "PurchaseOrder",
+      "key": [
+        "ID"
+      ],
+      "example": "4500123",
+      "carry": [
+        "byd_p_order_has_line"
+      ]
+    }
+  ]
+}

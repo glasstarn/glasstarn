@@ -1,0 +1,353 @@
+{
+  "id": "power-automate-dataverse",
+  "version": 1,
+  "name": "Flows and Dataverse records (Microsoft Power Automate)",
+  "system": "Microsoft Power Automate and Dataverse",
+  "process": "automated workflow",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the Dataverse audit table and cloud flow run history stored in Dataverse (flowrun). Not yet confirmed on a real environment; tested only on made-up extracts. Auditing must be switched on for the tables studied; flow run history is kept 28 days by default unless retention is raised.",
+  "case_object_type": "record",
+  "size_check": {
+    "ask": "How many records of the table studied were created in the period?",
+    "unit": "record",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "audit",
+      "noun": "audited changes",
+      "label": "Dataverse audit log",
+      "export": "Audit rows of the records of the table studied that were created in the period, from their creation on (audit): auditid, objectid, objecttypecode, action (exported with its label, for example Create, Update, Delete, Assign), createdon and userid. Times as exported in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "auditid",
+        "objectid",
+        "objecttypecode",
+        "action",
+        "createdon"
+      ],
+      "fields": [
+        "userid",
+        "operation"
+      ],
+      "date_field": "createdon"
+    },
+    {
+      "name": "flowrun",
+      "noun": "flow runs",
+      "label": "Cloud flow runs",
+      "export": "Runs of the cloud flows that act on that table (flowrun): flowrunid, workflowid, name, starttime, endtime, status and triggertype. Times as exported in UTC (2026-01-05T14:30:00Z).",
+      "required": [
+        "flowrunid",
+        "workflowid",
+        "starttime",
+        "endtime",
+        "status"
+      ],
+      "fields": [
+        "name",
+        "triggertype",
+        "duration"
+      ],
+      "date_field": "starttime",
+      "object": "pa_flow_run",
+      "key": [
+        "flowrunid"
+      ],
+      "optional": true
+    },
+    {
+      "name": "workflow",
+      "noun": "flows",
+      "label": "Flows",
+      "export": "The cloud flows those runs belong to (workflow): workflowid, name and category.",
+      "required": [
+        "workflowid",
+        "name"
+      ],
+      "fields": [
+        "category",
+        "statecode"
+      ],
+      "object": "pa_flow",
+      "key": [
+        "workflowid"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-audit-row",
+      "table": "audit",
+      "columns": [
+        "auditid"
+      ],
+      "label": "audit rows listed once"
+    },
+    {
+      "id": "one-flow-run",
+      "table": "flowrun",
+      "columns": [
+        "flowrunid"
+      ],
+      "label": "flow runs listed once"
+    },
+    {
+      "id": "one-flow",
+      "table": "workflow",
+      "columns": [
+        "workflowid"
+      ],
+      "label": "flows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "runs-have-flows",
+      "label": "flow runs whose flow is in the export",
+      "from": {
+        "table": "flowrun",
+        "columns": [
+          "workflowid"
+        ]
+      },
+      "to": {
+        "table": "workflow",
+        "columns": [
+          "workflowid"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "audited-records-were-created",
+      "label": "audit rows whose record's creation is in the export",
+      "from": {
+        "table": "audit",
+        "columns": [
+          "objectid"
+        ]
+      },
+      "to": {
+        "table": "audit",
+        "columns": [
+          "objectid"
+        ],
+        "where": [
+          {
+            "column": "action",
+            "in": [
+              "Create"
+            ]
+          }
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "pa_record",
+        "input": "audit",
+        "namespace": "dataverse",
+        "object_type": "record",
+        "key": [
+          "objectid"
+        ],
+        "attributes": [
+          {
+            "column": "objecttypecode",
+            "name": "table"
+          }
+        ],
+        "where": [
+          {
+            "column": "action",
+            "in": [
+              "Create"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "pa_flow_run",
+        "input": "flowrun",
+        "namespace": "dataverse",
+        "object_type": "flow run",
+        "key": [
+          "flowrunid"
+        ],
+        "attributes": [
+          {
+            "column": "status",
+            "name": "status"
+          },
+          {
+            "column": "triggertype",
+            "name": "trigger"
+          }
+        ]
+      },
+      {
+        "id": "pa_flow",
+        "input": "workflow",
+        "namespace": "dataverse",
+        "object_type": "flow",
+        "key": [
+          "workflowid"
+        ],
+        "attributes": [
+          {
+            "column": "name",
+            "name": "name"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "pa_record_changed",
+        "input": "audit",
+        "namespace": "dataverse",
+        "key": [
+          "auditid"
+        ],
+        "activity": {
+          "column": "action"
+        },
+        "timestamp": "createdon",
+        "attributes": [
+          {
+            "column": "userid",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "pa_record",
+            "columns": [
+              "objectid"
+            ],
+            "qualifier": "record"
+          }
+        ]
+      },
+      {
+        "id": "pa_run_started",
+        "input": "flowrun",
+        "namespace": "dataverse",
+        "key": [
+          "flowrunid"
+        ],
+        "activity": {
+          "value": "Start flow run"
+        },
+        "timestamp": "starttime",
+        "objects": [
+          {
+            "object": "pa_flow_run",
+            "columns": [
+              "flowrunid"
+            ],
+            "qualifier": "run"
+          },
+          {
+            "object": "pa_flow",
+            "columns": [
+              "workflowid"
+            ],
+            "qualifier": "flow",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "pa_run_succeeded",
+        "input": "flowrun",
+        "namespace": "dataverse",
+        "key": [
+          "flowrunid"
+        ],
+        "where": [
+          {
+            "column": "status",
+            "in": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Finish flow run"
+        },
+        "timestamp": "endtime",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "pa_flow_run",
+            "columns": [
+              "flowrunid"
+            ],
+            "qualifier": "run"
+          },
+          {
+            "object": "pa_flow",
+            "columns": [
+              "workflowid"
+            ],
+            "qualifier": "flow",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "pa_run_failed",
+        "input": "flowrun",
+        "namespace": "dataverse",
+        "key": [
+          "flowrunid"
+        ],
+        "where": [
+          {
+            "column": "status",
+            "in": [
+              "Failed",
+              "Cancelled"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Fail flow run"
+        },
+        "timestamp": "endtime",
+        "optional_timestamp": true,
+        "attributes": [
+          {
+            "column": "status",
+            "name": "status"
+          }
+        ],
+        "objects": [
+          {
+            "object": "pa_flow_run",
+            "columns": [
+              "flowrunid"
+            ],
+            "qualifier": "run"
+          },
+          {
+            "object": "pa_flow",
+            "columns": [
+              "workflowid"
+            ],
+            "qualifier": "flow",
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ]
+  }
+}

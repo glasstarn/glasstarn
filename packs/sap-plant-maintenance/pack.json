@@ -1,0 +1,1215 @@
+{
+  "id": "sap-plant-maintenance",
+  "version": 1,
+  "name": "Equipment maintenance (SAP ECC and S/4HANA)",
+  "system": "SAP ECC or SAP S/4HANA",
+  "process": "equipment maintenance",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on SAP S/4HANA 2025 FPS01 trial data: check, build and four order-history comparisons passed. Other SAP releases, customer customizations and unobserved branches still require validation.",
+  "case_object_type": "maintenance order",
+  "size_check": {
+    "ask": "How many maintenance orders were created in the period for the plant?",
+    "unit": "maintenance order",
+    "steps_per_unit": 7
+  },
+  "custom_prefixes": [
+    "Z*",
+    "YY*"
+  ],
+  "include": [
+    "sap-clock"
+  ],
+  "tables": [
+    {
+      "name": "QMEL",
+      "noun": "notifications",
+      "date_label": "the problem was reported",
+      "label": "Notifications",
+      "export": "Maintenance notifications created in the period (filter QMDAT): QMNUM, QMART, QMDAT, MZEIT, PRIOK, AUFNR and the company's own fields. No texts.",
+      "required": [
+        "QMNUM",
+        "QMART",
+        "QMDAT",
+        "MZEIT"
+      ],
+      "fields": [
+        "PRIOK",
+        "AUFNR",
+        "ERNAM",
+        "OBJNR"
+      ],
+      "date_field": "QMDAT",
+      "object": "notification",
+      "key": [
+        "QMNUM"
+      ]
+    },
+    {
+      "name": "QMIH",
+      "label": "Notification equipment and breakdowns",
+      "export": "Maintenance data of those notifications: QMNUM, EQUNR, MSAUS (breakdown), AUSVN and AUZTV (malfunction start), AUSBS and AUZTB (malfunction end).",
+      "required": [
+        "QMNUM",
+        "EQUNR",
+        "MSAUS",
+        "AUSVN",
+        "AUZTV"
+      ],
+      "fields": [
+        "AUSBS",
+        "AUZTB"
+      ],
+      "date_field": "AUSVN",
+      "optional": true
+    },
+    {
+      "name": "EQUI",
+      "noun": "pieces of equipment",
+      "label": "Equipment",
+      "export": "The equipment named in those notifications and orders: EQUNR, EQTYP, ERDAT and the company's own fields.",
+      "required": [
+        "EQUNR",
+        "EQTYP"
+      ],
+      "fields": [
+        "ERDAT",
+        "HERST",
+        "TYPBZ"
+      ],
+      "object": "equipment",
+      "key": [
+        "EQUNR"
+      ],
+      "optional": true
+    },
+    {
+      "name": "AUFK",
+      "label": "Order master data",
+      "export": "Maintenance orders (AUTYP 30) created in the period for the company code (filter AUTYP, BUKRS and ERDAT).",
+      "required": [
+        "AUFNR",
+        "AUTYP",
+        "AUART",
+        "ERDAT",
+        "ERFZEIT",
+        "BUKRS"
+      ],
+      "fields": [
+        "WERKS",
+        "ERNAM",
+        "OBJNR"
+      ],
+      "date_field": "ERDAT",
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "AFIH",
+      "noun": "maintenance orders",
+      "label": "Maintenance order headers",
+      "export": "Maintenance data of those orders: AUFNR, EQUNR, QMNUM, ILART (activity type), PRIOK and the company's own fields.",
+      "required": [
+        "AUFNR",
+        "EQUNR",
+        "QMNUM"
+      ],
+      "fields": [
+        "ILART",
+        "PRIOK",
+        "IWERK"
+      ],
+      "object": "maintenance_order",
+      "key": [
+        "AUFNR"
+      ]
+    },
+    {
+      "name": "AFRU",
+      "label": "Order confirmations",
+      "export": "Confirmations of those orders, including cancellations (STZHL).",
+      "required": [
+        "RUECK",
+        "RMZHL",
+        "AUFNR",
+        "VORNR",
+        "ERSDA",
+        "ERZET",
+        "AUERU",
+        "STZHL"
+      ],
+      "fields": [
+        "ERNAM",
+        "ISMNW",
+        "STOKZ",
+        "BUDAT"
+      ],
+      "date_field": "ERSDA"
+    },
+    {
+      "name": "MSEG",
+      "label": "Goods movements",
+      "export": "Material document items posted against those orders (AUFNR filled): spare part issues (261) and returns (262).",
+      "required": [
+        "MBLNR",
+        "MJAHR",
+        "ZEILE",
+        "BWART",
+        "AUFNR",
+        "MATNR",
+        "MENGE",
+        "CPUDT_MKPF",
+        "CPUTM_MKPF"
+      ],
+      "fields": [
+        "WERKS",
+        "LGORT",
+        "MEINS",
+        "USNAM_MKPF"
+      ],
+      "date_field": "CPUDT_MKPF",
+      "optional": true
+    },
+    {
+      "name": "JCDS",
+      "label": "Status changes",
+      "export": "Status change documents of those orders (OBJNR = OR + order number) and notifications (OBJNR = QM + notification number), at least for statuses I0002, I0045, I0046, I0070 and I0072.",
+      "required": [
+        "OBJNR",
+        "STAT",
+        "CHGNR",
+        "UDATE",
+        "UTIME",
+        "INACT"
+      ],
+      "fields": [
+        "USNAM",
+        "CHIND"
+      ],
+      "date_field": "UDATE",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-notification",
+      "table": "QMEL",
+      "columns": [
+        "QMNUM"
+      ],
+      "label": "notifications listed once"
+    },
+    {
+      "id": "one-notification-detail",
+      "table": "QMIH",
+      "columns": [
+        "QMNUM"
+      ],
+      "label": "notification details listed once"
+    },
+    {
+      "id": "one-equipment",
+      "table": "EQUI",
+      "columns": [
+        "EQUNR"
+      ],
+      "label": "equipment listed once"
+    },
+    {
+      "id": "one-order",
+      "table": "AUFK",
+      "columns": [
+        "AUFNR"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-maintenance-order-header",
+      "table": "AFIH",
+      "columns": [
+        "AUFNR"
+      ],
+      "label": "order headers listed once"
+    },
+    {
+      "id": "one-confirmation",
+      "table": "AFRU",
+      "columns": [
+        "RUECK",
+        "RMZHL"
+      ],
+      "label": "confirmations listed once"
+    },
+    {
+      "id": "one-goods-movement",
+      "table": "MSEG",
+      "columns": [
+        "MBLNR",
+        "MJAHR",
+        "ZEILE"
+      ],
+      "label": "goods movements listed once"
+    },
+    {
+      "id": "one-status-change",
+      "table": "JCDS",
+      "columns": [
+        "OBJNR",
+        "STAT",
+        "CHGNR"
+      ],
+      "label": "status changes listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "notification-details-have-notifications",
+      "label": "notification details whose notification is in the export",
+      "from": {
+        "table": "QMIH",
+        "columns": [
+          "QMNUM"
+        ]
+      },
+      "to": {
+        "table": "QMEL",
+        "columns": [
+          "QMNUM"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "orders-have-headers",
+      "label": "maintenance orders whose header is in the export",
+      "from": {
+        "table": "AUFK",
+        "columns": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "AUTYP",
+            "in": [
+              "30"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "AFIH",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "headers-have-orders",
+      "label": "order headers whose order is in the export",
+      "from": {
+        "table": "AFIH",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "to": {
+        "table": "AUFK",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "confirmations-have-orders",
+      "label": "confirmations whose order is in the export",
+      "from": {
+        "table": "AFRU",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "to": {
+        "table": "AFIH",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "movements-have-orders",
+      "label": "goods movements whose order is in the export",
+      "from": {
+        "table": "MSEG",
+        "columns": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "AFIH",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "order-statuses-have-orders",
+      "label": "order status changes whose order is in the export",
+      "from": {
+        "table": "JCDS",
+        "columns": [
+          {
+            "column": "OBJNR",
+            "start": 2,
+            "length": 12
+          }
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0002",
+              "I0045",
+              "I0046"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "AFIH",
+        "columns": [
+          "AUFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "notification-statuses-have-notifications",
+      "label": "notification status changes whose notification is in the export",
+      "from": {
+        "table": "JCDS",
+        "columns": [
+          {
+            "column": "OBJNR",
+            "start": 2,
+            "length": 12
+          }
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0070",
+              "I0072"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "QMEL",
+        "columns": [
+          "QMNUM"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "notification",
+        "input": "QMEL",
+        "namespace": "sap",
+        "object_type": "notification",
+        "key": [
+          "QMNUM"
+        ],
+        "attributes": [
+          {
+            "column": "QMART",
+            "name": "notification type"
+          },
+          {
+            "column": "PRIOK",
+            "name": "priority"
+          }
+        ]
+      },
+      {
+        "id": "equipment",
+        "input": "EQUI",
+        "namespace": "sap",
+        "object_type": "equipment",
+        "key": [
+          "EQUNR"
+        ],
+        "attributes": [
+          {
+            "column": "EQTYP",
+            "name": "equipment category"
+          },
+          {
+            "column": "TYPBZ",
+            "name": "model"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_order",
+        "input": "AFIH",
+        "namespace": "sap",
+        "object_type": "maintenance order",
+        "key": [
+          "AUFNR"
+        ],
+        "attributes": [
+          {
+            "column": "ILART",
+            "name": "activity type"
+          },
+          {
+            "column": "PRIOK",
+            "name": "priority"
+          },
+          {
+            "column": "EQUNR",
+            "name": "equipment number"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "problem_reported",
+        "input": "QMEL",
+        "namespace": "sap",
+        "key": [
+          "QMNUM"
+        ],
+        "activity": {
+          "value": "Report problem"
+        },
+        "timestamp": {
+          "date": "QMDAT",
+          "offset": "{setting:offset}",
+          "time": "MZEIT"
+        },
+        "attributes": [
+          {
+            "column": "QMART",
+            "name": "notification type"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "notification",
+            "columns": [
+              "QMNUM"
+            ],
+            "qualifier": "notification"
+          }
+        ]
+      },
+      {
+        "id": "equipment_broke_down",
+        "input": "QMIH",
+        "namespace": "sap",
+        "key": [
+          "QMNUM"
+        ],
+        "where": [
+          {
+            "column": "MSAUS",
+            "in": [
+              "X"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Equipment breaks down"
+        },
+        "timestamp": {
+          "date": "AUSVN",
+          "offset": "{setting:offset}",
+          "time": "AUZTV"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "notification",
+            "columns": [
+              "QMNUM"
+            ],
+            "qualifier": "notification"
+          },
+          {
+            "object": "equipment",
+            "columns": [
+              "EQUNR"
+            ],
+            "qualifier": "equipment",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "maintenance_order_created",
+        "input": "AUFK",
+        "namespace": "sap",
+        "key": [
+          "AUFNR"
+        ],
+        "where": [
+          {
+            "column": "AUTYP",
+            "in": [
+              "30"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create maintenance order"
+        },
+        "lookup": {
+          "input": "AFIH",
+          "key": [
+            "AUFNR"
+          ],
+          "matching": [
+            "AUFNR"
+          ],
+          "columns": [
+            "QMNUM",
+            "EQUNR"
+          ]
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERFZEIT"
+        },
+        "attributes": [
+          {
+            "column": "AUART",
+            "name": "order type"
+          },
+          {
+            "column": "WERKS",
+            "name": "plant"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "notification",
+            "columns": [
+              "QMNUM"
+            ],
+            "qualifier": "notification",
+            "optional": true,
+            "allow_unmatched": true
+          },
+          {
+            "object": "equipment",
+            "columns": [
+              "EQUNR"
+            ],
+            "qualifier": "equipment",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "maintenance_order_released",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0002"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Release maintenance order"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "spare_parts_issued",
+        "input": "MSEG",
+        "namespace": "sap",
+        "key": [
+          "MBLNR",
+          "MJAHR",
+          "ZEILE"
+        ],
+        "where": [
+          {
+            "column": "BWART",
+            "in": [
+              "261"
+            ]
+          },
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Issue spare parts"
+        },
+        "timestamp": {
+          "date": "CPUDT_MKPF",
+          "offset": "{setting:offset}",
+          "time": "CPUTM_MKPF"
+        },
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "MENGE",
+            "name": "quantity"
+          },
+          {
+            "column": "USNAM_MKPF",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "spare_parts_returned",
+        "input": "MSEG",
+        "namespace": "sap",
+        "key": [
+          "MBLNR",
+          "MJAHR",
+          "ZEILE"
+        ],
+        "where": [
+          {
+            "column": "BWART",
+            "in": [
+              "262"
+            ]
+          },
+          {
+            "column": "AUFNR",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Return spare parts"
+        },
+        "timestamp": {
+          "date": "CPUDT_MKPF",
+          "offset": "{setting:offset}",
+          "time": "CPUTM_MKPF"
+        },
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "MENGE",
+            "name": "quantity"
+          },
+          {
+            "column": "USNAM_MKPF",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "work_confirmed",
+        "input": "AFRU",
+        "namespace": "sap",
+        "key": [
+          "RUECK",
+          "RMZHL"
+        ],
+        "where": [
+          {
+            "column": "AUERU",
+            "in": [
+              ""
+            ]
+          },
+          {
+            "column": "STZHL",
+            "in": [
+              "",
+              "00000000"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Confirm work (partial)"
+        },
+        "timestamp": {
+          "date": "ERSDA",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "attributes": [
+          {
+            "column": "VORNR",
+            "name": "operation"
+          },
+          {
+            "column": "ISMNW",
+            "name": "work done"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "work_finished",
+        "input": "AFRU",
+        "namespace": "sap",
+        "key": [
+          "RUECK",
+          "RMZHL"
+        ],
+        "where": [
+          {
+            "column": "AUERU",
+            "in": [
+              "X"
+            ]
+          },
+          {
+            "column": "STZHL",
+            "in": [
+              "",
+              "00000000"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Confirm work (final)"
+        },
+        "timestamp": {
+          "date": "ERSDA",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "attributes": [
+          {
+            "column": "VORNR",
+            "name": "operation"
+          },
+          {
+            "column": "ISMNW",
+            "name": "work done"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "confirmation_cancelled",
+        "input": "AFRU",
+        "namespace": "sap",
+        "key": [
+          "RUECK",
+          "RMZHL"
+        ],
+        "where": [
+          {
+            "column": "STZHL",
+            "not_in": [
+              "",
+              "00000000"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel confirmation"
+        },
+        "timestamp": {
+          "date": "ERSDA",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "attributes": [
+          {
+            "column": "VORNR",
+            "name": "operation"
+          },
+          {
+            "column": "ISMNW",
+            "name": "work done"
+          },
+          {
+            "column": "ERNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              "AUFNR"
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_order_completed",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0045"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Complete order technically"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_order_closed",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0046"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Close order"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "maintenance_order",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "order"
+          }
+        ]
+      },
+      {
+        "id": "notification_in_process",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0070"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Start work on notification"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "notification",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "notification"
+          }
+        ]
+      },
+      {
+        "id": "notification_completed",
+        "input": "JCDS",
+        "namespace": "sap",
+        "key": [
+          "OBJNR",
+          "STAT",
+          "CHGNR"
+        ],
+        "where": [
+          {
+            "column": "STAT",
+            "in": [
+              "I0072"
+            ]
+          },
+          {
+            "column": "INACT",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Complete notification"
+        },
+        "timestamp": {
+          "date": "UDATE",
+          "offset": "{setting:offset}",
+          "time": "UTIME"
+        },
+        "attributes": [
+          {
+            "column": "USNAM",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "notification",
+            "columns": [
+              {
+                "column": "OBJNR",
+                "start": 2,
+                "length": 12
+              }
+            ],
+            "qualifier": "notification"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "order_for_notification",
+        "input": "AFIH",
+        "source": {
+          "object": "maintenance_order",
+          "columns": [
+            "AUFNR"
+          ],
+          "qualifier": "order"
+        },
+        "target": {
+          "object": "notification",
+          "columns": [
+            "QMNUM"
+          ],
+          "qualifier": "for notification",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "order_on_equipment",
+        "input": "AFIH",
+        "source": {
+          "object": "maintenance_order",
+          "columns": [
+            "AUFNR"
+          ],
+          "qualifier": "order"
+        },
+        "target": {
+          "object": "equipment",
+          "columns": [
+            "EQUNR"
+          ],
+          "qualifier": "on equipment",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ]
+  }
+}

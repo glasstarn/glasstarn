@@ -1,0 +1,54 @@
+{
+  "id": "sap-ecc-vendors",
+  "note": "Vendors from SAP ECC or S/4HANA tables.",
+  "tables": [
+    {
+      "name": "LFA1",
+      "noun": "vendors",
+      "label": "Vendors",
+      "export": "Vendors that appear in the order headers or invoices.",
+      "required": [
+        "LIFNR",
+        "NAME1"
+      ],
+      "fields": [
+        "LAND1",
+        "KTOKK"
+      ],
+      "object": "vendor",
+      "key": [
+        "LIFNR"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-vendor",
+      "table": "LFA1",
+      "columns": [
+        "LIFNR"
+      ],
+      "label": "vendors listed once"
+    }
+  ],
+  "checks": [],
+  "recipe": {
+    "objects": [
+      {
+        "id": "vendor",
+        "input": "LFA1",
+        "namespace": "sap",
+        "object_type": "vendor",
+        "key": [
+          "LIFNR"
+        ],
+        "attributes": [
+          {
+            "column": "NAME1",
+            "name": "vendor name"
+          }
+        ]
+      }
+    ]
+  }
+}

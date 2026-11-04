@@ -1,0 +1,604 @@
+{
+  "id": "salesforce-field-service",
+  "version": 1,
+  "name": "Field service (Salesforce)",
+  "system": "Salesforce Field Service",
+  "process": "field service",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Salesforce Field Service's standard objects (work orders, service appointments, assigned resources) and their field history. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Status steps need field history tracking on the status of work orders and service appointments.",
+  "case_object_type": "work order",
+  "size_check": {
+    "ask": "How many work orders were created in the period?",
+    "unit": "work order",
+    "steps_per_unit": 8
+  },
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "tables": [
+    {
+      "name": "WorkOrder",
+      "noun": "work orders",
+      "date_label": "the work order was created",
+      "label": "Work orders",
+      "export": "Work orders created in the period: Id, WorkOrderNumber, CaseId, AccountId, AssetId, WorkTypeId, CreatedDate, Status, Priority and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "Status",
+        "Priority"
+      ],
+      "fields": [
+        "WorkOrderNumber",
+        "CaseId",
+        "AccountId",
+        "AssetId",
+        "WorkTypeId",
+        "StartDate",
+        "EndDate"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_work_order",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "WorkOrderHistory",
+      "label": "Work order field history",
+      "export": "Field history of those work orders (WorkOrderHistory): Id, WorkOrderId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "WorkOrderId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "WorkOrder",
+      "needs_tracked": [
+        "Status"
+      ]
+    },
+    {
+      "name": "ServiceAppointment",
+      "noun": "service appointments",
+      "date_label": "the appointment was created",
+      "label": "Service appointments",
+      "export": "Service appointments of those work orders (ParentRecordId): Id, AppointmentNumber, ParentRecordId, CreatedDate, Status, SchedStartTime, SchedEndTime, ActualStartTime, ActualEndTime and ArrivalWindowStartTime.",
+      "required": [
+        "Id",
+        "ParentRecordId",
+        "CreatedDate",
+        "Status",
+        "ActualStartTime",
+        "ActualEndTime"
+      ],
+      "fields": [
+        "AppointmentNumber",
+        "SchedStartTime",
+        "SchedEndTime",
+        "ArrivalWindowStartTime",
+        "ArrivalWindowEndTime"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_service_appointment",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "ServiceAppointmentHistory",
+      "label": "Service appointment field history",
+      "export": "Field history of those appointments (ServiceAppointmentHistory): Id, ServiceAppointmentId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "ServiceAppointmentId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "optional": true,
+      "history_of": "ServiceAppointment",
+      "needs_tracked": [
+        "Status"
+      ]
+    },
+    {
+      "name": "AssignedResource",
+      "label": "Assigned technicians",
+      "export": "Technicians assigned to those appointments (AssignedResource): Id, ServiceAppointmentId, ServiceResourceId and CreatedDate.",
+      "required": [
+        "Id",
+        "ServiceAppointmentId",
+        "ServiceResourceId",
+        "CreatedDate"
+      ],
+      "fields": [],
+      "date_field": "CreatedDate",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-work-order",
+      "table": "WorkOrder",
+      "columns": [
+        "Id"
+      ],
+      "label": "work orders listed once"
+    },
+    {
+      "id": "one-sf-work-order-history-row",
+      "table": "WorkOrderHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "work order history rows listed once"
+    },
+    {
+      "id": "one-sf-appointment",
+      "table": "ServiceAppointment",
+      "columns": [
+        "Id"
+      ],
+      "label": "appointments listed once"
+    },
+    {
+      "id": "one-sf-appointment-history-row",
+      "table": "ServiceAppointmentHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "appointment history rows listed once"
+    },
+    {
+      "id": "one-sf-assignment",
+      "table": "AssignedResource",
+      "columns": [
+        "Id"
+      ],
+      "label": "assignments listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "work-order-history-has-work-orders",
+      "label": "work order history rows whose work order is in the export",
+      "from": {
+        "table": "WorkOrderHistory",
+        "columns": [
+          "WorkOrderId"
+        ]
+      },
+      "to": {
+        "table": "WorkOrder",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "appointments-have-work-orders",
+      "label": "appointments whose work order is in the export",
+      "from": {
+        "table": "ServiceAppointment",
+        "columns": [
+          "ParentRecordId"
+        ]
+      },
+      "to": {
+        "table": "WorkOrder",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} appointments belong to something other than an exported work order (for example a work order line item or an older work order). Keep them on their own, or re-export?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without a work order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with their work orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "appointment-history-has-appointments",
+      "label": "appointment history rows whose appointment is in the export",
+      "from": {
+        "table": "ServiceAppointmentHistory",
+        "columns": [
+          "ServiceAppointmentId"
+        ]
+      },
+      "to": {
+        "table": "ServiceAppointment",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "assignments-have-appointments",
+      "label": "assignments whose appointment is in the export",
+      "from": {
+        "table": "AssignedResource",
+        "columns": [
+          "ServiceAppointmentId"
+        ]
+      },
+      "to": {
+        "table": "ServiceAppointment",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sf_work_order",
+        "input": "WorkOrder",
+        "namespace": "salesforce",
+        "object_type": "work order",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          },
+          {
+            "column": "Priority",
+            "name": "priority"
+          },
+          {
+            "column": "WorkTypeId",
+            "name": "work type"
+          }
+        ]
+      },
+      {
+        "id": "sf_service_appointment",
+        "input": "ServiceAppointment",
+        "namespace": "salesforce",
+        "object_type": "service appointment",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          },
+          {
+            "column": "SchedStartTime",
+            "name": "scheduled start"
+          },
+          {
+            "column": "ArrivalWindowEndTime",
+            "name": "arrival window end"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_work_order_created",
+        "input": "WorkOrder",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create work order"
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "Priority",
+            "name": "priority"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "work order"
+          }
+        ]
+      },
+      {
+        "id": "sf_work_order_status_changed",
+        "input": "WorkOrderHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Status"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue",
+          "prefix": "Work order: "
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "WorkOrderId"
+            ],
+            "qualifier": "work order"
+          }
+        ]
+      },
+      {
+        "id": "sf_appointment_created",
+        "input": "ServiceAppointment",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create appointment"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_service_appointment",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "appointment"
+          },
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "ParentRecordId"
+            ],
+            "qualifier": "work order",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_appointment_status_changed",
+        "input": "ServiceAppointmentHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Status"
+            ]
+          }
+        ],
+        "activity": {
+          "column": "NewValue",
+          "prefix": "Appointment: "
+        },
+        "lookup": {
+          "input": "ServiceAppointment",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ServiceAppointmentId"
+          ],
+          "columns": [
+            "ParentRecordId"
+          ]
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_service_appointment",
+            "columns": [
+              "ServiceAppointmentId"
+            ],
+            "qualifier": "appointment"
+          },
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "ParentRecordId"
+            ],
+            "qualifier": "work order",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_technician_assigned",
+        "input": "AssignedResource",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Assign technician"
+        },
+        "lookup": {
+          "input": "ServiceAppointment",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "ServiceAppointmentId"
+          ],
+          "columns": [
+            "ParentRecordId"
+          ]
+        },
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "ServiceResourceId",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_service_appointment",
+            "columns": [
+              "ServiceAppointmentId"
+            ],
+            "qualifier": "appointment"
+          },
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "ParentRecordId"
+            ],
+            "qualifier": "work order",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_work_started",
+        "input": "ServiceAppointment",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Start work on site"
+        },
+        "timestamp": "ActualStartTime",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "sf_service_appointment",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "appointment"
+          },
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "ParentRecordId"
+            ],
+            "qualifier": "work order",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "sf_work_finished",
+        "input": "ServiceAppointment",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Finish work on site"
+        },
+        "timestamp": "ActualEndTime",
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "sf_service_appointment",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "appointment"
+          },
+          {
+            "object": "sf_work_order",
+            "columns": [
+              "ParentRecordId"
+            ],
+            "qualifier": "work order",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "sf_appointment_for_work_order",
+        "input": "ServiceAppointment",
+        "source": {
+          "object": "sf_service_appointment",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "appointment"
+        },
+        "target": {
+          "object": "sf_work_order",
+          "columns": [
+            "ParentRecordId"
+          ],
+          "qualifier": "work order",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      }
+    ]
+  }
+}

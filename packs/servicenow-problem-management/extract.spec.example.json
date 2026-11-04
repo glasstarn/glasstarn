@@ -1,0 +1,45 @@
+{
+ "version": 1,
+ "system": "servicenow",
+ "instance": "https://your-instance.service-now.com",
+ "start": "2026-01-01T00:00:00Z",
+ "end": "2026-04-01T00:00:00Z",
+ "tables": [
+  {
+   "table": "problem",
+   "fields": [
+    "state",
+    "priority",
+    "assignment_group",
+    "assigned_to"
+   ],
+   "label_fields": [
+    "state",
+    "priority",
+    "assignment_group"
+   ]
+  },
+  {
+   "table": "problem_task",
+   "fields": [
+    "state",
+    "assignment_group"
+   ],
+   "label_fields": [
+    "state",
+    "assignment_group"
+   ],
+   "parent": {
+    "field": "problem",
+    "table": "problem"
+   }
+  }
+ ],
+ "history_fields": [
+  "state",
+  "priority",
+  "assignment_group",
+  "assigned_to"
+ ],
+ "history_gaps": []
+}

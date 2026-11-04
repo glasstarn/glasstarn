@@ -1,0 +1,372 @@
+{
+  "id": "salesforce-opportunities",
+  "note": "Opportunities and their field history (stage, amount and close-date changes) from a Salesforce extract.",
+  "custom_prefixes": [
+    "*__c"
+  ],
+  "tables": [
+    {
+      "name": "Opportunity",
+      "noun": "opportunities",
+      "date_label": "the opportunity was created",
+      "label": "Salesforce opportunities",
+      "export": "Opportunities for the period: Id, Name, AccountId, CreatedDate, StageName, IsClosed, IsWon, CloseDate, Amount and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "StageName",
+        "IsClosed",
+        "IsWon",
+        "CloseDate",
+        "Amount"
+      ],
+      "fields": [
+        "Name",
+        "AccountId",
+        "LeadSource",
+        "OwnerId",
+        "Probability",
+        "Type"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_opportunity",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "OpportunityFieldHistory",
+      "label": "Salesforce opportunity field history",
+      "export": "Field history of those opportunities (OpportunityFieldHistory): Id, OpportunityId, Field, OldValue, NewValue, CreatedDate and DataType. Stage changes appear only if StageName history tracking is on; Salesforce keeps field history for 18 months (24 through the API) unless Field Audit Trail is used.",
+      "required": [
+        "Id",
+        "OpportunityId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate"
+      ],
+      "fields": [
+        "DataType",
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "Opportunity",
+      "needs_tracked": [
+        "StageName",
+        "Amount",
+        "CloseDate"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-opportunity",
+      "table": "Opportunity",
+      "columns": [
+        "Id"
+      ],
+      "label": "opportunities listed once"
+    },
+    {
+      "id": "one-sf-opportunity-history-row",
+      "table": "OpportunityFieldHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "history rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "opportunity-history-has-opportunities",
+      "label": "history rows whose opportunity is in the export",
+      "from": {
+        "table": "OpportunityFieldHistory",
+        "columns": [
+          "OpportunityId"
+        ]
+      },
+      "to": {
+        "table": "Opportunity",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "sf_opportunity",
+        "input": "Opportunity",
+        "namespace": "salesforce",
+        "object_type": "opportunity",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "StageName",
+            "name": "stage"
+          },
+          {
+            "column": "Amount",
+            "name": "amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_opportunity_created",
+        "input": "Opportunity",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create opportunity"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "opportunity"
+          }
+        ]
+      },
+      {
+        "id": "sf_stage_reached",
+        "input": "OpportunityFieldHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "StageName"
+            ]
+          },
+          {
+            "column": "NewValue",
+            "not_in": [
+              "Closed Won",
+              "Closed Lost"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "activity": {
+          "column": "NewValue"
+        }
+      },
+      {
+        "id": "sf_opportunity_won",
+        "input": "OpportunityFieldHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "StageName"
+            ]
+          },
+          {
+            "column": "NewValue",
+            "in": [
+              "Closed Won"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "activity": {
+          "value": "Win opportunity"
+        }
+      },
+      {
+        "id": "sf_opportunity_lost",
+        "input": "OpportunityFieldHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "StageName"
+            ]
+          },
+          {
+            "column": "NewValue",
+            "in": [
+              "Closed Lost"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "activity": {
+          "value": "Lose opportunity"
+        }
+      },
+      {
+        "id": "sf_amount_changed",
+        "input": "OpportunityFieldHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Amount"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "activity": {
+          "value": "Change amount"
+        }
+      },
+      {
+        "id": "sf_close_date_moved",
+        "input": "OpportunityFieldHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "CloseDate"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "OpportunityId"
+            ],
+            "qualifier": "opportunity"
+          }
+        ],
+        "activity": {
+          "value": "Move close date"
+        }
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "opportunity",
+      "label": "Salesforce opportunity ID",
+      "object": "sf_opportunity",
+      "table": "Opportunity",
+      "key": [
+        "Id"
+      ],
+      "example": "0065g00000AbCdEAAZ",
+      "carry": []
+    }
+  ]
+}

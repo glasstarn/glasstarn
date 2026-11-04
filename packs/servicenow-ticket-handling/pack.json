@@ -1,0 +1,833 @@
+{
+  "id": "servicenow-ticket-handling",
+  "version": 1,
+  "name": "Ticket handling (ServiceNow, any task-based table)",
+  "system": "ServiceNow",
+  "process": "ticket handling",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of ServiceNow's Table API, its standard tables and the audit history (sys_audit). Checked on a real ServiceNow instance on 2026-10-15 with planted records; see the README. Steps come from audited fields; a field excluded from auditing leaves no steps. Works on any ServiceNow table built on task: HR cases, customer service cases, facilities, security incidents or a company's own ticket table, named in the settings.",
+  "case_object_type": "ticket",
+  "size_check": {
+    "ask": "How many tickets were opened in the period?",
+    "unit": "ticket",
+    "steps_per_unit": 7
+  },
+  "custom_prefixes": [
+    "u_"
+  ],
+  "settings": [
+    {
+      "id": "ticket_table",
+      "question": "Which ServiceNow table holds the tickets? For example sn_hr_core_case (HR cases), sn_customerservice_case (customer service cases), sn_sec_inc (security incidents) or the company's own table (u_…).",
+      "example": "sn_hr_core_case"
+    },
+    {
+      "id": "task_table",
+      "question": "Which table holds the tickets' tasks, such as sn_hr_core_task? Answer none when the tickets have no tasks.",
+      "example": "sn_hr_core_task"
+    }
+  ],
+  "tables": [
+    {
+      "name": "ServiceNowTicket",
+      "noun": "tickets",
+      "date_label": "the ticket was opened",
+      "label": "ServiceNow tickets",
+      "export": "Tickets with activity in the period, from the ServiceNow extract of the ticket table read \"as\": \"ticket\": sys_id, number, created, state, priority, assignment_group, assigned_to and the company's own fields (u_…), with state, priority and assignment group labels.",
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "state",
+        "state_label"
+      ],
+      "fields": [
+        "priority",
+        "priority_label",
+        "assignment_group",
+        "assigned_to",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_ticket",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowTicketTask",
+      "noun": "tasks",
+      "date_label": "the task was created",
+      "label": "ServiceNow ticket tasks",
+      "export": "The tasks of those tickets, from the task table read \"as\": \"ticket_task\" with its parent field: sys_id, number, created, ticket, state, assignment_group, with state and assignment group labels. Optional.",
+      "optional": true,
+      "required": [
+        "sys_id",
+        "number",
+        "created",
+        "ticket",
+        "state",
+        "state_label"
+      ],
+      "fields": [
+        "assignment_group",
+        "assignment_group_label"
+      ],
+      "date_field": "created",
+      "object": "sn_ticket_task",
+      "key": [
+        "sys_id"
+      ]
+    },
+    {
+      "name": "ServiceNowAudit",
+      "label": "ServiceNow audit history",
+      "export": "The audit history (sys_audit) of those records, one row per changed field, from the ServiceNow extract: table, record, audit_id, created, user, field, old and new stored values and their display labels.",
+      "required": [
+        "table",
+        "record",
+        "audit_id",
+        "created",
+        "field",
+        "old_value",
+        "old_label",
+        "new_value",
+        "new_label"
+      ],
+      "fields": [
+        "user"
+      ],
+      "date_field": "created"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-ServiceNowTicket",
+      "table": "ServiceNowTicket",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "tickets listed once"
+    },
+    {
+      "id": "one-ServiceNowTicketTask",
+      "table": "ServiceNowTicketTask",
+      "columns": [
+        "sys_id"
+      ],
+      "label": "tasks listed once"
+    },
+    {
+      "id": "one-audit-row",
+      "table": "ServiceNowAudit",
+      "columns": [
+        "audit_id"
+      ],
+      "label": "audit rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "audit-has-ticket",
+      "label": "audit rows whose ticket is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowTicket",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "audit-has-task",
+      "label": "audit rows whose task is in the extract",
+      "from": {
+        "table": "ServiceNowAudit",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:task_table}"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "ServiceNowTicketTask",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "tasks-have-ticket",
+      "label": "tasks whose ticket is in the extract",
+      "from": {
+        "table": "ServiceNowTicketTask",
+        "columns": [
+          "ticket"
+        ]
+      },
+      "to": {
+        "table": "ServiceNowTicket",
+        "columns": [
+          "sys_id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "sn_ticket",
+        "input": "ServiceNowTicket",
+        "namespace": "servicenow",
+        "object_type": "ticket",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "priority_label",
+            "name": "priority"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      },
+      {
+        "id": "sn_ticket_task",
+        "input": "ServiceNowTicketTask",
+        "namespace": "servicenow",
+        "object_type": "ticket task",
+        "key": [
+          "sys_id"
+        ],
+        "attributes": [
+          {
+            "column": "number",
+            "name": "number"
+          },
+          {
+            "column": "state_label",
+            "name": "state"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "task_of_ticket",
+        "input": "ServiceNowTicketTask",
+        "source": {
+          "object": "sn_ticket_task",
+          "columns": [
+            "sys_id"
+          ],
+          "qualifier": "task"
+        },
+        "target": {
+          "object": "sn_ticket",
+          "columns": [
+            "ticket"
+          ],
+          "qualifier": "of ticket"
+        }
+      }
+    ],
+    "events": [
+      {
+        "id": "ticket_opened",
+        "input": "ServiceNowTicket",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Open ticket"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "column": "new_label"
+        }
+      },
+      {
+        "id": "group_assigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Assign to group"
+        }
+      },
+      {
+        "id": "group_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Reassign to another group"
+        }
+      },
+      {
+        "id": "person_assigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assigned_to"
+            ]
+          },
+          {
+            "column": "old_value",
+            "in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Assign to person"
+        }
+      },
+      {
+        "id": "person_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assigned_to"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Reassign to another person"
+        }
+      },
+      {
+        "id": "priority_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "priority"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Change priority"
+        }
+      },
+      {
+        "id": "field_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:ticket_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "not_in": [
+              "state",
+              "assignment_group",
+              "assigned_to",
+              "priority",
+              "work_notes",
+              "comments"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "column": "field",
+          "prefix": "Change "
+        }
+      },
+      {
+        "id": "task_created",
+        "input": "ServiceNowTicketTask",
+        "namespace": "servicenow",
+        "key": [
+          "sys_id"
+        ],
+        "activity": {
+          "value": "Create task"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "sn_ticket_task",
+            "columns": [
+              "sys_id"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "ticket"
+            ],
+            "qualifier": "ticket"
+          }
+        ]
+      },
+      {
+        "id": "task_state_changed",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:task_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "state"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "ticket"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "column": "new_label",
+          "prefix": "Task "
+        },
+        "lookup": {
+          "input": "ServiceNowTicketTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "ticket"
+          ]
+        }
+      },
+      {
+        "id": "task_reassigned",
+        "input": "ServiceNowAudit",
+        "namespace": "servicenow",
+        "key": [
+          "audit_id"
+        ],
+        "where": [
+          {
+            "column": "table",
+            "in": [
+              "{setting:task_table}"
+            ]
+          },
+          {
+            "column": "field",
+            "in": [
+              "assignment_group"
+            ]
+          },
+          {
+            "column": "old_value",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "old_label",
+            "name": "from"
+          },
+          {
+            "column": "new_label",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sn_ticket_task",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "task"
+          },
+          {
+            "object": "sn_ticket",
+            "columns": [
+              "ticket"
+            ],
+            "qualifier": "ticket"
+          }
+        ],
+        "activity": {
+          "value": "Reassign task"
+        },
+        "lookup": {
+          "input": "ServiceNowTicketTask",
+          "key": [
+            "sys_id"
+          ],
+          "matching": [
+            "record"
+          ],
+          "columns": [
+            "ticket"
+          ]
+        }
+      }
+    ]
+  }
+}

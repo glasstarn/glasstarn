@@ -1,0 +1,1632 @@
+{
+  "id": "sap-business-one-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (SAP Business One)",
+  "system": "SAP Business One",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the SAP Business One database tables. Not yet confirmed on a real company database; tested only on made-up tables in the standard layout. Approval steps need the approval procedures' tables (OWDD, WDD1); approval times are read as HHMMSS.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period?",
+    "unit": "purchase order line",
+    "steps_per_unit": 4
+  },
+  "custom_prefixes": [
+    "U_*"
+  ],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "What time zone is the SAP Business One server set to? Business One stores creation times without a time zone. Give it as an offset from UTC, for example +01:00.",
+      "example": "+01:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "OPRQ",
+      "label": "Purchase requests",
+      "export": "Purchase requests created in the period (OPRQ). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate",
+      "object": "b1_p_request",
+      "key": [
+        "DocEntry"
+      ],
+      "optional": true
+    },
+    {
+      "name": "PRQ1",
+      "label": "Purchase request lines",
+      "export": "The lines of those purchase requests (PRQ1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ],
+      "optional": true
+    },
+    {
+      "name": "OPOR",
+      "label": "Purchase orders",
+      "export": "Purchase orders created in the period (OPOR). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "object": "b1_p_order",
+      "key": [
+        "DocEntry"
+      ]
+    },
+    {
+      "name": "POR1",
+      "label": "Purchase order lines",
+      "export": "The lines of those orders (POR1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ],
+      "noun": "purchase order lines",
+      "object": "b1_p_order_line",
+      "key": [
+        "DocEntry",
+        "LineNum"
+      ]
+    },
+    {
+      "name": "OPDN",
+      "label": "Goods receipts",
+      "export": "Goods receipts based on those orders (OPDN). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate"
+    },
+    {
+      "name": "PDN1",
+      "label": "Goods receipt lines",
+      "export": "The lines of those documents (PDN1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ],
+      "object": "b1_p_receipt_line",
+      "key": [
+        "DocEntry",
+        "LineNum"
+      ]
+    },
+    {
+      "name": "OPCH",
+      "label": "Supplier invoices",
+      "export": "Supplier invoices for those orders or documents (OPCH). Header fields DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, DocTotal, CANCELED and UserSign. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "CANCELED"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign",
+        "DocStatus",
+        "DocDueDate",
+        "draftKey",
+        "CancelDate"
+      ],
+      "date_field": "CreateDate",
+      "noun": "supplier invoices",
+      "object": "b1_p_invoice",
+      "key": [
+        "DocEntry"
+      ]
+    },
+    {
+      "name": "PCH1",
+      "label": "Supplier invoice lines",
+      "export": "The lines of those invoices (PCH1). Fields DocEntry, LineNum, ItemCode, Quantity, Price, BaseType, BaseEntry and BaseLine.",
+      "required": [
+        "DocEntry",
+        "LineNum",
+        "ItemCode",
+        "Quantity",
+        "BaseType",
+        "BaseEntry",
+        "BaseLine"
+      ],
+      "fields": [
+        "Price",
+        "LineTotal",
+        "LineStatus"
+      ]
+    },
+    {
+      "name": "OVPM",
+      "label": "Payments",
+      "export": "Payments that pay those invoices (OVPM): DocEntry, DocNum, CardCode, DocDate, CreateDate, CreateTS, Canceled and DocTotal. Include cancellation documents (CANCELED = C) and their lines. Dates as YYYY-MM-DD; CreateTS as the stored number (HHMMSS). Leave BaseEntry and BaseLine blank on lines without a base document.",
+      "required": [
+        "DocEntry",
+        "DocNum",
+        "CardCode",
+        "DocDate",
+        "CreateDate",
+        "CreateTS",
+        "Canceled"
+      ],
+      "fields": [
+        "DocTotal",
+        "UserSign"
+      ],
+      "date_field": "CreateDate",
+      "optional": true
+    },
+    {
+      "name": "VPM2",
+      "label": "Paid invoices",
+      "export": "The invoices each of those payments pays (VPM2): DocNum (the payment's DocEntry), InvoiceId, DocEntry (the invoice), InvType and SumApplied.",
+      "required": [
+        "DocNum",
+        "InvoiceId",
+        "DocEntry",
+        "InvType"
+      ],
+      "fields": [
+        "SumApplied"
+      ],
+      "optional": true
+    },
+    {
+      "name": "OWDD",
+      "label": "Approval requests",
+      "export": "Approval requests for purchase orders (OWDD, ObjType 22): WddCode, ObjType, DocEntry (the draft), Status, CreateDate and CreateTime (as HHMMSS).",
+      "required": [
+        "WddCode",
+        "ObjType",
+        "DocEntry",
+        "Status",
+        "CreateDate",
+        "CreateTime"
+      ],
+      "fields": [
+        "OwnerID"
+      ],
+      "date_field": "CreateDate",
+      "optional": true
+    },
+    {
+      "name": "WDD1",
+      "label": "Approval decisions",
+      "export": "The decisions on those requests (WDD1): WddCode, StepCode, UserID, Status (Y approved, N rejected), UpdateDate and UpdateTime (as HHMMSS).",
+      "required": [
+        "WddCode",
+        "StepCode",
+        "UserID",
+        "Status",
+        "UpdateDate",
+        "UpdateTime"
+      ],
+      "fields": [],
+      "date_field": "UpdateDate",
+      "optional": true
+    },
+    {
+      "name": "OCRD",
+      "noun": "vendors",
+      "label": "Vendors",
+      "export": "The vendors on those documents (OCRD): CardCode, CardType, GroupCode, Country and the company's own fields. No names or contact details.",
+      "required": [
+        "CardCode",
+        "CardType"
+      ],
+      "fields": [
+        "GroupCode",
+        "Country"
+      ],
+      "object": "b1_p_partner",
+      "key": [
+        "CardCode"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-oprq",
+      "table": "OPRQ",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "purchase requests listed once"
+    },
+    {
+      "id": "one-prq1",
+      "table": "PRQ1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "purchase request lines listed once"
+    },
+    {
+      "id": "one-opor",
+      "table": "OPOR",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "purchase orders listed once"
+    },
+    {
+      "id": "one-por1",
+      "table": "POR1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "purchase order lines listed once"
+    },
+    {
+      "id": "one-opdn",
+      "table": "OPDN",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "goods receipts listed once"
+    },
+    {
+      "id": "one-pdn1",
+      "table": "PDN1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "goods receipt lines listed once"
+    },
+    {
+      "id": "one-opch",
+      "table": "OPCH",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "supplier invoices listed once"
+    },
+    {
+      "id": "one-pch1",
+      "table": "PCH1",
+      "columns": [
+        "DocEntry",
+        "LineNum"
+      ],
+      "label": "supplier invoice lines listed once"
+    },
+    {
+      "id": "one-ovpm",
+      "table": "OVPM",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "payments listed once"
+    },
+    {
+      "id": "one-paid-invoice",
+      "table": "VPM2",
+      "columns": [
+        "DocNum",
+        "InvoiceId"
+      ],
+      "label": "paid invoices listed once"
+    },
+    {
+      "id": "one-partner",
+      "table": "OCRD",
+      "columns": [
+        "CardCode"
+      ],
+      "label": "vendors listed once"
+    },
+    {
+      "id": "one-approval-request",
+      "table": "OWDD",
+      "columns": [
+        "WddCode"
+      ],
+      "label": "approval requests listed once"
+    },
+    {
+      "id": "one-approval-per-draft",
+      "table": "OWDD",
+      "columns": [
+        "DocEntry"
+      ],
+      "label": "one approval request per draft",
+      "where": [
+        {
+          "column": "ObjType",
+          "in": [
+            "22"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-approval-decision",
+      "table": "WDD1",
+      "columns": [
+        "WddCode",
+        "StepCode",
+        "UserID"
+      ],
+      "label": "approval decisions listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "request-lines-have-requests",
+      "label": "request lines whose document is in the export",
+      "from": {
+        "table": "PRQ1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "OPRQ",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "order-lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "POR1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "OPOR",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-lines-have-documents",
+      "label": "lines whose document is in the export",
+      "from": {
+        "table": "PDN1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "OPDN",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "PCH1",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "to": {
+        "table": "OPCH",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipt-lines-have-order-lines",
+      "label": "lines based on an order line in the export",
+      "from": {
+        "table": "PDN1",
+        "columns": [
+          "BaseEntry",
+          "BaseLine"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "22"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "POR1",
+        "columns": [
+          "DocEntry",
+          "LineNum"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} lines are based on orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "decisions-have-requests",
+      "label": "approval decisions whose request is in the export",
+      "from": {
+        "table": "WDD1",
+        "columns": [
+          "WddCode"
+        ]
+      },
+      "to": {
+        "table": "OWDD",
+        "columns": [
+          "WddCode"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "paid-invoices-have-payments",
+      "label": "paid invoices whose payment is in the export",
+      "from": {
+        "table": "VPM2",
+        "columns": [
+          "DocNum"
+        ]
+      },
+      "to": {
+        "table": "OVPM",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "paid-invoices-are-exported",
+      "label": "paid invoices that are in the export",
+      "from": {
+        "table": "VPM2",
+        "columns": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "InvType",
+            "in": [
+              "18"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "OPCH",
+        "columns": [
+          "DocEntry"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "b1_p_request",
+        "input": "OPRQ",
+        "namespace": "sap-b1",
+        "object_type": "purchase request",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "DocNum",
+            "name": "number"
+          }
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_p_order",
+        "input": "OPOR",
+        "namespace": "sap-b1",
+        "object_type": "purchase order",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "DocNum",
+            "name": "number"
+          },
+          {
+            "column": "CardCode",
+            "name": "vendor"
+          }
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_p_order_line",
+        "input": "POR1",
+        "namespace": "sap-b1",
+        "object_type": "purchase order line",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "attributes": [
+          {
+            "column": "ItemCode",
+            "name": "item"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          },
+          {
+            "column": "Price",
+            "name": "price"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_receipt_line",
+        "input": "PDN1",
+        "namespace": "sap-b1",
+        "object_type": "goods receipt line",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "attributes": [
+          {
+            "column": "ItemCode",
+            "name": "item"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "not_in": [
+              "20"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_p_approval",
+        "input": "OWDD",
+        "namespace": "sap-b1",
+        "object_type": "approval request",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ],
+        "where": [
+          {
+            "column": "ObjType",
+            "in": [
+              "22"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_p_invoice",
+        "input": "OPCH",
+        "namespace": "sap-b1",
+        "object_type": "supplier invoice",
+        "key": [
+          "DocEntry"
+        ],
+        "attributes": [
+          {
+            "column": "DocNum",
+            "name": "number"
+          },
+          {
+            "column": "DocTotal",
+            "name": "total"
+          }
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b1_p_partner",
+        "input": "OCRD",
+        "namespace": "sap-b1",
+        "object_type": "vendor",
+        "key": [
+          "CardCode"
+        ],
+        "attributes": [
+          {
+            "column": "GroupCode",
+            "name": "group"
+          },
+          {
+            "column": "Country",
+            "name": "country"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "b1_p_request_created",
+        "input": "OPRQ",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create purchase request"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_request",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "purchase request"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_order_created",
+        "input": "OPOR",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          },
+          {
+            "column": "DocTotal",
+            "name": "total"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_order",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "purchase order"
+          },
+          {
+            "object": "b1_p_partner",
+            "columns": [
+              "CardCode"
+            ],
+            "qualifier": "vendor",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "b1_p_approval_requested",
+        "input": "OWDD",
+        "namespace": "sap-b1",
+        "key": [
+          "WddCode"
+        ],
+        "where": [
+          {
+            "column": "ObjType",
+            "in": [
+              "22"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Request approval"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTime"
+        },
+        "objects": [
+          {
+            "object": "b1_p_approval",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_approved",
+        "input": "WDD1",
+        "namespace": "sap-b1",
+        "key": [
+          "WddCode",
+          "StepCode",
+          "UserID"
+        ],
+        "where": [
+          {
+            "column": "Status",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve purchase order"
+        },
+        "lookup": {
+          "input": "OWDD",
+          "key": [
+            "WddCode"
+          ],
+          "matching": [
+            "WddCode"
+          ],
+          "columns": [
+            "DocEntry"
+          ]
+        },
+        "timestamp": {
+          "date": "UpdateDate",
+          "offset": "{setting:offset}",
+          "time": "UpdateTime"
+        },
+        "attributes": [
+          {
+            "column": "UserID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_approval",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_rejected",
+        "input": "WDD1",
+        "namespace": "sap-b1",
+        "key": [
+          "WddCode",
+          "StepCode",
+          "UserID"
+        ],
+        "where": [
+          {
+            "column": "Status",
+            "in": [
+              "N"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject purchase order"
+        },
+        "lookup": {
+          "input": "OWDD",
+          "key": [
+            "WddCode"
+          ],
+          "matching": [
+            "WddCode"
+          ],
+          "columns": [
+            "DocEntry"
+          ]
+        },
+        "timestamp": {
+          "date": "UpdateDate",
+          "offset": "{setting:offset}",
+          "time": "UpdateTime"
+        },
+        "attributes": [
+          {
+            "column": "UserID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_approval",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_order_cancelled",
+        "input": "OPOR",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel purchase order"
+        },
+        "timestamp": {
+          "date": "CancelDate",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "b1_p_order",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_goods_moved",
+        "input": "PDN1",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "not_in": [
+              "20"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive goods"
+        },
+        "lookup": {
+          "input": "OPDN",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocEntry"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "UserSign"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          },
+          {
+            "column": "Quantity",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_receipt_line",
+            "columns": [
+              "DocEntry",
+              "LineNum"
+            ],
+            "qualifier": "goods receipt line"
+          },
+          {
+            "object": "b1_p_order_line",
+            "columns": [
+              "BaseEntry",
+              "BaseLine"
+            ],
+            "qualifier": "purchase order line",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "b1_p_goods_movement_cancelled",
+        "input": "PDN1",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry",
+          "LineNum"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "20"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel goods receipt"
+        },
+        "lookup": {
+          "input": "OPDN",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocEntry"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "UserSign"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_receipt_line",
+            "columns": [
+              "BaseEntry",
+              "BaseLine"
+            ],
+            "qualifier": "goods receipt line"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_invoice_cancelled",
+        "input": "PCH1",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "18"
+            ]
+          },
+          {
+            "column": "LineNum",
+            "in": [
+              "0"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel supplier invoice"
+        },
+        "lookup": {
+          "input": "OPCH",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocEntry"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "UserSign"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_invoice",
+            "columns": [
+              "BaseEntry"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      },
+      {
+        "id": "b1_p_invoice_created",
+        "input": "OPCH",
+        "namespace": "sap-b1",
+        "key": [
+          "DocEntry"
+        ],
+        "where": [
+          {
+            "column": "CANCELED",
+            "not_in": [
+              "C"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Record supplier invoice"
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "UserSign",
+            "name": "resource"
+          },
+          {
+            "column": "DocTotal",
+            "name": "total"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_invoice",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "supplier invoice"
+          },
+          {
+            "object": "b1_p_partner",
+            "columns": [
+              "CardCode"
+            ],
+            "qualifier": "vendor",
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "b1_p_invoice_paid",
+        "input": "VPM2",
+        "namespace": "sap-b1",
+        "key": [
+          "DocNum",
+          "InvoiceId"
+        ],
+        "where": [
+          {
+            "column": "InvType",
+            "in": [
+              "18"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Pay supplier invoice"
+        },
+        "lookup": {
+          "input": "OVPM",
+          "key": [
+            "DocEntry"
+          ],
+          "matching": [
+            "DocNum"
+          ],
+          "columns": [
+            "CreateDate",
+            "CreateTS",
+            "Canceled"
+          ]
+        },
+        "timestamp": {
+          "date": "CreateDate",
+          "offset": "{setting:offset}",
+          "time": "CreateTS"
+        },
+        "attributes": [
+          {
+            "column": "SumApplied",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "b1_p_invoice",
+            "columns": [
+              "DocEntry"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "b1_p_order_has_line",
+        "input": "POR1",
+        "source": {
+          "object": "b1_p_order",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "b1_p_order_line",
+          "columns": [
+            "DocEntry",
+            "LineNum"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "b1_p_approval_became_order",
+        "input": "OPOR",
+        "where": [
+          {
+            "column": "draftKey",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_p_approval",
+          "columns": [
+            "draftKey"
+          ],
+          "qualifier": "approval request"
+        },
+        "target": {
+          "object": "b1_p_order",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "purchase order"
+        }
+      },
+      {
+        "id": "b1_p_request_became_line",
+        "input": "POR1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "1470000113"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_p_request",
+          "columns": [
+            "BaseEntry"
+          ],
+          "qualifier": "purchase request"
+        },
+        "target": {
+          "object": "b1_p_order_line",
+          "columns": [
+            "DocEntry",
+            "LineNum"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "b1_p_invoice_for_line",
+        "input": "PCH1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "22"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_p_invoice",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "supplier invoice"
+        },
+        "target": {
+          "object": "b1_p_order_line",
+          "columns": [
+            "BaseEntry",
+            "BaseLine"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "b1_p_invoice_for_receipt",
+        "input": "PCH1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "20"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_p_invoice",
+          "columns": [
+            "DocEntry"
+          ],
+          "qualifier": "supplier invoice"
+        },
+        "target": {
+          "object": "b1_p_receipt_line",
+          "columns": [
+            "BaseEntry",
+            "BaseLine"
+          ],
+          "qualifier": "goods receipt line"
+        }
+      },
+      {
+        "id": "b1_p_receipt_for_line",
+        "input": "PDN1",
+        "where": [
+          {
+            "column": "BaseType",
+            "in": [
+              "22"
+            ]
+          }
+        ],
+        "source": {
+          "object": "b1_p_receipt_line",
+          "columns": [
+            "DocEntry",
+            "LineNum"
+          ],
+          "qualifier": "goods receipt line"
+        },
+        "target": {
+          "object": "b1_p_order_line",
+          "columns": [
+            "BaseEntry",
+            "BaseLine"
+          ],
+          "qualifier": "purchase order line"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "b1_p_request_created_lines",
+        "event": "b1_p_request_created",
+        "through": "b1_p_request",
+        "relationship": "b1_p_request_became_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_order_created_lines",
+        "event": "b1_p_order_created",
+        "through": "b1_p_order",
+        "relationship": "b1_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_approval_requested_order",
+        "event": "b1_p_approval_requested",
+        "through": "b1_p_approval",
+        "relationship": "b1_p_approval_became_order",
+        "qualifier": "purchase order"
+      },
+      {
+        "id": "b1_p_approved_order",
+        "event": "b1_p_approved",
+        "through": "b1_p_approval",
+        "relationship": "b1_p_approval_became_order",
+        "qualifier": "purchase order"
+      },
+      {
+        "id": "b1_p_approval_requested_lines",
+        "event": "b1_p_approval_requested",
+        "through": "b1_p_order",
+        "relationship": "b1_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_approved_lines",
+        "event": "b1_p_approved",
+        "through": "b1_p_order",
+        "relationship": "b1_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_order_cancelled_lines",
+        "event": "b1_p_order_cancelled",
+        "through": "b1_p_order",
+        "relationship": "b1_p_order_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_goods_movement_cancelled_lines",
+        "event": "b1_p_goods_movement_cancelled",
+        "through": "b1_p_receipt_line",
+        "relationship": "b1_p_receipt_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_invoice_cancelled_lines",
+        "event": "b1_p_invoice_cancelled",
+        "through": "b1_p_invoice",
+        "relationship": "b1_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_invoice_cancelled_receipts",
+        "event": "b1_p_invoice_cancelled",
+        "through": "b1_p_invoice",
+        "relationship": "b1_p_invoice_for_receipt",
+        "qualifier": "goods receipt line"
+      },
+      {
+        "id": "b1_p_invoice_cancelled_receipt_lines",
+        "event": "b1_p_invoice_cancelled",
+        "through": "b1_p_receipt_line",
+        "relationship": "b1_p_receipt_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_invoice_created_receipts",
+        "event": "b1_p_invoice_created",
+        "through": "b1_p_invoice",
+        "relationship": "b1_p_invoice_for_receipt",
+        "qualifier": "goods receipt line"
+      },
+      {
+        "id": "b1_p_invoice_created_lines",
+        "event": "b1_p_invoice_created",
+        "through": "b1_p_invoice",
+        "relationship": "b1_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_invoice_created_receipt_lines",
+        "event": "b1_p_invoice_created",
+        "through": "b1_p_receipt_line",
+        "relationship": "b1_p_receipt_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_invoice_paid_receipts",
+        "event": "b1_p_invoice_paid",
+        "through": "b1_p_invoice",
+        "relationship": "b1_p_invoice_for_receipt",
+        "qualifier": "goods receipt line"
+      },
+      {
+        "id": "b1_p_invoice_paid_lines",
+        "event": "b1_p_invoice_paid",
+        "through": "b1_p_invoice",
+        "relationship": "b1_p_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "b1_p_invoice_paid_receipt_lines",
+        "event": "b1_p_invoice_paid",
+        "through": "b1_p_receipt_line",
+        "relationship": "b1_p_receipt_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "Business One purchase order number",
+      "object": "b1_p_order",
+      "table": "OPOR",
+      "key": [
+        "DocNum"
+      ],
+      "example": "10045",
+      "carry": [
+        "b1_p_order_has_line"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,415 @@
+{
+  "id": "salesforce-lead-to-opportunity",
+  "version": 1,
+  "name": "Lead to opportunity (Salesforce)",
+  "system": "Salesforce Sales Cloud",
+  "process": "lead to opportunity",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Salesforce's standard objects and field history. Checked on a real Salesforce org on 2026-10-15 with planted records; see the README. Lead and opportunity steps need field history tracking on the fields listed; history starts when tracking is switched on.",
+  "case_object_type": "lead",
+  "size_check": {
+    "ask": "How many leads were created in the period?",
+    "unit": "lead",
+    "steps_per_unit": 5
+  },
+  "include": [
+    "salesforce-opportunities"
+  ],
+  "tables": [
+    {
+      "name": "Lead",
+      "noun": "leads",
+      "date_label": "the lead was created",
+      "label": "Salesforce leads",
+      "export": "Leads created in the period: Id, CreatedDate, Status, LeadSource, OwnerId, Company, IsConverted, ConvertedDate, ConvertedOpportunityId and the company's own fields.",
+      "required": [
+        "Id",
+        "CreatedDate",
+        "Status",
+        "IsConverted",
+        "ConvertedDate",
+        "ConvertedOpportunityId"
+      ],
+      "fields": [
+        "LeadSource",
+        "OwnerId",
+        "Company",
+        "Industry",
+        "Rating",
+        "ConvertedAccountId"
+      ],
+      "date_field": "CreatedDate",
+      "object": "sf_lead",
+      "key": [
+        "Id"
+      ]
+    },
+    {
+      "name": "LeadHistory",
+      "label": "Salesforce lead field history",
+      "export": "Field history of those leads (LeadHistory): Id, LeadId, Field, OldValue, NewValue, CreatedDate and DataType.",
+      "required": [
+        "Id",
+        "LeadId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "fields": [
+        "CreatedById"
+      ],
+      "date_field": "CreatedDate",
+      "history_of": "Lead",
+      "needs_tracked": [
+        "Status",
+        "Owner"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-sf-lead",
+      "table": "Lead",
+      "columns": [
+        "Id"
+      ],
+      "label": "leads listed once"
+    },
+    {
+      "id": "one-sf-lead-history-row",
+      "table": "LeadHistory",
+      "columns": [
+        "Id"
+      ],
+      "label": "history rows listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lead-history-has-leads",
+      "label": "lead history rows whose lead is in the export",
+      "from": {
+        "table": "LeadHistory",
+        "columns": [
+          "LeadId"
+        ]
+      },
+      "to": {
+        "table": "Lead",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "converted-leads-have-opportunities",
+      "label": "converted leads whose opportunity is in the export",
+      "from": {
+        "table": "Lead",
+        "columns": [
+          "ConvertedOpportunityId"
+        ],
+        "where": [
+          {
+            "column": "IsConverted",
+            "in": [
+              "true"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "Opportunity",
+        "columns": [
+          "Id"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} converted leads ({missing_share}) became opportunities that are not in the export, usually because the opportunity extract covers a different period. Should the opportunity extract include them?",
+        "options": [
+          {
+            "id": "widen",
+            "label": "Yes, extract those opportunities too"
+          },
+          {
+            "id": "keep",
+            "label": "No, keep the leads without their opportunity"
+          }
+        ],
+        "recommended": "widen"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "sf_lead",
+        "input": "Lead",
+        "namespace": "salesforce",
+        "object_type": "lead",
+        "key": [
+          "Id"
+        ],
+        "attributes": [
+          {
+            "column": "LeadSource",
+            "name": "lead source"
+          },
+          {
+            "column": "Status",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "sf_lead_created",
+        "input": "Lead",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "activity": {
+          "value": "Create lead"
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_lead",
+            "columns": [
+              "Id"
+            ],
+            "qualifier": "lead"
+          }
+        ]
+      },
+      {
+        "id": "sf_lead_status_changed",
+        "input": "LeadHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Status"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_lead",
+            "columns": [
+              "LeadId"
+            ],
+            "qualifier": "lead"
+          }
+        ],
+        "activity": {
+          "column": "NewValue"
+        }
+      },
+      {
+        "id": "sf_lead_reassigned",
+        "input": "LeadHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "Owner"
+            ]
+          },
+          {
+            "column": "DataType",
+            "not_in": [
+              "EntityId"
+            ]
+          }
+        ],
+        "timestamp": "CreatedDate",
+        "attributes": [
+          {
+            "column": "OldValue",
+            "name": "old value"
+          },
+          {
+            "column": "NewValue",
+            "name": "new value"
+          }
+        ],
+        "objects": [
+          {
+            "object": "sf_lead",
+            "columns": [
+              "LeadId"
+            ],
+            "qualifier": "lead"
+          }
+        ],
+        "activity": {
+          "value": "Reassign lead"
+        }
+      },
+      {
+        "id": "sf_lead_converted",
+        "input": "LeadHistory",
+        "namespace": "salesforce",
+        "key": [
+          "Id"
+        ],
+        "where": [
+          {
+            "column": "Field",
+            "in": [
+              "leadConverted"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Convert lead"
+        },
+        "lookup": {
+          "input": "Lead",
+          "key": [
+            "Id"
+          ],
+          "matching": [
+            "LeadId"
+          ],
+          "columns": [
+            "ConvertedOpportunityId"
+          ],
+          "optional": true
+        },
+        "timestamp": "CreatedDate",
+        "objects": [
+          {
+            "object": "sf_lead",
+            "columns": [
+              "LeadId"
+            ],
+            "qualifier": "lead"
+          },
+          {
+            "object": "sf_opportunity",
+            "columns": [
+              "ConvertedOpportunityId"
+            ],
+            "qualifier": "opportunity",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "lead_opportunity",
+        "input": "Lead",
+        "source": {
+          "object": "sf_lead",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "lead"
+        },
+        "target": {
+          "object": "sf_opportunity",
+          "columns": [
+            "ConvertedOpportunityId"
+          ],
+          "qualifier": "became opportunity",
+          "optional": true,
+          "allow_unmatched": true
+        }
+      },
+      {
+        "id": "opportunity_from_lead",
+        "input": "Lead",
+        "source": {
+          "object": "sf_opportunity",
+          "columns": [
+            "ConvertedOpportunityId"
+          ],
+          "qualifier": "opportunity",
+          "optional": true,
+          "allow_unmatched": true
+        },
+        "target": {
+          "object": "sf_lead",
+          "columns": [
+            "Id"
+          ],
+          "qualifier": "from lead"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "sf_opportunity_created_lead",
+        "event": "sf_opportunity_created",
+        "through": "sf_opportunity",
+        "relationship": "opportunity_from_lead",
+        "qualifier": "lead"
+      },
+      {
+        "id": "sf_stage_reached_lead",
+        "event": "sf_stage_reached",
+        "through": "sf_opportunity",
+        "relationship": "opportunity_from_lead",
+        "qualifier": "lead"
+      },
+      {
+        "id": "sf_opportunity_won_lead",
+        "event": "sf_opportunity_won",
+        "through": "sf_opportunity",
+        "relationship": "opportunity_from_lead",
+        "qualifier": "lead"
+      },
+      {
+        "id": "sf_opportunity_lost_lead",
+        "event": "sf_opportunity_lost",
+        "through": "sf_opportunity",
+        "relationship": "opportunity_from_lead",
+        "qualifier": "lead"
+      },
+      {
+        "id": "sf_amount_changed_lead",
+        "event": "sf_amount_changed",
+        "through": "sf_opportunity",
+        "relationship": "opportunity_from_lead",
+        "qualifier": "lead"
+      },
+      {
+        "id": "sf_close_date_moved_lead",
+        "event": "sf_close_date_moved",
+        "through": "sf_opportunity",
+        "relationship": "opportunity_from_lead",
+        "qualifier": "lead"
+      }
+    ]
+  }
+}

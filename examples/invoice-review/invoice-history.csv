@@ -1,0 +1,511 @@
+invoice_id,activity,timestamp,channel
+INV-001,Receive invoice,2026-01-02 09:00:00,Standard
+INV-001,Validate invoice,2026-01-03 09:00:00,Standard
+INV-001,Approve invoice,2026-01-04 09:00:00,Standard
+INV-001,Pay invoice,2026-01-05 09:00:00,Standard
+INV-002,Receive invoice,2026-01-03 09:00:00,Standard
+INV-002,Validate invoice,2026-01-04 09:00:00,Standard
+INV-002,Approve invoice,2026-01-05 09:00:00,Standard
+INV-002,Pay invoice,2026-01-06 09:00:00,Standard
+INV-003,Receive invoice,2026-01-04 09:00:00,Standard
+INV-003,Validate invoice,2026-01-05 09:00:00,Standard
+INV-003,Approve invoice,2026-01-06 09:00:00,Standard
+INV-003,Pay invoice,2026-01-07 09:00:00,Standard
+INV-004,Receive invoice,2026-01-05 09:00:00,Standard
+INV-004,Validate invoice,2026-01-06 09:00:00,Standard
+INV-004,Approve invoice,2026-01-07 09:00:00,Standard
+INV-004,Pay invoice,2026-01-08 09:00:00,Standard
+INV-005,Receive invoice,2026-01-06 09:00:00,Standard
+INV-005,Validate invoice,2026-01-07 09:00:00,Standard
+INV-005,Approve invoice,2026-01-08 09:00:00,Standard
+INV-005,Pay invoice,2026-01-09 09:00:00,Standard
+INV-006,Receive invoice,2026-01-07 09:00:00,Standard
+INV-006,Validate invoice,2026-01-08 09:00:00,Standard
+INV-006,Approve invoice,2026-01-09 09:00:00,Standard
+INV-006,Pay invoice,2026-01-10 09:00:00,Standard
+INV-007,Receive invoice,2026-01-08 09:00:00,Standard
+INV-007,Validate invoice,2026-01-09 09:00:00,Standard
+INV-007,Approve invoice,2026-01-10 09:00:00,Standard
+INV-007,Pay invoice,2026-01-11 09:00:00,Standard
+INV-008,Receive invoice,2026-01-09 09:00:00,Standard
+INV-008,Validate invoice,2026-01-10 09:00:00,Standard
+INV-008,Approve invoice,2026-01-11 09:00:00,Standard
+INV-008,Pay invoice,2026-01-12 09:00:00,Standard
+INV-009,Receive invoice,2026-01-10 09:00:00,Standard
+INV-009,Validate invoice,2026-01-11 09:00:00,Standard
+INV-009,Approve invoice,2026-01-12 09:00:00,Standard
+INV-009,Pay invoice,2026-01-13 09:00:00,Standard
+INV-010,Receive invoice,2026-01-11 09:00:00,Standard
+INV-010,Validate invoice,2026-01-12 09:00:00,Standard
+INV-010,Approve invoice,2026-01-13 09:00:00,Standard
+INV-010,Pay invoice,2026-01-14 09:00:00,Standard
+INV-011,Receive invoice,2026-01-12 09:00:00,Standard
+INV-011,Validate invoice,2026-01-13 09:00:00,Standard
+INV-011,Approve invoice,2026-01-14 09:00:00,Standard
+INV-011,Pay invoice,2026-01-15 09:00:00,Standard
+INV-012,Receive invoice,2026-01-13 09:00:00,Standard
+INV-012,Validate invoice,2026-01-14 09:00:00,Standard
+INV-012,Approve invoice,2026-01-15 09:00:00,Standard
+INV-012,Pay invoice,2026-01-16 09:00:00,Standard
+INV-013,Receive invoice,2026-01-14 09:00:00,Standard
+INV-013,Validate invoice,2026-01-15 09:00:00,Standard
+INV-013,Approve invoice,2026-01-16 09:00:00,Standard
+INV-013,Pay invoice,2026-01-17 09:00:00,Standard
+INV-014,Receive invoice,2026-01-15 09:00:00,Standard
+INV-014,Validate invoice,2026-01-16 09:00:00,Standard
+INV-014,Approve invoice,2026-01-17 09:00:00,Standard
+INV-014,Pay invoice,2026-01-18 09:00:00,Standard
+INV-015,Receive invoice,2026-01-16 09:00:00,Standard
+INV-015,Validate invoice,2026-01-17 09:00:00,Standard
+INV-015,Approve invoice,2026-01-18 09:00:00,Standard
+INV-015,Pay invoice,2026-01-19 09:00:00,Standard
+INV-016,Receive invoice,2026-01-17 09:00:00,Standard
+INV-016,Validate invoice,2026-01-18 09:00:00,Standard
+INV-016,Approve invoice,2026-01-19 09:00:00,Standard
+INV-016,Pay invoice,2026-01-20 09:00:00,Standard
+INV-017,Receive invoice,2026-01-18 09:00:00,Standard
+INV-017,Validate invoice,2026-01-19 09:00:00,Standard
+INV-017,Approve invoice,2026-01-20 09:00:00,Standard
+INV-017,Pay invoice,2026-01-21 09:00:00,Standard
+INV-018,Receive invoice,2026-01-19 09:00:00,Standard
+INV-018,Validate invoice,2026-01-20 09:00:00,Standard
+INV-018,Approve invoice,2026-01-21 09:00:00,Standard
+INV-018,Pay invoice,2026-01-22 09:00:00,Standard
+INV-019,Receive invoice,2026-01-20 09:00:00,Standard
+INV-019,Validate invoice,2026-01-21 09:00:00,Standard
+INV-019,Approve invoice,2026-01-22 09:00:00,Standard
+INV-019,Pay invoice,2026-01-23 09:00:00,Standard
+INV-020,Receive invoice,2026-01-21 09:00:00,Standard
+INV-020,Validate invoice,2026-01-22 09:00:00,Standard
+INV-020,Approve invoice,2026-01-23 09:00:00,Standard
+INV-020,Pay invoice,2026-01-24 09:00:00,Standard
+INV-021,Receive invoice,2026-01-22 09:00:00,Standard
+INV-021,Validate invoice,2026-01-23 09:00:00,Standard
+INV-021,Approve invoice,2026-01-24 09:00:00,Standard
+INV-021,Pay invoice,2026-01-25 09:00:00,Standard
+INV-022,Receive invoice,2026-01-23 09:00:00,Standard
+INV-022,Validate invoice,2026-01-24 09:00:00,Standard
+INV-022,Approve invoice,2026-01-25 09:00:00,Standard
+INV-022,Pay invoice,2026-01-26 09:00:00,Standard
+INV-023,Receive invoice,2026-01-24 09:00:00,Standard
+INV-023,Validate invoice,2026-01-25 09:00:00,Standard
+INV-023,Approve invoice,2026-01-26 09:00:00,Standard
+INV-023,Pay invoice,2026-01-27 09:00:00,Standard
+INV-024,Receive invoice,2026-01-25 09:00:00,Standard
+INV-024,Validate invoice,2026-01-26 09:00:00,Standard
+INV-024,Approve invoice,2026-01-27 09:00:00,Standard
+INV-024,Pay invoice,2026-01-28 09:00:00,Standard
+INV-025,Receive invoice,2026-01-26 09:00:00,Standard
+INV-025,Validate invoice,2026-01-27 09:00:00,Standard
+INV-025,Approve invoice,2026-01-28 09:00:00,Standard
+INV-025,Pay invoice,2026-01-29 09:00:00,Standard
+INV-026,Receive invoice,2026-01-27 09:00:00,Standard
+INV-026,Validate invoice,2026-01-28 09:00:00,Standard
+INV-026,Approve invoice,2026-01-29 09:00:00,Standard
+INV-026,Pay invoice,2026-01-30 09:00:00,Standard
+INV-027,Receive invoice,2026-01-28 09:00:00,Standard
+INV-027,Validate invoice,2026-01-29 09:00:00,Standard
+INV-027,Approve invoice,2026-01-30 09:00:00,Standard
+INV-027,Pay invoice,2026-01-31 09:00:00,Standard
+INV-028,Receive invoice,2026-01-01 09:00:00,Standard
+INV-028,Validate invoice,2026-01-02 09:00:00,Standard
+INV-028,Approve invoice,2026-01-03 09:00:00,Standard
+INV-028,Pay invoice,2026-01-04 09:00:00,Standard
+INV-029,Receive invoice,2026-01-02 09:00:00,Standard
+INV-029,Validate invoice,2026-01-03 09:00:00,Standard
+INV-029,Approve invoice,2026-01-04 09:00:00,Standard
+INV-029,Pay invoice,2026-01-05 09:00:00,Standard
+INV-030,Receive invoice,2026-01-03 09:00:00,Standard
+INV-030,Validate invoice,2026-01-04 09:00:00,Standard
+INV-030,Approve invoice,2026-01-05 09:00:00,Standard
+INV-030,Pay invoice,2026-01-06 09:00:00,Standard
+INV-031,Receive invoice,2026-01-04 09:00:00,Standard
+INV-031,Validate invoice,2026-01-05 09:00:00,Standard
+INV-031,Approve invoice,2026-01-06 09:00:00,Standard
+INV-031,Pay invoice,2026-01-07 09:00:00,Standard
+INV-032,Receive invoice,2026-01-05 09:00:00,Standard
+INV-032,Validate invoice,2026-01-06 09:00:00,Standard
+INV-032,Approve invoice,2026-01-07 09:00:00,Standard
+INV-032,Pay invoice,2026-01-08 09:00:00,Standard
+INV-033,Receive invoice,2026-01-06 09:00:00,Standard
+INV-033,Validate invoice,2026-01-07 09:00:00,Standard
+INV-033,Approve invoice,2026-01-08 09:00:00,Standard
+INV-033,Pay invoice,2026-01-09 09:00:00,Standard
+INV-034,Receive invoice,2026-01-07 09:00:00,Standard
+INV-034,Validate invoice,2026-01-08 09:00:00,Standard
+INV-034,Approve invoice,2026-01-09 09:00:00,Standard
+INV-034,Pay invoice,2026-01-10 09:00:00,Standard
+INV-035,Receive invoice,2026-01-08 09:00:00,Standard
+INV-035,Validate invoice,2026-01-09 09:00:00,Standard
+INV-035,Approve invoice,2026-01-10 09:00:00,Standard
+INV-035,Pay invoice,2026-01-11 09:00:00,Standard
+INV-036,Receive invoice,2026-01-09 09:00:00,Standard
+INV-036,Validate invoice,2026-01-10 09:00:00,Standard
+INV-036,Approve invoice,2026-01-11 09:00:00,Standard
+INV-036,Pay invoice,2026-01-12 09:00:00,Standard
+INV-037,Receive invoice,2026-01-10 09:00:00,Standard
+INV-037,Validate invoice,2026-01-11 09:00:00,Standard
+INV-037,Approve invoice,2026-01-12 09:00:00,Standard
+INV-037,Pay invoice,2026-01-13 09:00:00,Standard
+INV-038,Receive invoice,2026-01-11 09:00:00,Standard
+INV-038,Validate invoice,2026-01-12 09:00:00,Standard
+INV-038,Approve invoice,2026-01-13 09:00:00,Standard
+INV-038,Pay invoice,2026-01-14 09:00:00,Standard
+INV-039,Receive invoice,2026-01-12 09:00:00,Standard
+INV-039,Validate invoice,2026-01-13 09:00:00,Standard
+INV-039,Approve invoice,2026-01-14 09:00:00,Standard
+INV-039,Pay invoice,2026-01-15 09:00:00,Standard
+INV-040,Receive invoice,2026-01-13 09:00:00,Standard
+INV-040,Validate invoice,2026-01-14 09:00:00,Standard
+INV-040,Approve invoice,2026-01-15 09:00:00,Standard
+INV-040,Pay invoice,2026-01-16 09:00:00,Standard
+INV-041,Receive invoice,2026-01-14 09:00:00,Standard
+INV-041,Validate invoice,2026-01-15 09:00:00,Standard
+INV-041,Approve invoice,2026-01-16 09:00:00,Standard
+INV-041,Pay invoice,2026-01-17 09:00:00,Standard
+INV-042,Receive invoice,2026-01-15 09:00:00,Standard
+INV-042,Validate invoice,2026-01-16 09:00:00,Standard
+INV-042,Approve invoice,2026-01-17 09:00:00,Standard
+INV-042,Pay invoice,2026-01-18 09:00:00,Standard
+INV-043,Receive invoice,2026-01-16 09:00:00,Standard
+INV-043,Validate invoice,2026-01-17 09:00:00,Standard
+INV-043,Approve invoice,2026-01-18 09:00:00,Standard
+INV-043,Pay invoice,2026-01-19 09:00:00,Standard
+INV-044,Receive invoice,2026-01-17 09:00:00,Standard
+INV-044,Validate invoice,2026-01-18 09:00:00,Standard
+INV-044,Approve invoice,2026-01-19 09:00:00,Standard
+INV-044,Pay invoice,2026-01-20 09:00:00,Standard
+INV-045,Receive invoice,2026-01-18 09:00:00,Standard
+INV-045,Validate invoice,2026-01-19 09:00:00,Standard
+INV-045,Approve invoice,2026-01-20 09:00:00,Standard
+INV-045,Pay invoice,2026-01-21 09:00:00,Standard
+INV-046,Receive invoice,2026-01-19 09:00:00,Standard
+INV-046,Validate invoice,2026-01-20 09:00:00,Standard
+INV-046,Approve invoice,2026-01-21 09:00:00,Standard
+INV-046,Pay invoice,2026-01-22 09:00:00,Standard
+INV-047,Receive invoice,2026-01-20 09:00:00,Standard
+INV-047,Validate invoice,2026-01-21 09:00:00,Standard
+INV-047,Approve invoice,2026-01-22 09:00:00,Standard
+INV-047,Pay invoice,2026-01-23 09:00:00,Standard
+INV-048,Receive invoice,2026-01-21 09:00:00,Standard
+INV-048,Validate invoice,2026-01-22 09:00:00,Standard
+INV-048,Approve invoice,2026-01-23 09:00:00,Standard
+INV-048,Pay invoice,2026-01-24 09:00:00,Standard
+INV-049,Receive invoice,2026-01-22 09:00:00,Standard
+INV-049,Validate invoice,2026-01-23 09:00:00,Standard
+INV-049,Approve invoice,2026-01-24 09:00:00,Standard
+INV-049,Pay invoice,2026-01-25 09:00:00,Standard
+INV-050,Receive invoice,2026-01-23 09:00:00,Standard
+INV-050,Validate invoice,2026-01-24 09:00:00,Standard
+INV-050,Approve invoice,2026-01-25 09:00:00,Standard
+INV-050,Pay invoice,2026-01-26 09:00:00,Standard
+INV-051,Receive invoice,2026-01-24 09:00:00,Standard
+INV-051,Validate invoice,2026-01-25 09:00:00,Standard
+INV-051,Approve invoice,2026-01-26 09:00:00,Standard
+INV-051,Pay invoice,2026-01-27 09:00:00,Standard
+INV-052,Receive invoice,2026-01-25 09:00:00,Standard
+INV-052,Validate invoice,2026-01-26 09:00:00,Standard
+INV-052,Approve invoice,2026-01-27 09:00:00,Standard
+INV-052,Pay invoice,2026-01-28 09:00:00,Standard
+INV-053,Receive invoice,2026-01-26 09:00:00,Standard
+INV-053,Validate invoice,2026-01-27 09:00:00,Standard
+INV-053,Approve invoice,2026-01-28 09:00:00,Standard
+INV-053,Pay invoice,2026-01-29 09:00:00,Standard
+INV-054,Receive invoice,2026-01-27 09:00:00,Standard
+INV-054,Validate invoice,2026-01-28 09:00:00,Standard
+INV-054,Approve invoice,2026-01-29 09:00:00,Standard
+INV-054,Pay invoice,2026-01-30 09:00:00,Standard
+INV-055,Receive invoice,2026-01-28 09:00:00,Standard
+INV-055,Validate invoice,2026-01-29 09:00:00,Standard
+INV-055,Approve invoice,2026-01-30 09:00:00,Standard
+INV-055,Pay invoice,2026-01-31 09:00:00,Standard
+INV-056,Receive invoice,2026-01-01 09:00:00,Standard
+INV-056,Validate invoice,2026-01-02 09:00:00,Standard
+INV-056,Approve invoice,2026-01-03 09:00:00,Standard
+INV-056,Pay invoice,2026-01-04 09:00:00,Standard
+INV-057,Receive invoice,2026-01-02 09:00:00,Standard
+INV-057,Validate invoice,2026-01-03 09:00:00,Standard
+INV-057,Approve invoice,2026-01-04 09:00:00,Standard
+INV-057,Pay invoice,2026-01-05 09:00:00,Standard
+INV-058,Receive invoice,2026-01-03 09:00:00,Standard
+INV-058,Validate invoice,2026-01-04 09:00:00,Standard
+INV-058,Approve invoice,2026-01-05 09:00:00,Standard
+INV-058,Pay invoice,2026-01-06 09:00:00,Standard
+INV-059,Receive invoice,2026-01-04 09:00:00,Standard
+INV-059,Validate invoice,2026-01-05 09:00:00,Standard
+INV-059,Approve invoice,2026-01-06 09:00:00,Standard
+INV-059,Pay invoice,2026-01-07 09:00:00,Standard
+INV-060,Receive invoice,2026-01-05 09:00:00,Standard
+INV-060,Validate invoice,2026-01-06 09:00:00,Standard
+INV-060,Approve invoice,2026-01-07 09:00:00,Standard
+INV-060,Pay invoice,2026-01-08 09:00:00,Standard
+INV-061,Receive invoice,2026-01-06 09:00:00,Standard
+INV-061,Validate invoice,2026-01-07 09:00:00,Standard
+INV-061,Approve invoice,2026-01-08 09:00:00,Standard
+INV-061,Pay invoice,2026-01-09 09:00:00,Standard
+INV-062,Receive invoice,2026-01-07 09:00:00,Standard
+INV-062,Validate invoice,2026-01-08 09:00:00,Standard
+INV-062,Approve invoice,2026-01-09 09:00:00,Standard
+INV-062,Pay invoice,2026-01-10 09:00:00,Standard
+INV-063,Receive invoice,2026-01-08 09:00:00,Standard
+INV-063,Validate invoice,2026-01-09 09:00:00,Standard
+INV-063,Approve invoice,2026-01-10 09:00:00,Standard
+INV-063,Pay invoice,2026-01-11 09:00:00,Standard
+INV-064,Receive invoice,2026-01-09 09:00:00,Standard
+INV-064,Validate invoice,2026-01-10 09:00:00,Standard
+INV-064,Approve invoice,2026-01-11 09:00:00,Standard
+INV-064,Pay invoice,2026-01-12 09:00:00,Standard
+INV-065,Receive invoice,2026-01-10 09:00:00,Standard
+INV-065,Validate invoice,2026-01-11 09:00:00,Standard
+INV-065,Approve invoice,2026-01-12 09:00:00,Standard
+INV-065,Pay invoice,2026-01-13 09:00:00,Standard
+INV-066,Receive invoice,2026-01-11 09:00:00,Standard
+INV-066,Validate invoice,2026-01-12 09:00:00,Standard
+INV-066,Approve invoice,2026-01-13 09:00:00,Standard
+INV-066,Pay invoice,2026-01-14 09:00:00,Standard
+INV-067,Receive invoice,2026-01-12 09:00:00,Standard
+INV-067,Validate invoice,2026-01-13 09:00:00,Standard
+INV-067,Approve invoice,2026-01-14 09:00:00,Standard
+INV-067,Pay invoice,2026-01-15 09:00:00,Standard
+INV-068,Receive invoice,2026-01-13 09:00:00,Standard
+INV-068,Validate invoice,2026-01-14 09:00:00,Standard
+INV-068,Approve invoice,2026-01-15 09:00:00,Standard
+INV-068,Pay invoice,2026-01-16 09:00:00,Standard
+INV-069,Receive invoice,2026-01-14 09:00:00,Standard
+INV-069,Validate invoice,2026-01-15 09:00:00,Standard
+INV-069,Approve invoice,2026-01-16 09:00:00,Standard
+INV-069,Pay invoice,2026-01-17 09:00:00,Standard
+INV-070,Receive invoice,2026-01-15 09:00:00,Standard
+INV-070,Validate invoice,2026-01-16 09:00:00,Standard
+INV-070,Approve invoice,2026-01-17 09:00:00,Standard
+INV-070,Pay invoice,2026-01-18 09:00:00,Standard
+INV-071,Receive invoice,2026-01-16 09:00:00,Standard
+INV-071,Validate invoice,2026-01-17 09:00:00,Standard
+INV-071,Approve invoice,2026-01-18 09:00:00,Standard
+INV-071,Pay invoice,2026-01-19 09:00:00,Standard
+INV-072,Receive invoice,2026-01-17 09:00:00,Standard
+INV-072,Validate invoice,2026-01-18 09:00:00,Standard
+INV-072,Approve invoice,2026-01-19 09:00:00,Standard
+INV-072,Pay invoice,2026-01-20 09:00:00,Standard
+INV-073,Receive invoice,2026-01-18 09:00:00,Standard
+INV-073,Validate invoice,2026-01-19 09:00:00,Standard
+INV-073,Approve invoice,2026-01-20 09:00:00,Standard
+INV-073,Pay invoice,2026-01-21 09:00:00,Standard
+INV-074,Receive invoice,2026-01-19 09:00:00,Standard
+INV-074,Validate invoice,2026-01-20 09:00:00,Standard
+INV-074,Approve invoice,2026-01-21 09:00:00,Standard
+INV-074,Pay invoice,2026-01-22 09:00:00,Standard
+INV-075,Receive invoice,2026-01-20 09:00:00,Standard
+INV-075,Validate invoice,2026-01-21 09:00:00,Standard
+INV-075,Approve invoice,2026-01-22 09:00:00,Standard
+INV-075,Pay invoice,2026-01-23 09:00:00,Standard
+INV-076,Receive invoice,2026-01-21 09:00:00,Standard
+INV-076,Validate invoice,2026-01-22 09:00:00,Standard
+INV-076,Approve invoice,2026-01-23 09:00:00,Standard
+INV-076,Pay invoice,2026-01-24 09:00:00,Standard
+INV-077,Receive invoice,2026-01-22 09:00:00,Standard
+INV-077,Validate invoice,2026-01-23 09:00:00,Standard
+INV-077,Approve invoice,2026-01-24 09:00:00,Standard
+INV-077,Pay invoice,2026-01-25 09:00:00,Standard
+INV-078,Receive invoice,2026-01-23 09:00:00,Standard
+INV-078,Validate invoice,2026-01-24 09:00:00,Standard
+INV-078,Approve invoice,2026-01-25 09:00:00,Standard
+INV-078,Pay invoice,2026-01-26 09:00:00,Standard
+INV-079,Receive invoice,2026-01-24 09:00:00,Standard
+INV-079,Validate invoice,2026-01-25 09:00:00,Standard
+INV-079,Approve invoice,2026-01-26 09:00:00,Standard
+INV-079,Pay invoice,2026-01-27 09:00:00,Standard
+INV-080,Receive invoice,2026-01-25 09:00:00,Standard
+INV-080,Validate invoice,2026-01-26 09:00:00,Standard
+INV-080,Approve invoice,2026-01-27 09:00:00,Standard
+INV-080,Pay invoice,2026-01-28 09:00:00,Standard
+INV-081,Receive invoice,2026-01-26 09:00:00,Manual review
+INV-081,Validate invoice,2026-01-27 09:00:00,Manual review
+INV-081,Request correction,2026-01-28 09:00:00,Manual review
+INV-081,Validate invoice,2026-01-30 09:00:00,Manual review
+INV-081,Approve invoice,2026-02-03 09:00:00,Manual review
+INV-081,Pay invoice,2026-02-04 09:00:00,Manual review
+INV-082,Receive invoice,2026-01-27 09:00:00,Manual review
+INV-082,Validate invoice,2026-01-28 09:00:00,Manual review
+INV-082,Request correction,2026-01-29 09:00:00,Manual review
+INV-082,Validate invoice,2026-01-31 09:00:00,Manual review
+INV-082,Approve invoice,2026-02-04 09:00:00,Manual review
+INV-082,Pay invoice,2026-02-05 09:00:00,Manual review
+INV-083,Receive invoice,2026-01-28 09:00:00,Manual review
+INV-083,Validate invoice,2026-01-29 09:00:00,Manual review
+INV-083,Request correction,2026-01-30 09:00:00,Manual review
+INV-083,Validate invoice,2026-02-01 09:00:00,Manual review
+INV-083,Approve invoice,2026-02-05 09:00:00,Manual review
+INV-083,Pay invoice,2026-02-06 09:00:00,Manual review
+INV-084,Receive invoice,2026-01-01 09:00:00,Manual review
+INV-084,Validate invoice,2026-01-02 09:00:00,Manual review
+INV-084,Request correction,2026-01-03 09:00:00,Manual review
+INV-084,Validate invoice,2026-01-05 09:00:00,Manual review
+INV-084,Approve invoice,2026-01-09 09:00:00,Manual review
+INV-084,Pay invoice,2026-01-10 09:00:00,Manual review
+INV-085,Receive invoice,2026-01-02 09:00:00,Manual review
+INV-085,Validate invoice,2026-01-03 09:00:00,Manual review
+INV-085,Request correction,2026-01-04 09:00:00,Manual review
+INV-085,Validate invoice,2026-01-06 09:00:00,Manual review
+INV-085,Approve invoice,2026-01-10 09:00:00,Manual review
+INV-085,Pay invoice,2026-01-11 09:00:00,Manual review
+INV-086,Receive invoice,2026-01-03 09:00:00,Manual review
+INV-086,Validate invoice,2026-01-04 09:00:00,Manual review
+INV-086,Request correction,2026-01-05 09:00:00,Manual review
+INV-086,Validate invoice,2026-01-07 09:00:00,Manual review
+INV-086,Approve invoice,2026-01-11 09:00:00,Manual review
+INV-086,Pay invoice,2026-01-12 09:00:00,Manual review
+INV-087,Receive invoice,2026-01-04 09:00:00,Manual review
+INV-087,Validate invoice,2026-01-05 09:00:00,Manual review
+INV-087,Request correction,2026-01-06 09:00:00,Manual review
+INV-087,Validate invoice,2026-01-08 09:00:00,Manual review
+INV-087,Approve invoice,2026-01-12 09:00:00,Manual review
+INV-087,Pay invoice,2026-01-13 09:00:00,Manual review
+INV-088,Receive invoice,2026-01-05 09:00:00,Manual review
+INV-088,Validate invoice,2026-01-06 09:00:00,Manual review
+INV-088,Request correction,2026-01-07 09:00:00,Manual review
+INV-088,Validate invoice,2026-01-09 09:00:00,Manual review
+INV-088,Approve invoice,2026-01-13 09:00:00,Manual review
+INV-088,Pay invoice,2026-01-14 09:00:00,Manual review
+INV-089,Receive invoice,2026-01-06 09:00:00,Manual review
+INV-089,Validate invoice,2026-01-07 09:00:00,Manual review
+INV-089,Request correction,2026-01-08 09:00:00,Manual review
+INV-089,Validate invoice,2026-01-10 09:00:00,Manual review
+INV-089,Approve invoice,2026-01-14 09:00:00,Manual review
+INV-089,Pay invoice,2026-01-15 09:00:00,Manual review
+INV-090,Receive invoice,2026-01-07 09:00:00,Manual review
+INV-090,Validate invoice,2026-01-08 09:00:00,Manual review
+INV-090,Request correction,2026-01-09 09:00:00,Manual review
+INV-090,Validate invoice,2026-01-11 09:00:00,Manual review
+INV-090,Approve invoice,2026-01-15 09:00:00,Manual review
+INV-090,Pay invoice,2026-01-16 09:00:00,Manual review
+INV-091,Receive invoice,2026-01-08 09:00:00,Manual review
+INV-091,Validate invoice,2026-01-09 09:00:00,Manual review
+INV-091,Request correction,2026-01-10 09:00:00,Manual review
+INV-091,Validate invoice,2026-01-12 09:00:00,Manual review
+INV-091,Approve invoice,2026-01-16 09:00:00,Manual review
+INV-091,Pay invoice,2026-01-17 09:00:00,Manual review
+INV-092,Receive invoice,2026-01-09 09:00:00,Manual review
+INV-092,Validate invoice,2026-01-10 09:00:00,Manual review
+INV-092,Request correction,2026-01-11 09:00:00,Manual review
+INV-092,Validate invoice,2026-01-13 09:00:00,Manual review
+INV-092,Approve invoice,2026-01-17 09:00:00,Manual review
+INV-092,Pay invoice,2026-01-18 09:00:00,Manual review
+INV-093,Receive invoice,2026-01-10 09:00:00,Manual review
+INV-093,Validate invoice,2026-01-11 09:00:00,Manual review
+INV-093,Request correction,2026-01-12 09:00:00,Manual review
+INV-093,Validate invoice,2026-01-14 09:00:00,Manual review
+INV-093,Approve invoice,2026-01-18 09:00:00,Manual review
+INV-093,Pay invoice,2026-01-19 09:00:00,Manual review
+INV-094,Receive invoice,2026-01-11 09:00:00,Manual review
+INV-094,Validate invoice,2026-01-12 09:00:00,Manual review
+INV-094,Request correction,2026-01-13 09:00:00,Manual review
+INV-094,Validate invoice,2026-01-15 09:00:00,Manual review
+INV-094,Approve invoice,2026-01-19 09:00:00,Manual review
+INV-094,Pay invoice,2026-01-20 09:00:00,Manual review
+INV-095,Receive invoice,2026-01-12 09:00:00,Manual review
+INV-095,Validate invoice,2026-01-13 09:00:00,Manual review
+INV-095,Request correction,2026-01-14 09:00:00,Manual review
+INV-095,Validate invoice,2026-01-16 09:00:00,Manual review
+INV-095,Approve invoice,2026-01-20 09:00:00,Manual review
+INV-095,Pay invoice,2026-01-21 09:00:00,Manual review
+INV-096,Receive invoice,2026-01-13 09:00:00,Manual review
+INV-096,Validate invoice,2026-01-14 09:00:00,Manual review
+INV-096,Request correction,2026-01-15 09:00:00,Manual review
+INV-096,Validate invoice,2026-01-17 09:00:00,Manual review
+INV-096,Approve invoice,2026-01-21 09:00:00,Manual review
+INV-096,Pay invoice,2026-01-22 09:00:00,Manual review
+INV-097,Receive invoice,2026-01-14 09:00:00,Manual review
+INV-097,Validate invoice,2026-01-15 09:00:00,Manual review
+INV-097,Request correction,2026-01-16 09:00:00,Manual review
+INV-097,Validate invoice,2026-01-18 09:00:00,Manual review
+INV-097,Approve invoice,2026-01-22 09:00:00,Manual review
+INV-097,Pay invoice,2026-01-23 09:00:00,Manual review
+INV-098,Receive invoice,2026-01-15 09:00:00,Manual review
+INV-098,Validate invoice,2026-01-16 09:00:00,Manual review
+INV-098,Request correction,2026-01-17 09:00:00,Manual review
+INV-098,Validate invoice,2026-01-19 09:00:00,Manual review
+INV-098,Approve invoice,2026-01-23 09:00:00,Manual review
+INV-098,Pay invoice,2026-01-24 09:00:00,Manual review
+INV-099,Receive invoice,2026-01-16 09:00:00,Manual review
+INV-099,Validate invoice,2026-01-17 09:00:00,Manual review
+INV-099,Request correction,2026-01-18 09:00:00,Manual review
+INV-099,Validate invoice,2026-01-20 09:00:00,Manual review
+INV-099,Approve invoice,2026-01-24 09:00:00,Manual review
+INV-099,Pay invoice,2026-01-25 09:00:00,Manual review
+INV-100,Receive invoice,2026-01-17 09:00:00,Manual review
+INV-100,Validate invoice,2026-01-18 09:00:00,Manual review
+INV-100,Request correction,2026-01-19 09:00:00,Manual review
+INV-100,Validate invoice,2026-01-21 09:00:00,Manual review
+INV-100,Approve invoice,2026-01-25 09:00:00,Manual review
+INV-100,Pay invoice,2026-01-26 09:00:00,Manual review
+INV-101,Receive invoice,2026-01-18 09:00:00,Manual review
+INV-101,Validate invoice,2026-01-19 09:00:00,Manual review
+INV-101,Pay invoice,2026-01-27 09:00:00,Manual review
+INV-102,Receive invoice,2026-01-19 09:00:00,Manual review
+INV-102,Validate invoice,2026-01-20 09:00:00,Manual review
+INV-102,Pay invoice,2026-01-28 09:00:00,Manual review
+INV-103,Receive invoice,2026-01-20 09:00:00,Manual review
+INV-103,Validate invoice,2026-01-21 09:00:00,Manual review
+INV-103,Pay invoice,2026-01-29 09:00:00,Manual review
+INV-104,Receive invoice,2026-01-21 09:00:00,Manual review
+INV-104,Validate invoice,2026-01-22 09:00:00,Manual review
+INV-104,Pay invoice,2026-01-30 09:00:00,Manual review
+INV-105,Receive invoice,2026-01-22 09:00:00,Manual review
+INV-105,Validate invoice,2026-01-23 09:00:00,Manual review
+INV-105,Pay invoice,2026-01-31 09:00:00,Manual review
+INV-106,Receive invoice,2026-01-23 09:00:00,Manual review
+INV-106,Validate invoice,2026-01-24 09:00:00,Manual review
+INV-106,Pay invoice,2026-02-01 09:00:00,Manual review
+INV-107,Receive invoice,2026-01-24 09:00:00,Manual review
+INV-107,Validate invoice,2026-01-25 09:00:00,Manual review
+INV-107,Pay invoice,2026-02-02 09:00:00,Manual review
+INV-108,Receive invoice,2026-01-25 09:00:00,Manual review
+INV-108,Validate invoice,2026-01-26 09:00:00,Manual review
+INV-108,Pay invoice,2026-02-03 09:00:00,Manual review
+INV-109,Receive invoice,2026-01-26 09:00:00,Manual review
+INV-109,Validate invoice,2026-01-27 09:00:00,Manual review
+INV-109,Pay invoice,2026-02-04 09:00:00,Manual review
+INV-110,Receive invoice,2026-01-27 09:00:00,Manual review
+INV-110,Validate invoice,2026-01-28 09:00:00,Manual review
+INV-110,Pay invoice,2026-02-05 09:00:00,Manual review
+INV-111,Receive invoice,2026-01-28 09:00:00,Manual review
+INV-111,Validate invoice,2026-01-29 09:00:00,Manual review
+INV-111,Approve invoice,2026-02-05 09:00:00,Manual review
+INV-111,Pay invoice,2026-02-06 09:00:00,Manual review
+INV-112,Receive invoice,2026-01-01 09:00:00,Manual review
+INV-112,Validate invoice,2026-01-02 09:00:00,Manual review
+INV-112,Approve invoice,2026-01-09 09:00:00,Manual review
+INV-112,Pay invoice,2026-01-10 09:00:00,Manual review
+INV-113,Receive invoice,2026-01-02 09:00:00,Manual review
+INV-113,Validate invoice,2026-01-03 09:00:00,Manual review
+INV-113,Approve invoice,2026-01-10 09:00:00,Manual review
+INV-113,Pay invoice,2026-01-11 09:00:00,Manual review
+INV-114,Receive invoice,2026-01-03 09:00:00,Manual review
+INV-114,Validate invoice,2026-01-04 09:00:00,Manual review
+INV-114,Approve invoice,2026-01-11 09:00:00,Manual review
+INV-114,Pay invoice,2026-01-12 09:00:00,Manual review
+INV-115,Receive invoice,2026-01-04 09:00:00,Manual review
+INV-115,Validate invoice,2026-01-05 09:00:00,Manual review
+INV-115,Approve invoice,2026-01-12 09:00:00,Manual review
+INV-115,Pay invoice,2026-01-13 09:00:00,Manual review
+INV-116,Receive invoice,2026-01-05 09:00:00,Manual review
+INV-116,Validate invoice,2026-01-06 09:00:00,Manual review
+INV-116,Approve invoice,2026-01-13 09:00:00,Manual review
+INV-116,Pay invoice,2026-01-14 09:00:00,Manual review
+INV-117,Receive invoice,2026-01-06 09:00:00,Manual review
+INV-117,Validate invoice,2026-01-07 09:00:00,Manual review
+INV-117,Approve invoice,2026-01-14 09:00:00,Manual review
+INV-117,Pay invoice,2026-01-15 09:00:00,Manual review
+INV-118,Receive invoice,2026-01-07 09:00:00,Manual review
+INV-118,Validate invoice,2026-01-08 09:00:00,Manual review
+INV-118,Approve invoice,2026-01-15 09:00:00,Manual review
+INV-118,Pay invoice,2026-01-16 09:00:00,Manual review
+INV-119,Receive invoice,2026-01-08 09:00:00,Manual review
+INV-119,Validate invoice,2026-01-09 09:00:00,Manual review
+INV-119,Approve invoice,2026-01-16 09:00:00,Manual review
+INV-119,Pay invoice,2026-01-17 09:00:00,Manual review
+INV-120,Receive invoice,2026-01-09 09:00:00,Manual review
+INV-120,Validate invoice,2026-01-10 09:00:00,Manual review
+INV-120,Approve invoice,2026-01-17 09:00:00,Manual review
+INV-120,Pay invoice,2026-01-18 09:00:00,Manual review

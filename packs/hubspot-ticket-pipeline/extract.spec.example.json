@@ -1,0 +1,23 @@
+{
+ "version": 1,
+ "system": "hubspot",
+ "start": "2026-01-01T00:00:00Z",
+ "end": "2026-04-01T00:00:00Z",
+ "objects": [
+  {
+   "object": "tickets",
+   "properties": [
+    "hs_pipeline_stage",
+    "hs_pipeline",
+    "hs_ticket_priority",
+    "hubspot_owner_id"
+   ],
+   "history": [
+    "hs_pipeline_stage",
+    "hs_ticket_priority",
+    "hubspot_owner_id"
+   ]
+  }
+ ],
+ "history_gaps": []
+}

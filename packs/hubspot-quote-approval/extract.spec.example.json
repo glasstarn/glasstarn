@@ -1,0 +1,21 @@
+{
+ "version": 1,
+ "system": "hubspot",
+ "start": "2026-01-01T00:00:00Z",
+ "end": "2026-04-01T00:00:00Z",
+ "objects": [
+  {
+   "object": "quotes",
+   "properties": [
+    "hs_status",
+    "hs_title",
+    "hs_expiration_date"
+   ],
+   "history": [
+    "hs_status",
+    "hs_expiration_date"
+   ]
+  }
+ ],
+ "history_gaps": []
+}

@@ -1,0 +1,18 @@
+[package]
+name = "pm-core"
+description = "Canonical event-log types, sequence structures, and mining algorithms."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+thiserror.workspace = true
+serde = { workspace = true }
+hashbrown = "0.17"
+
+[lints.rust]
+unsafe_code = "forbid"

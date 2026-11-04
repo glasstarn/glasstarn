@@ -1,0 +1,35 @@
+name: Publish
+
+# Publishes the exact npm package the Release workflow built and tested, taken
+# from that tag's GitHub Release, so what reaches npm is what was tested.
+# Run by hand once the release has been checked: Actions → Publish.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to publish, for example v1.0.0"
+        required: true
+        type: string
+
+jobs:
+  publish:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          registry-url: "https://registry.npmjs.org"
+      - name: Take the tested package from the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "${{ inputs.tag }}" --repo "${{ github.repository }}" --pattern "glasstarn-*.tgz" --pattern "glasstarn.sha256"
+          sha256sum -c glasstarn.sha256
+      - name: Publish to npm
+        run: npm publish ./glasstarn-*.tgz --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

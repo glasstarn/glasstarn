@@ -1,0 +1,338 @@
+{
+  "id": "jira-issue-lifecycle",
+  "version": 1,
+  "name": "Issue lifecycle (Jira)",
+  "system": "Jira Cloud",
+  "process": "issue lifecycle",
+  "status": "tested",
+  "note": "Written by the Glasstarn project from public knowledge of Jira Cloud's REST API (issues and their change history). Not yet confirmed on a real site; tested only on made-up extracts. For bug resolution, limit the extract to bugs (issue type Bug); the steps are the same.",
+  "case_object_type": "Jira issue",
+  "size_check": {
+    "ask": "How many issues were created or updated in the period in the projects to look at?",
+    "unit": "issue",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [
+    "customfield_"
+  ],
+  "tables": [
+    {
+      "name": "JiraIssue",
+      "noun": "issues",
+      "date_label": "the issue was created",
+      "label": "Jira issues",
+      "export": "Issues of the chosen projects with activity in the period, from the Jira extract: key, id, project, issuetype, status, priority, resolution, created, updated, resolutiondate, assignee and the company's own fields (customfield_…).",
+      "required": [
+        "key",
+        "created",
+        "issuetype",
+        "status",
+        "priority"
+      ],
+      "fields": [
+        "id",
+        "project",
+        "resolution",
+        "updated",
+        "resolutiondate",
+        "assignee"
+      ],
+      "date_field": "created",
+      "object": "jira_issue",
+      "key": [
+        "key"
+      ],
+      "scope_field": "project"
+    },
+    {
+      "name": "JiraIssueHistory",
+      "label": "Jira change history",
+      "export": "The change history of those issues, one row per changed field, from the Jira extract.",
+      "required": [
+        "issue_key",
+        "history_id",
+        "item",
+        "created",
+        "field",
+        "field_id",
+        "from_string",
+        "to_string"
+      ],
+      "fields": [
+        "author",
+        "from",
+        "to"
+      ],
+      "date_field": "created"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-jira-issue",
+      "table": "JiraIssue",
+      "columns": [
+        "key"
+      ],
+      "label": "issues listed once"
+    },
+    {
+      "id": "one-history-item",
+      "table": "JiraIssueHistory",
+      "columns": [
+        "history_id",
+        "item"
+      ],
+      "label": "change items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "history-has-issues",
+      "label": "change history rows whose issue is in the extract",
+      "from": {
+        "table": "JiraIssueHistory",
+        "columns": [
+          "issue_key"
+        ]
+      },
+      "to": {
+        "table": "JiraIssue",
+        "columns": [
+          "key"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "jira_issue",
+        "input": "JiraIssue",
+        "namespace": "jira",
+        "object_type": "Jira issue",
+        "key": [
+          "key"
+        ],
+        "attributes": [
+          {
+            "column": "issuetype",
+            "name": "issue type"
+          },
+          {
+            "column": "priority",
+            "name": "priority"
+          },
+          {
+            "column": "status",
+            "name": "status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "issue_created",
+        "input": "JiraIssue",
+        "namespace": "jira",
+        "key": [
+          "key"
+        ],
+        "activity": {
+          "value": "Create issue"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "jira_issue",
+            "columns": [
+              "key"
+            ],
+            "qualifier": "issue"
+          }
+        ]
+      },
+      {
+        "id": "status_changed",
+        "input": "JiraIssueHistory",
+        "namespace": "jira",
+        "key": [
+          "history_id",
+          "item"
+        ],
+        "where": [
+          {
+            "column": "field_id",
+            "in": [
+              "status"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "author",
+            "name": "resource"
+          },
+          {
+            "column": "from_string",
+            "name": "from"
+          },
+          {
+            "column": "to_string",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jira_issue",
+            "columns": [
+              "issue_key"
+            ],
+            "qualifier": "issue"
+          }
+        ],
+        "activity": {
+          "column": "to_string"
+        }
+      },
+      {
+        "id": "issue_reassigned",
+        "input": "JiraIssueHistory",
+        "namespace": "jira",
+        "key": [
+          "history_id",
+          "item"
+        ],
+        "where": [
+          {
+            "column": "field_id",
+            "in": [
+              "assignee"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "author",
+            "name": "resource"
+          },
+          {
+            "column": "from_string",
+            "name": "from"
+          },
+          {
+            "column": "to_string",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jira_issue",
+            "columns": [
+              "issue_key"
+            ],
+            "qualifier": "issue"
+          }
+        ],
+        "activity": {
+          "value": "Reassign issue"
+        }
+      },
+      {
+        "id": "priority_changed",
+        "input": "JiraIssueHistory",
+        "namespace": "jira",
+        "key": [
+          "history_id",
+          "item"
+        ],
+        "where": [
+          {
+            "column": "field_id",
+            "in": [
+              "priority"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "author",
+            "name": "resource"
+          },
+          {
+            "column": "from_string",
+            "name": "from"
+          },
+          {
+            "column": "to_string",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jira_issue",
+            "columns": [
+              "issue_key"
+            ],
+            "qualifier": "issue"
+          }
+        ],
+        "activity": {
+          "value": "Change priority"
+        }
+      },
+      {
+        "id": "field_changed",
+        "input": "JiraIssueHistory",
+        "namespace": "jira",
+        "key": [
+          "history_id",
+          "item"
+        ],
+        "where": [
+          {
+            "column": "field_id",
+            "not_in": [
+              "status",
+              "assignee",
+              "priority",
+              "resolution"
+            ]
+          }
+        ],
+        "timestamp": "created",
+        "attributes": [
+          {
+            "column": "author",
+            "name": "resource"
+          },
+          {
+            "column": "from_string",
+            "name": "from"
+          },
+          {
+            "column": "to_string",
+            "name": "to"
+          }
+        ],
+        "objects": [
+          {
+            "object": "jira_issue",
+            "columns": [
+              "issue_key"
+            ],
+            "qualifier": "issue"
+          }
+        ],
+        "activity": {
+          "column": "field"
+        }
+      }
+    ]
+  }
+}

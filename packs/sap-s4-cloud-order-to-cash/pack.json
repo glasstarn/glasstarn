@@ -1,0 +1,35 @@
+{
+  "id": "sap-s4-cloud-order-to-cash",
+  "version": 1,
+  "name": "Order to cash (SAP S/4HANA Public Cloud)",
+  "system": "SAP S/4HANA Cloud, public edition",
+  "process": "order to cash",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the standard SAP S/4HANA Cloud data views. Not yet confirmed on a real system; tested only on made-up files in this layout.",
+  "case_object_type": "sales order item",
+  "size_check": {
+    "ask": "How many sales order items were created in the period for the company code?",
+    "unit": "sales order item",
+    "steps_per_unit": 5
+  },
+  "include": [
+    "sap-clock",
+    "sap-cloud-customers",
+    "sap-cloud-sales",
+    "sap-cloud-billing",
+    "sap-cloud-receivables",
+    "sap-cloud-sales-changes"
+  ],
+  "variants": [
+    {
+      "id": "accounts-receivable",
+      "name": "Accounts receivable: invoice to cash",
+      "case_object_type": "customer invoice",
+      "tables": [
+        "Customer",
+        "BillingDocument",
+        "JournalEntryItem"
+      ]
+    }
+  ]
+}

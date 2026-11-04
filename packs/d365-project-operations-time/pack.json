@@ -1,0 +1,325 @@
+{
+  "id": "d365-project-operations-time",
+  "version": 1,
+  "name": "Project time and approvals (Dynamics 365 Project Operations)",
+  "system": "Microsoft Dynamics 365 Project Operations (Dataverse)",
+  "process": "project time approval",
+  "status": "tested",
+  "note": "Live Core validation covered two projects, a retained draft, and a separate time entry submitted, rejected, resubmitted and approved. Eight events, six objects and fourteen links matched independent raw source timestamps, IDs, hashes and rows. Expense approval is covered separately by d365-project-operations-expenses. Recall and project invoicing remain untested.",
+  "case_object_type": "project",
+  "size_check": {
+    "ask": "How many projects were created in the period?",
+    "unit": "project",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [
+    "*_*"
+  ],
+  "tables": [
+    {
+      "name": "msdyn_project",
+      "label": "Projects",
+      "export": "Projects in scope: msdyn_projectid and createdon in UTC. Optional msdyn_subject and statecode. Exclude customers, descriptions, addresses and personal details. Planned dates and actual start/finish business dates are not substitutes for record creation time.",
+      "required": [
+        "msdyn_projectid",
+        "createdon"
+      ],
+      "fields": [
+        "msdyn_subject",
+        "statecode"
+      ],
+      "date_field": "createdon",
+      "noun": "projects",
+      "object": "po_project",
+      "key": [
+        "msdyn_projectid"
+      ]
+    },
+    {
+      "name": "msdyn_timeentry",
+      "label": "Project time entries",
+      "export": "All time entries for those projects, including drafts and returned entries: msdyn_timeentryid, createdon, msdyn_project. Rename _msdyn_project_value to msdyn_project without changing GUIDs. Entry status and duration are optional context; the work date is not submission or creation time.",
+      "required": [
+        "msdyn_timeentryid",
+        "createdon",
+        "msdyn_project"
+      ],
+      "fields": [
+        "msdyn_entrystatus",
+        "msdyn_duration"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    },
+    {
+      "name": "msdyn_projectapproval",
+      "label": "Time approval requests",
+      "export": "Every time-approval request for those projects, including earlier rejected instances: msdyn_projectapprovalid, createdon, msdyn_project. Rename _msdyn_project_value and _msdyn_timeentry_value to logical lookup names. Keep msdyn_recordstage as raw numeric code or its standard English label and msdyn_approvedon as original UTC ISO timestamp. Despite its name, approvedon is also populated for rejection: interpret it with Record Stage. Do not substitute modifiedon. Export source timestamps directly; its date-only UI display can hide time precision. Header/grouped UI rows are not individual approval requests.",
+      "required": [
+        "msdyn_projectapprovalid",
+        "createdon",
+        "msdyn_project"
+      ],
+      "fields": [
+        "msdyn_timeentry",
+        "msdyn_recordstage",
+        "msdyn_approvedon"
+      ],
+      "date_field": "createdon",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-msdyn_projectid",
+      "table": "msdyn_project",
+      "columns": [
+        "msdyn_projectid"
+      ],
+      "label": "projects listed once"
+    },
+    {
+      "id": "one-msdyn_timeentryid",
+      "table": "msdyn_timeentry",
+      "columns": [
+        "msdyn_timeentryid"
+      ],
+      "label": "time entries listed once"
+    },
+    {
+      "id": "one-msdyn_projectapprovalid",
+      "table": "msdyn_projectapproval",
+      "columns": [
+        "msdyn_projectapprovalid"
+      ],
+      "label": "approval requests listed once"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "po_project",
+        "input": "msdyn_project",
+        "namespace": "dataverse",
+        "object_type": "project",
+        "key": [
+          "msdyn_projectid"
+        ],
+        "attributes": [
+          {
+            "column": "statecode",
+            "name": "current state"
+          }
+        ]
+      },
+      {
+        "id": "po_time",
+        "input": "msdyn_timeentry",
+        "namespace": "dataverse",
+        "object_type": "time entry",
+        "key": [
+          "msdyn_timeentryid"
+        ],
+        "attributes": [
+          {
+            "column": "msdyn_entrystatus",
+            "name": "current status"
+          },
+          {
+            "column": "msdyn_duration",
+            "name": "minutes"
+          }
+        ]
+      },
+      {
+        "id": "po_approval",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "object_type": "approval request",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "attributes": [
+          {
+            "column": "msdyn_recordstage",
+            "name": "current stage"
+          },
+          {
+            "column": "msdyn_timeentry",
+            "name": "time entry GUID"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "po_project_created",
+        "input": "msdyn_project",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectid"
+        ],
+        "activity": {
+          "value": "Create project"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "po_project",
+            "columns": [
+              "msdyn_projectid"
+            ],
+            "qualifier": "project"
+          }
+        ]
+      },
+      {
+        "id": "po_time_created",
+        "input": "msdyn_timeentry",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_timeentryid"
+        ],
+        "activity": {
+          "value": "Create time entry"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "po_project",
+            "columns": [
+              "msdyn_project"
+            ],
+            "qualifier": "project"
+          },
+          {
+            "object": "po_time",
+            "columns": [
+              "msdyn_timeentryid"
+            ],
+            "qualifier": "time entry"
+          }
+        ]
+      },
+      {
+        "id": "po_approval_created",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "activity": {
+          "value": "Create time approval request"
+        },
+        "timestamp": "createdon",
+        "objects": [
+          {
+            "object": "po_project",
+            "columns": [
+              "msdyn_project"
+            ],
+            "qualifier": "project"
+          },
+          {
+            "object": "po_approval",
+            "columns": [
+              "msdyn_projectapprovalid"
+            ],
+            "qualifier": "approval request"
+          }
+        ]
+      },
+      {
+        "id": "po_reject_time",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "activity": {
+          "value": "Reject time entry (latest decision)"
+        },
+        "timestamp": "msdyn_approvedon",
+        "objects": [
+          {
+            "object": "po_project",
+            "columns": [
+              "msdyn_project"
+            ],
+            "qualifier": "project"
+          },
+          {
+            "object": "po_approval",
+            "columns": [
+              "msdyn_projectapprovalid"
+            ],
+            "qualifier": "approval request"
+          }
+        ],
+        "optional_timestamp": true,
+        "where": [
+          {
+            "column": "msdyn_recordstage",
+            "in": [
+              "1",
+              "Rejected"
+            ]
+          }
+        ]
+      },
+      {
+        "id": "po_approve_time",
+        "input": "msdyn_projectapproval",
+        "namespace": "dataverse",
+        "key": [
+          "msdyn_projectapprovalid"
+        ],
+        "activity": {
+          "value": "Approve time entry (latest decision)"
+        },
+        "timestamp": "msdyn_approvedon",
+        "objects": [
+          {
+            "object": "po_project",
+            "columns": [
+              "msdyn_project"
+            ],
+            "qualifier": "project"
+          },
+          {
+            "object": "po_approval",
+            "columns": [
+              "msdyn_projectapprovalid"
+            ],
+            "qualifier": "approval request"
+          }
+        ],
+        "optional_timestamp": true,
+        "where": [
+          {
+            "column": "msdyn_recordstage",
+            "in": [
+              "2",
+              "Approved"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "project",
+      "label": "Dynamics 365 project GUID",
+      "object": "po_project",
+      "table": "msdyn_project",
+      "key": [
+        "msdyn_projectid"
+      ],
+      "example": "6a1f0c2e-\u2026",
+      "carry": []
+    }
+  ]
+}

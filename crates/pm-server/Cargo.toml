@@ -1,0 +1,28 @@
+[package]
+name = "pm-server"
+description = "Loopback-only HTTP service for the local process-mining browser application."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+pm-core = { path = "../pm-core" }
+pm-ingest = { path = "../pm-ingest" }
+pm-mcp = { path = "../pm-mcp" }
+pm-project = { path = "../pm-project" }
+pm-query = { path = "../pm-query" }
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+serde.workspace = true
+serde_json.workspace = true
+sha2 = "0.10"
+thiserror.workspace = true
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[dev-dependencies]
+tempfile = "3"

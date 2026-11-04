@@ -1,0 +1,536 @@
+{
+  "id": "sap-ecc-billing",
+  "note": "Customer invoices and their cancellations from SAP ECC or S/4HANA tables.",
+  "tables": [
+    {
+      "name": "VBRK",
+      "noun": "invoices",
+      "date_label": "the invoice was created",
+      "label": "Billing documents (customer invoices)",
+      "export": "Financial billing documents of the company code, with VBTYP M/N/O/P/S/5/6, including both cancellation categories and the originals they reference. Export billing requests, invoice lists and pro formas separately.",
+      "required": [
+        "VBELN",
+        "FKART",
+        "ERDAT",
+        "ERZET",
+        "BUKRS",
+        "KUNAG",
+        "NETWR",
+        "FKSTO",
+        "SFAKN",
+        "VBTYP"
+      ],
+      "fields": [
+        "FKDAT",
+        "WAERK"
+      ],
+      "date_field": "ERDAT",
+      "object": "billing",
+      "key": [
+        "VBELN"
+      ],
+      "scope_field": "BUKRS"
+    },
+    {
+      "name": "VBRP",
+      "label": "Billing document items",
+      "export": "Items of the exported billing documents.",
+      "required": [
+        "VBELN",
+        "POSNR",
+        "AUBEL",
+        "AUPOS"
+      ],
+      "fields": [
+        "VGBEL",
+        "VGPOS",
+        "FKIMG",
+        "NETWR"
+      ]
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-billing-document",
+      "table": "VBRK",
+      "columns": [
+        "VBELN"
+      ],
+      "label": "billing documents listed once"
+    },
+    {
+      "id": "one-billing-item",
+      "table": "VBRP",
+      "columns": [
+        "VBELN",
+        "POSNR"
+      ],
+      "label": "billing items listed once (document and item)"
+    }
+  ],
+  "checks": [
+    {
+      "id": "invoices-have-customers",
+      "label": "invoices whose customer is in the customer list",
+      "from": {
+        "table": "VBRK",
+        "columns": [
+          "KUNAG"
+        ]
+      },
+      "to": {
+        "table": "KNA1",
+        "columns": [
+          "KUNNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "billing-items-have-documents",
+      "label": "billing items whose billing document is in the export",
+      "from": {
+        "table": "VBRP",
+        "columns": [
+          "VBELN"
+        ]
+      },
+      "to": {
+        "table": "VBRK",
+        "columns": [
+          "VBELN"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "vbrk-document-scope",
+      "scope": true,
+      "label": "billing headers must be financial invoice/debit/credit documents or their cancellations (VBTYP M/N/O/P/S/5/6); export requests, lists and pro formas separately",
+      "from": {
+        "table": "VBRK",
+        "columns": [
+          "VBTYP"
+        ]
+      },
+      "to": {
+        "table": "VBRK",
+        "columns": [
+          "VBTYP"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "M",
+              "N",
+              "O",
+              "P",
+              "S",
+              "5",
+              "6"
+            ]
+          }
+        ]
+      },
+      "expect": "all",
+      "require_nonblank": true
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "billing",
+        "input": "VBRK",
+        "namespace": "sap",
+        "object_type": "customer invoice",
+        "key": [
+          "VBELN"
+        ],
+        "attributes": [
+          {
+            "column": "NETWR",
+            "name": "invoice amount"
+          },
+          {
+            "column": "BUKRS",
+            "name": "company code"
+          },
+          {
+            "column": "FKSTO",
+            "name": "cancelled"
+          },
+          {
+            "column": "VBTYP",
+            "name": "billing category"
+          }
+        ]
+      },
+      {
+        "id": "billing_item",
+        "input": "VBRP",
+        "namespace": "sap",
+        "object_type": "customer invoice item",
+        "key": [
+          "VBELN",
+          "POSNR"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "invoice_created",
+        "input": "VBRK",
+        "namespace": "sap",
+        "key": [
+          "VBELN"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "M",
+              "5"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create invoice"
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "VBELN"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "KUNAG"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "invoice_cancelled",
+        "input": "VBRK",
+        "namespace": "sap",
+        "key": [
+          "VBELN"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "N"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel invoice"
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "SFAKN"
+            ],
+            "qualifier": "cancelled invoice"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "KUNAG"
+            ],
+            "qualifier": "customer"
+          },
+          {
+            "object": "billing",
+            "columns": [
+              "VBELN"
+            ],
+            "qualifier": "cancellation document"
+          }
+        ]
+      },
+      {
+        "id": "credit_memo_created",
+        "input": "VBRK",
+        "namespace": "sap",
+        "key": [
+          "VBELN"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "O",
+              "6"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create credit memo"
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "VBELN"
+            ],
+            "qualifier": "credit memo"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "KUNAG"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "debit_memo_created",
+        "input": "VBRK",
+        "namespace": "sap",
+        "key": [
+          "VBELN"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "P"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create debit memo"
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "VBELN"
+            ],
+            "qualifier": "invoice"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "KUNAG"
+            ],
+            "qualifier": "customer"
+          }
+        ]
+      },
+      {
+        "id": "credit_memo_cancelled",
+        "input": "VBRK",
+        "namespace": "sap",
+        "key": [
+          "VBELN"
+        ],
+        "where": [
+          {
+            "column": "VBTYP",
+            "in": [
+              "S"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel credit memo"
+        },
+        "timestamp": {
+          "date": "ERDAT",
+          "offset": "{setting:offset}",
+          "time": "ERZET"
+        },
+        "objects": [
+          {
+            "object": "billing",
+            "columns": [
+              "SFAKN"
+            ],
+            "qualifier": "cancelled invoice"
+          },
+          {
+            "object": "customer",
+            "columns": [
+              "KUNAG"
+            ],
+            "qualifier": "customer"
+          },
+          {
+            "object": "billing",
+            "columns": [
+              "VBELN"
+            ],
+            "qualifier": "cancellation document"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "billing_order_lines",
+        "input": "VBRP",
+        "source": {
+          "object": "billing_item",
+          "columns": [
+            "VBELN",
+            "POSNR"
+          ],
+          "qualifier": "invoice item"
+        },
+        "target": {
+          "object": "sales_item",
+          "columns": [
+            "AUBEL",
+            "AUPOS"
+          ],
+          "qualifier": "bills order line",
+          "allow_unmatched": true,
+          "optional": true
+        }
+      },
+      {
+        "id": "billing_items",
+        "input": "VBRP",
+        "source": {
+          "object": "billing",
+          "columns": [
+            "VBELN"
+          ],
+          "qualifier": "invoice",
+          "allow_unmatched": true
+        },
+        "target": {
+          "object": "billing_item",
+          "columns": [
+            "VBELN",
+            "POSNR"
+          ],
+          "qualifier": "invoice item"
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "invoice_created_items",
+        "event": "invoice_created",
+        "through": "billing",
+        "relationship": "billing_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "invoice_cancelled_items",
+        "event": "invoice_cancelled",
+        "through": "billing",
+        "relationship": "billing_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "credit_memo_created_items",
+        "event": "credit_memo_created",
+        "through": "billing",
+        "relationship": "billing_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "invoice_created_lines",
+        "event": "invoice_created",
+        "through": "billing_item",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "invoice_cancelled_lines",
+        "event": "invoice_cancelled",
+        "through": "billing_item",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "credit_memo_created_lines",
+        "event": "credit_memo_created",
+        "through": "billing_item",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "credit_memo_created_original",
+        "event": "credit_memo_created",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      },
+      {
+        "id": "debit_memo_created_items",
+        "event": "debit_memo_created",
+        "through": "billing",
+        "relationship": "billing_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "debit_memo_created_lines",
+        "event": "debit_memo_created",
+        "through": "billing_item",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "credit_memo_cancelled_items",
+        "event": "credit_memo_cancelled",
+        "through": "billing",
+        "relationship": "billing_items",
+        "qualifier": "invoice item"
+      },
+      {
+        "id": "credit_memo_cancelled_lines",
+        "event": "credit_memo_cancelled",
+        "through": "billing_item",
+        "relationship": "billing_order_lines",
+        "qualifier": "order line"
+      },
+      {
+        "id": "debit_memo_created_original",
+        "event": "debit_memo_created",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      },
+      {
+        "id": "credit_memo_cancelled_original",
+        "event": "credit_memo_cancelled",
+        "through": "sales_item",
+        "relationship": "item_reference",
+        "qualifier": "original order line"
+      }
+    ]
+  }
+}

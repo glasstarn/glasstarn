@@ -1,0 +1,802 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>glasstarn</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/assets/app.css" />
+    <script src="/assets/core.js" defer></script>
+    <script src="/assets/navigation.js" defer></script>
+    <script src="/assets/projects.js" defer></script>
+    <script src="/assets/agent-setup.js" defer></script>
+    <script src="/assets/extracts.js" defer></script>
+    <script src="/assets/import.js" defer></script>
+    <script src="/assets/quality.js" defer></script>
+    <script src="/assets/filters.js" defer></script>
+    <script src="/assets/answer.js" defer></script>
+    <script src="/assets/process-model.js" defer></script>
+    <script src="/assets/map.js" defer></script>
+    <script src="/assets/objects.js" defer></script>
+    <script src="/assets/follow.js" defer></script>
+    <script src="/assets/provenance.js" defer></script>
+    <script src="/assets/values.js" defer></script>
+    <script src="/assets/cases.js" defer></script>
+    <script src="/assets/timing.js" defer></script>
+    <script src="/assets/results.js" defer></script>
+    <script src="/assets/explorers.js" defer></script>
+<script src="/assets/studio.js" defer></script>
+<script src="/assets/map-analysis.js" defer></script>
+    <script src="/assets/subway.js" defer></script>
+    <script src="/assets/map-shell.js" defer></script>
+    <script src="/assets/compare.js" defer></script>
+    <script src="/assets/conformance.js" defer></script>
+    <script src="/assets/slides.js" defer></script>
+    <script src="/assets/select.js" defer></script>
+    <script src="/assets/controls.js" defer></script>
+    <script src="/assets/main.js" defer></script>
+  </head>
+  <body data-view="home" data-project-state="loading">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="results" id="app">
+      <header class="bar">
+        <div class="bar-in">
+          <a class="brand" href="/" id="app-home" aria-label="glasstarn projects">
+            <svg class="brand-mark" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><rect width="24" height="24" rx="6.5" fill="var(--ink)"/><path d="M4.6 12.6 9.7 6.3l2.6 3.1 2-2.1 5.1 5.3z" fill="var(--ink-fg)"/><path d="M4.6 14.4 9.7 18.6l2.6-2.1 2 1.4 5.1-3.5z" fill="var(--glacier)"/></svg>
+            <span class="brand-word">glasstarn</span>
+          </a>
+          <div class="crumb project-only"><span class="meta-hide">/</span><b id="workspace-title">Project</b><span class="meta-hide mono" id="results-source"></span><button type="button" class="data-built-open meta-hide" id="data-built-open" aria-controls="data-built" aria-expanded="false" hidden>How this data was built</button></div>
+          <span class="visually-hidden" id="view-title">Projects</span>
+          <div class="spacer"></div>
+          <span class="pill neutral connection" id="connection" role="status" aria-live="polite"><span class="dot connection-dot"></span><span id="connection-label">Connecting…</span></span>
+          <button class="btn primary home-only" type="button" id="app-import">Import file</button>
+          <button class="btn home-only" type="button" id="app-agent">Connect an agent</button>
+          <button class="btn project-only" type="button" id="results-projects">All projects</button>
+        </div>
+      </header>
+      <main class="results-main" id="main" tabindex="-1">
+        <div class="opening" id="opening" role="status" aria-live="polite" hidden><span class="opening-bar" aria-hidden="true"></span><b id="opening-title">Opening your project…</b><span>Checking the saved data and rebuilding your results.</span></div>
+        <section class="panel extract-approval" id="extract-approval" hidden aria-labelledby="extract-approval-title">
+          <div class="panel-h"><h2 id="extract-approval-title">Extract waiting for your approval</h2><span class="hint" id="extract-approval-when"></span></div>
+          <div class="panel-b extract-body">
+            <p class="extract-lead" id="extract-approval-lead"></p>
+            <dl class="extract-facts" id="extract-approval-facts"></dl>
+            <div class="tw"><table class="extract-objects"><thead><tr><th>Object</th><th>Kind</th><th>Fields</th><th>Time</th><th>Filters</th><th>Known gaps</th></tr></thead><tbody id="extract-approval-objects"></tbody></table></div>
+            <details class="extract-queries"><summary>Queries the app will run</summary><ol id="extract-approval-queries"></ol></details>
+            <form class="extract-decide" id="extract-approval-form">
+              <label>Your name <input id="extract-approver" required maxlength="120" autocomplete="name" /></label>
+              <button class="btn primary" type="submit" id="extract-approve">Approve and run</button>
+              <button class="btn" type="button" id="extract-decline">Decline</button>
+            </form>
+            <p class="extract-status" id="extract-approval-status" role="status"></p>
+          </div>
+        </section>
+        <div class="home-page">
+          <div class="home-head"><h1 id="hero-title">Your projects</h1><p class="hero-description">Open a project to see its findings, process map and evidence.</p></div>
+<section class="project-workspace" id="workspace-panel" hidden aria-label="Project workspace">
+            <div class="project-list-heading"><h3 class="project-list-title">Projects</h3><button id="workspace-refresh-list" class="text-action" type="button">Refresh</button></div>
+            <div id="workspace-list" aria-label="Projects"></div>
+            <details class="browser-create"><summary>New project</summary>
+            <p>Create a project first, then import your event history. You can use your agent to interpret the results later.</p>
+            <form id="workspace-create" class="workspace-actions">
+              <label>New project <input id="workspace-name" required maxlength="120" placeholder="e.g. Purchase-to-pay review" /></label>
+              <label>Purpose <select id="workspace-purpose"><option value="improvement">Process improvement</option><option value="audit">Audit</option></select></label>
+              <button class="primary-action" type="submit">Create project</button>
+            </form>
+            </details>
+            <details class="project-settings"><summary>Current project settings</summary>
+            <p id="workspace-description">Choose a project above. Each one keeps its own data, findings and evidence.</p>
+            <p id="workspace-location" class="workspace-location"></p>
+            <button id="workspace-save" type="button" class="text-action" hidden>Save project now</button>
+            <details id="agent-panel" hidden>
+              <summary>Connect an agent</summary>
+              <p class="agent-lead">Optional. Your agent can read this project’s results and answer questions about them. It cannot change your data.</p>
+              <div class="agent-steps">
+                <section class="agent-step">
+                  <h3>Choose what your agent can see</h3>
+                  <select id="agent-preset" aria-label="What your agent can see">
+                    <option value="private">Hide names (recommended)</option>
+                    <option value="business_names">Show step and column names</option>
+                  </select>
+                  <p id="agent-scope" class="agent-note"></p>
+                  <div class="agent-row">
+                    <button id="agent-enable" type="button" class="primary-action">Allow access</button>
+                    <button id="agent-disable" type="button" class="text-action" disabled>Turn off access</button>
+                  </div>
+                  <p id="agent-access-status" class="agent-note" role="status" aria-live="polite"></p>
+                </section>
+                <div id="agent-setup" hidden>
+                  <section class="agent-step">
+                    <h3>Add glasstarn to your agent</h3>
+                    <select id="agent-client" aria-label="Your agent"><option value="claude">Claude Code</option><option value="codex">Codex</option><option value="vscode">Copilot Chat in VS Code</option><option value="generic">Other</option></select>
+                    <p id="agent-instructions" class="agent-note"></p>
+                    <div class="agent-copy"><textarea id="agent-config" readonly rows="2" aria-label="Agent setup" spellcheck="false"></textarea><button id="agent-copy-config" type="button" class="secondary-action">Copy</button></div>
+                  </section>
+                  <section class="agent-step">
+                    <h3>Paste this in your agent</h3>
+                    <p class="agent-note">Restart your agent first, so it picks up glasstarn.</p>
+                    <div class="agent-copy"><textarea id="agent-prompt" readonly rows="2" aria-label="Starter message"></textarea><button id="agent-copy-prompt" type="button" class="secondary-action">Copy</button></div>
+                    <div class="agent-row">
+                      <button id="agent-check" type="button" class="secondary-action">Check connection</button>
+                      <p id="agent-contact" class="agent-note" role="status" aria-live="polite"></p>
+                    </div>
+                  </section>
+                  <details class="agent-more"><summary>Help and other options</summary>
+                    <details id="agent-extra"><summary>Use a configuration file instead</summary><p id="agent-extra-instructions" class="agent-note"></p><textarea id="agent-extra-config" readonly rows="5" aria-label="Alternative agent configuration" spellcheck="false"></textarea></details>
+                    <p class="agent-note">Keep glasstarn running while you use your agent. If you restart glasstarn, reopen this project and the connection follows.</p>
+                    <p class="agent-note">If your company blocks custom MCP servers, ask your IT team to approve this one.</p>
+                  </details>
+                </div>
+                <pre id="agent-policy" hidden>Access is off.</pre>
+              </div>
+            </details>
+              <div class="hero-actions">
+                <button class="primary-action" id="choose-log" type="button" disabled aria-describedby="file-support">
+                  <span id="choose-log-label">Choose an event log</span>
+                  <span aria-hidden="true">→</span>
+                </button>
+                <input id="file-input" type="file" accept=".csv,.parquet,.xes,.xes.gz,.jsonocel,.xmlocel,.xml,.sqlite,.sqlite3" hidden />
+                <button class="secondary-action" id="open-project" type="button" disabled>Import analysis export</button>
+                <input id="project-input" type="file" accept=".json,application/json" hidden />
+                <button class="secondary-action" id="open-project-folder" type="button" hidden>Open project folder</button>
+                <button class="text-action" id="reopen-recent" type="button" hidden>Reopen recent project</button>
+                <span id="file-support">CSV, Parquet, XES, XES.gz, or OCEL 2.0 JSON/XML/SQLite. Up to 100 GiB.</span>
+                <span id="project-status" role="status" aria-live="polite"></span>
+              </div>
+            <div class="workspace-actions project-switcher">
+              <label>Project <select id="workspace-select"><option value="">Choose a project</option></select></label>
+              <button class="secondary-action" id="workspace-open" type="button">Open here</button>
+              <button class="secondary-action" id="workspace-new-tab" type="button">Open in new tab</button>
+              <button class="text-action" id="workspace-refresh" type="button">Refresh list</button>
+            </div>
+            </details>
+            <p id="workspace-status" role="status" aria-live="polite"></p>
+          </section>
+<section class="agent-journey" aria-labelledby="journey-title">
+            <p class="kicker">Starting a new project?</p>
+            <h2 id="journey-title">Start with a question in your agent.</h2>
+            <p>Type /glasstarn in your agent, or just ask. For example: “Why are our invoices taking longer to process?” or “Are invoices approved before payment?”</p>
+            <ol><li><strong>Bring your data</strong><span>Your agent asks for extracts and context, then confirms the mapping with you.</span></li><li><strong>Get findings</strong><span>glasstarn reveals how your work really flows, straight from your data. Your agent explains the evidence and saves the project.</span></li><li><strong>See it for yourself</strong><span>Explore the process map and the evidence behind every finding in glasstarn. Keep asking questions in the same agent conversation.</span></li></ol>
+          </section>
+<section class="import-panel" id="import-panel" aria-labelledby="import-title">
+            <div class="import-intro">
+              <p class="kicker">Bring your own event data</p>
+              <h2 id="import-title">Import event history</h2>
+              <p>
+                Check the fields, confirm their meaning, then run the analysis.
+              </p>
+            </div>
+            <div class="drop-zone" id="drop-zone">
+              <span class="drop-icon" aria-hidden="true">↥</span>
+              <strong>Drop an event log here</strong>
+              <span>or use “Choose an event log” above</span>
+            </div>
+            <div class="upload-status" id="upload-status" hidden role="status" aria-live="polite">
+              <span class="status-spinner" aria-hidden="true"></span>
+              <span id="upload-status-text"></span>
+            </div>
+          </section>
+        </div>
+<section class="profile-panel" id="profile-panel" hidden aria-labelledby="mapping-title">
+            <header class="profile-header">
+              <div>
+                <p class="kicker">Column profile</p>
+                <h2 id="mapping-title">Confirm how this log is structured.</h2>
+              </div>
+              <div class="file-summary">
+                <strong id="profile-file-name"></strong>
+                <span id="profile-file-meta"></span>
+              </div>
+            </header>
+
+            <div class="mapping-grid" id="mapping-fields" aria-label="Field mapping"></div>
+            <div class="mapping-actions">
+              <button class="secondary-action" id="confirm-mapping" type="button">
+                Confirm mapping
+              </button>
+              <span id="mapping-status" role="status" aria-live="polite">
+                Required fields must use three different columns.
+              </span>
+            </div>
+
+            <div class="column-table-wrap">
+              <table class="column-table">
+                <caption>Values observed in the local sample</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Column</th>
+                    <th scope="col">Looks like</th>
+                    <th scope="col">Missing</th>
+                    <th scope="col">Distinct</th>
+                    <th scope="col">Examples</th>
+                  </tr>
+                </thead>
+                <tbody id="column-rows"></tbody>
+              </table>
+            </div>
+          </section>
+        <div class="project-page project-shell">
+          <aside class="side" aria-label="Project navigation">
+          <button type="button" id="navigation-pin" class="navigation-pin" aria-label="Pin navigation open" aria-pressed="false" title="Pin navigation open"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 2v12M9 6l2 2-2 2"/></svg><span class="nav-label">Pin menu open</span></button>
+          <nav class="tabs side-nav" aria-label="Project views">
+            <a class="tab nav-item unavailable" id="report-nav" href="#answer" data-view="report" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg><span class="nav-label">Overview</span></a>
+            <a class="tab nav-item unavailable" id="process-map-nav" href="#map" data-view="map" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><rect x="5" y="1.5" width="6" height="3.5" rx="1"/><rect x="5" y="11" width="6" height="3.5" rx="1"/><path d="M8 5v6"/></svg><span class="nav-label">Process</span></a>
+            <a class="tab nav-item unavailable" id="variants-nav" href="#variants" data-view="variants" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M2 4h12M2 8h8M2 12h5"/></svg><span class="nav-label">Variants</span><span class="count" id="results-variant-count"></span></a>
+            <a class="tab nav-item unavailable" id="timing-nav" hidden href="#performance" data-view="timing" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6"/><path d="M8 4.5V8l2.5 1.5"/></svg><span class="nav-label">Analysis</span></a>
+            <a class="tab nav-item unavailable" id="conformance-nav" href="#conformance" data-view="conformance" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3 3 7-7"/></svg><span class="nav-label">Conformance</span><span class="count" id="results-conf-count" hidden></span></a>
+            <a class="tab nav-item unavailable" id="cases-nav" href="#cases" data-view="cases" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 4h10M3 8h10M3 12h10"/></svg><span class="nav-label">Items</span></a>
+            <a class="tab nav-item unavailable retired" id="comparison-nav" href="#compare" data-view="compare" aria-disabled="true" tabindex="-1">Compare</a>
+            <a class="tab nav-item unavailable" id="ocel-nav" href="#objects" data-view="objects" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="4" r="2"/><circle cx="12" cy="12" r="2"/><path d="M5 6l5 4"/></svg><span class="nav-label">Connected processes</span></a>
+            <a class="tab nav-item unavailable" id="quality-nav" href="#data-checks" data-view="quality" aria-disabled="true" tabindex="-1"><svg class="nav-icon" viewBox="0 0 16 16" aria-hidden="true"><ellipse cx="8" cy="4" rx="5" ry="2"/><path d="M3 4v8c0 1.1 2.2 2 5 2s5-.9 5-2V4"/></svg><span class="nav-label">Data checks</span></a>
+          </nav>
+          <section class="follow-bar side-follow" id="follow-bar" aria-label="What to follow" hidden>
+            <span class="side-label">Follow</span>
+            <div class="follow-list" id="follow-types" role="group" aria-label="Item type"></div>
+            <span class="hint" id="follow-hint"></span>
+            <span class="hint" id="follow-status" role="status"></span>
+          </section>
+          </aside>
+          <div class="project-content">
+          <div class="page-head">
+            <h1 class="page-title" id="page-title">Overview</h1>
+            <p class="kpi-line" id="kpi-line"></p>
+            <div class="filter-chips" id="filter-chips">
+              <span class="filter-chip-list" id="filter-chip-list"></span>
+              <div class="filter-add">
+                <button class="filter-add-button" id="filter-add" type="button" aria-haspopup="menu" aria-expanded="false">+ Filter</button>
+                <div class="filter-menu" id="filter-menu" role="menu" hidden>
+                  <button type="button" role="menuitem" data-filter-open="period"><b>Period</b><span>When items started</span></button>
+                  <button type="button" role="menuitem" data-filter-open="amount" id="filter-menu-amount" hidden><b>Amount</b><span>At least or at most a value</span></button>
+                  <button type="button" role="menuitem" data-filter-open="steps"><b>Steps</b><span>Went through, skipped, or repeated a step</span></button>
+                  <button type="button" role="menuitem" data-filter-open="duration"><b>Duration</b><span>Faster or slower than</span></button>
+                  <button type="button" role="menuitem" data-filter-open="routes"><b>Variants</b><span>Only the most common variants</span></button>
+                  <button type="button" role="menuitem" data-filter-open="field"><b>Field value</b><span>A field such as region or vendor</span></button><button type="button" role="menuitem" data-filter-open="people" id="filter-menu-people" hidden><b>Handled by</b><span>Someone who worked on the item</span></button>
+                  <button type="button" role="menuitem" data-filter-open="order"><b>Order of steps</b><span>First or last step, or one step before another</span></button>
+                  <button type="button" role="menuitem" data-filter-open="complete"><b>Completeness</b><span>Leave out incomplete items</span></button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <section class="kpis" id="results-kpis" aria-label="Summary"></section>
+<details class="filter-panel" id="filter-panel">
+              <summary>
+                <span>Filter items</span>
+                <span id="filter-count">No filters applied</span>
+              </summary>
+              <div class="filter-grid">
+                <label data-filter-group="steps">
+                  <span>Includes steps</span>
+                  <select id="filter-with-activities" multiple size="4"></select>
+                </label>
+                <label data-filter-group="steps">
+                  <span>Skips steps</span>
+                  <select id="filter-without-activities" multiple size="4"></select>
+                </label>
+                <label data-filter-group="steps">
+                  <span>Repeats a step</span>
+                  <select id="filter-repeats" multiple size="4" aria-label="Repeats a step"></select>
+                </label>
+                <label data-filter-group="order">
+                  <span>First recorded activity</span>
+                  <select id="filter-starts-with"><option value="">Any activity</option></select>
+                </label>
+                <label data-filter-group="order">
+                  <span>Last recorded activity</span>
+                  <select id="filter-ends-with"><option value="">Any activity</option></select>
+                </label>
+                <fieldset class="trace-pair" id="filter-direct-group" data-filter-group="order">
+                  <legend>Directly follows</legend>
+                  <div class="trace-pair-list" id="filter-direct-pairs">
+                    <div class="trace-pair-row">
+                      <label><span>Earlier activity</span><select class="trace-activity-select filter-direct-from"><option value="">Any activity</option></select></label>
+                      <label><span>Immediately next activity</span><select class="trace-activity-select filter-direct-to"><option value="">Any activity</option></select></label>
+                      <button class="text-action trace-pair-remove" type="button" aria-label="Remove directly-follows condition">Remove</button>
+                    </div>
+                  </div>
+                  <button class="text-action trace-pair-add" id="add-direct-pair" type="button">Add another direct condition</button>
+                </fieldset>
+                <fieldset class="trace-pair" id="filter-eventual-group" data-filter-group="order">
+                  <legend>Eventually follows</legend>
+                  <div class="trace-pair-list" id="filter-eventual-pairs">
+                    <div class="trace-pair-row">
+                      <label><span>Earlier activity</span><select class="trace-activity-select filter-eventual-from"><option value="">Any activity</option></select></label>
+                      <label><span>Later activity</span><select class="trace-activity-select filter-eventual-to"><option value="">Any activity</option></select></label>
+                      <button class="text-action trace-pair-remove" type="button" aria-label="Remove eventually-follows condition">Remove</button>
+                    </div>
+                  </div>
+                  <button class="text-action trace-pair-add" id="add-eventual-pair" type="button">Add another eventual condition</button>
+                </fieldset>
+                <label data-filter-group="people">
+                  <span>Handled by (any of)</span>
+                  <select id="filter-people" multiple aria-label="Handled by"></select>
+                </label>
+                <label data-filter-group="field">
+                  <span>Field</span>
+                  <select id="filter-attribute"><option value="">Choose a field…</option></select>
+                </label>
+                <label data-filter-group="field">
+                  <span>Comparison</span>
+                  <select id="filter-operator"><option value="eq">Equals</option><option value="latest" hidden>Latest value is</option><option value="gt">Greater than</option><option value="gte">At least</option><option value="lt">Less than</option><option value="lte">At most</option><option value="between">Between (inclusive)</option></select>
+                </label>
+                <label data-filter-group="field">
+                  <span>Value</span>
+                  <input id="filter-attribute-value" type="text" placeholder="Choose or search actual values" autocomplete="off" />
+                  <select id="filter-value-options" size="5" aria-label="Recorded values" hidden></select>
+                  <small id="filter-value-hint" role="status"></small>
+                </label>
+                <label data-filter-group="field" id="filter-upper-row" hidden>
+                  <span>Upper value</span><input id="filter-attribute-upper" type="text" inputmode="decimal" />
+                </label>
+                <label data-filter-group="amount" class="number-filter" hidden>
+                  <span>Amount field</span>
+                  <select id="filter-number-field"><option value="">No amount filter</option></select>
+                </label>
+                <label data-filter-group="amount" class="number-filter" hidden>
+                  <span>Amount at least</span>
+                  <input id="filter-number-min" type="text" inputmode="decimal" placeholder="e.g. 50,000" />
+                </label>
+                <label data-filter-group="amount" class="number-filter" hidden>
+                  <span>Amount at most</span>
+                  <input id="filter-number-max" type="text" inputmode="decimal" placeholder="No upper limit" />
+                </label>
+                <label data-filter-group="period">
+                  <span>Started at or after</span>
+                  <input id="filter-started-after" type="datetime-local" />
+                </label>
+                <label data-filter-group="period">
+                  <span>Started at or before</span>
+                  <input id="filter-started-before" type="datetime-local" />
+                </label>
+                <label data-filter-group="duration">
+                  <span>Minimum duration (hours)</span>
+                  <input id="filter-min-duration" type="number" min="0" step="0.1" inputmode="decimal" />
+                </label>
+                <label data-filter-group="duration">
+                  <span>Maximum duration (hours)</span>
+                  <input id="filter-max-duration" type="number" min="0" step="0.1" inputmode="decimal" />
+                </label>
+                <label data-filter-group="routes">
+                  <span>Pick variants</span>
+                  <select id="filter-variants" multiple size="5" aria-label="Pick variants"></select>
+                </label>
+                <label data-filter-group="routes">
+                  <span>Top variants</span>
+                  <input id="filter-top-variants" type="number" min="1" step="1" inputmode="numeric" placeholder="All variants" />
+                </label>
+                <label data-filter-group="routes">
+                  <span>At least this many recorded steps</span>
+                  <input id="filter-min-events" type="number" min="1" step="1" inputmode="numeric" placeholder="Any length" />
+                </label>
+                <label data-filter-group="complete" class="check-filter">
+                  <input id="filter-complete-only" type="checkbox" />
+                  <span>Leave out items flagged incomplete</span>
+                </label>
+                <label data-filter-group="period" class="check-filter" id="filter-inside-window-row" hidden>
+                  <input id="filter-inside-window" type="checkbox" />
+                  <span id="filter-inside-window-label">Only items that began and finished inside the extract window</span>
+                </label>
+                <p class="filter-note" data-filter-group="order">Sequence filters use recorded event order. Equal-time ordering is deterministic, but does not prove that one activity caused another.</p>
+              </div>
+              <div class="filter-actions">
+                <button class="secondary-action" id="apply-filters" type="button">Apply filters</button>
+                <button class="text-action" id="filter-cancel" type="button">Cancel</button>
+                <button class="text-action" id="reset-filters" type="button">Clear all</button>
+                <span id="filter-status" role="status" aria-live="polite"></span>
+              </div>
+            </details>
+          <p id="consultant-update" class="consultant-update" role="status" hidden></p>
+          <div class="view-panel" data-view-panel="report">
+<section id="executive-report" hidden aria-label="Project findings">
+            <p id="report-status" class="report-status" role="status" hidden></p>
+            <div id="investigation-answer"></div>
+            <section id="report-evidence" hidden aria-label="Slide evidence"><header><h3 id="report-evidence-title">Evidence</h3><button id="report-evidence-close" class="text-action" type="button">Close</button></header><p id="report-evidence-description"></p><button id="report-evidence-case" class="text-action" type="button" hidden>Open item history</button><div id="report-evidence-summary"></div><pre id="report-evidence-json" hidden></pre></section>
+          </section>
+            <div class="overview-pair">
+            <section class="panel value-panel" id="value-panel" hidden aria-labelledby="value-heading">
+              <div class="panel-h"><h2 id="value-heading">Where the value sits</h2><div class="spacer"></div><label class="value-field"><span class="visually-hidden">Amount field</span> <select id="value-field" aria-label="Amount field"></select></label></div>
+              <div class="panel-b">
+                <div class="value-facts" id="value-facts" hidden></div>
+                <div class="value-columns">
+                  <div class="tw"><table><thead><tr><th>Last step</th><th class="n">Value</th><th class="n" id="value-open-head" hidden>Open</th><th class="n">Items</th><th>Share</th></tr></thead><tbody id="value-steps"></tbody></table></div>
+                  
+                </div>
+              </div>
+              <p class="journey-note" id="value-note"></p>
+            </section>
+            <section class="panel ask-next" id="ask-next" hidden aria-labelledby="ask-next-heading">
+              <div class="panel-h"><h2 id="ask-next-heading">Ask next</h2></div>
+              <div class="panel-b"><p class="ask-next-lead">Questions your agent can answer from this project.</p><ul class="ask-next-list" id="ask-next-list"></ul></div>
+            </section>
+            </div>
+          </div>
+          <div class="view-panel" data-view-panel="map">
+            <div id="working-current-process" hidden></div>
+<section class="mapgrid" id="measured-process-map">
+          <div class="panel">
+            <div class="panel-h map-toolbar">
+              <h2 id="process-scope" class="visually-hidden">Recorded process</h2>
+              <span class="map-scope" id="map-scope"></span>
+              <span class="map-filter-slot" id="map-filter-slot"></span>
+              <span class="spacer"></span>
+              <div class="seg" id="map-style" role="group" aria-label="Map style" hidden>
+                <button type="button" data-map-style="classic" aria-pressed="false">Classic</button>
+                <button type="button" data-map-style="subway" aria-pressed="true">Subway</button>
+              </div>
+              <div class="seg" id="map-metric-seg" role="group" aria-label="Show on the map">
+                <button type="button" data-metric-choice="cases" aria-pressed="true">Count</button>
+                <button type="button" data-metric-choice="performance" aria-pressed="false">Time</button>
+              </div>
+              <label class="explorer-metric visually-hidden">Metric <select id="process-metric" aria-label="Process metric"><option value="cases">Unique items</option><option value="frequency">Event occurrences</option><option value="performance">Average elapsed time</option></select></label>
+              <span class="toolbar-divider" aria-hidden="true"></span>
+              <button type="button" id="map-controls-toggle" class="icon-btn" aria-controls="map-view-controls" aria-expanded="false" aria-label="Objects and events" data-tip="Objects and events"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2.5 4h11M4.5 8h7M6.5 12h3"/></svg></button>
+              <button type="button" id="map-measure" class="icon-btn" aria-label="Measure time between steps" data-tip="Measure time between steps"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1.5" y="5" width="13" height="6" rx="1.5"/><path d="M4.5 5v2.5M7 5v1.5M9.5 5v2.5M12 5v1.5"/></svg></button>
+              <button type="button" id="map-saved" class="icon-btn" aria-label="Saved views" data-tip="Saved views"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M4 2.5h8v11l-4-2.8-4 2.8z"/></svg></button>
+              <button type="button" id="export-bpmn" class="icon-btn" aria-label="Export BPMN" data-tip="Export this map as BPMN"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2.5v8M4.8 7.5 8 10.7l3.2-3.2M3 13.5h10"/></svg></button>
+            </div>
+            <div id="process-variant-focus" class="explorer-focus" hidden></div>
+            <div class="map-workspace">
+              <div class="subway-legend map-float" id="subway-legend" hidden></div><div class="subway-detail map-float" id="subway-detail" hidden><div class="seg seg-small" role="group" aria-label="How much the map shows"><button type="button" data-subway-detail="0" aria-pressed="true">Main lines</button><button type="button" data-subway-detail="1" aria-pressed="false">More side paths</button><button type="button" data-subway-detail="2" aria-pressed="false">Most</button><button type="button" data-subway-detail="3" aria-pressed="false">All</button></div><div class="seg seg-small" role="group" aria-label="Direction"><button type="button" data-subway-direction="horizontal" aria-pressed="false" aria-label="Horizontal" data-tip="Left to right">↔</button><button type="button" data-subway-direction="vertical" aria-pressed="false" aria-label="Vertical" data-tip="Top to bottom">↕</button></div></div><p class="map-note map-float" id="map-note" role="status" hidden></p>
+              <p class="coverage map-float" id="results-coverage" role="status" aria-live="polite"></p>
+              <div class="legend map-float" id="results-legend"></div>            <section class="panel process-controls map-float" id="process-controls" hidden><div class="panel-h"><h3>Map detail</h3></div><div class="panel-b">
+              <p>Reveal activities and connections independently. Detail changes the map, not your data selection.</p>
+              <div class="limits" id="results-limits">
+                <label for="results-activities">Activities <span id="results-activities-v"></span><input id="results-activities" type="range" min="1" step="1" aria-label="Activities shown"></label>
+                <label for="results-connections">Connections <span id="results-connections-v"></span><input id="results-connections" type="range" min="0" step="1" aria-label="Connections shown"></label>
+              </div><div class="explorer-actions"><button type="button" id="process-reset">Main flow</button><button type="button" id="process-all">Show all</button></div>
+              <p class="process-model-note">The main flow stays visible, with connections that keep activities linked. Coverage counts whole recorded variants. Use Variants to inspect the variants individual items followed.</p>
+            </div></section>
+              <aside id="map-view-controls" class="map-view-controls" aria-label="Objects and events" hidden>
+                <div class="map-controls-heading"><h3>Objects &amp; events</h3><button type="button" id="map-controls-close" aria-label="Close objects and events">×</button></div>
+                <div class="map-view-body"><input type="search" id="map-view-search" aria-label="Find an object or activity" placeholder="Find objects or events…"><p class="map-visibility-note">Show or hide items on the map. Showing a single object type also switches Variants and Items to it; showing more goes back. A hidden step keeps a faint stop on its line.</p><div class="map-view-head"><h3>Object types</h3><span><button type="button" data-map-select="objects" data-all="true">Select all</button><button type="button" data-map-select="objects" data-all="false">Clear all</button></span></div><div id="map-object-list"></div><div class="map-view-head"><h3>Event types</h3><span><button type="button" data-map-select="events" data-all="true">Select all</button><button type="button" data-map-select="events" data-all="false">Clear all</button></span></div><div id="map-event-list"></div>
+                </div>
+              </aside>
+              <div class="explorer-zoom map-zoom" role="group" aria-label="Process zoom"><button type="button" data-explorer-zoom="process" data-zoom="out" aria-label="Zoom out Process">−</button><button type="button" data-explorer-zoom="process" data-zoom="fit">Fit</button><button type="button" data-explorer-zoom="process" data-zoom="in" aria-label="Zoom in Process">+</button></div>
+              <div class="mapwrap"><svg id="subway-map" role="img" aria-label="Subway map of connected item types" hidden></svg><svg id="results-map" role="img" aria-label="Directly-follows process map"></svg><svg id="process-map" class="formal-map" role="img" aria-label="Formal process model"></svg></div>
+            </div>
+          </div>
+          <aside class="rail map-drawer" aria-label="Selected step"><div id="map-step-detail" hidden><button type="button" class="drawer-close" id="map-step-close" aria-label="Close step details">×</button>
+
+            <div class="panel">
+              <div class="panel-b" id="results-detail"><p class="detail-empty">Click a step or an arrow on the map to see how many reach it, how long it takes and where items go next.</p></div>
+            </div>
+          </div><section class="analysis-studio" id="analysis-inspector" aria-label="Map analysis" hidden>
+  <header class="inspector-heading"><h3 id="studio-title">Time between steps</h3><button type="button" id="studio-close" aria-label="Close measurement">×</button></header>
+  <p id="studio-picking" role="status" hidden></p>
+  <section class="studio-query panel" aria-label="Choose what to measure">
+    <div class="studio-query-top"><div class="studio-modes seg" role="group" aria-label="Measurement">
+      <button type="button" data-studio-mode="whole" aria-pressed="true" title="Whole history: from each item's first step to its last">Start to end</button><button type="button" data-studio-mode="segment" aria-pressed="false">Between steps</button><button type="button" data-studio-mode="linked" aria-pressed="false" hidden title="Between linked objects">Linked</button>
+    </div><select id="studio-mode" hidden aria-label="Measurement mode"><option value="whole">Whole process</option><option value="segment">Between steps</option><option value="linked">Between linked objects</option></select><button type="button" id="studio-run">Refresh</button></div>
+    <div class="studio-endpoints studio-endpoint" hidden>
+      <div class="studio-end" data-end="A"><label class="studio-linked-type" hidden>Starting object<select id="studio-from-type"></select></label><label>From<select id="studio-from"></select></label></div>
+      <span class="studio-arrow" aria-hidden="true">→</span>
+      <div class="studio-end" data-end="B"><label class="studio-linked-type" hidden>Ending object<select id="studio-to-type"></select></label><label>To<select id="studio-to"></select></label></div>
+    </div>
+    <p id="studio-definition"></p>
+    <details class="studio-rules studio-endpoint" hidden><summary>When a step repeats</summary><div class="studio-controls"><label>Measure from A’s<select id="studio-from-occurrence" data-seg="true"><option value="first">First time</option><option value="last">Last time</option></select></label><label>Measure to B’s<select id="studio-to-occurrence" data-seg="true"><option value="first">First time</option><option value="last" selected>Last time</option></select></label></div><p>If A or B happens more than once for an item, choose which time counts. For linked records, B’s last time includes every related record, such as split deliveries.</p></details>
+  </section>
+  <div class="inspector-tabs" role="tablist" aria-label="Measurement details"><button type="button" role="tab" data-studio-tab="time" aria-selected="true" aria-controls="studio-time-pane">Time</button><button type="button" role="tab" data-studio-tab="breakdown" aria-selected="false" aria-controls="studio-breakdown-pane">Breakdown</button><button type="button" role="tab" data-studio-tab="items" aria-selected="false" aria-controls="studio-items-pane">Items</button></div>
+  <p id="studio-status" role="status" aria-live="polite"></p>
+  <div id="studio-time-pane" data-studio-pane="time" role="tabpanel"><section class="panel studio-answer" aria-label="Time analysis results">
+    <div id="studio-cards" class="studio-cards"></div>
+    <div class="studio-chart-heading"><span id="studio-chart-unit"></span></div>
+    <div id="studio-histogram" class="studio-histogram"></div>
+    <section id="studio-drivers" class="studio-drivers" hidden aria-label="Likely drivers"><h4>Likely drivers</h4><div id="studio-driver-list"></div><p class="studio-note">What goes with the slowest fifth. Patterns, not proven causes. Click one to show only those.</p></section>
+    <details id="studio-range-editor" class="studio-range-editor"><summary>Focus on a time range</summary><div class="studio-range"><label>From<input id="studio-min" type="number" min="0" step="any" placeholder="Any"></label><label>To<input id="studio-max" type="number" min="0" step="any" placeholder="Any"></label><label class="studio-unit">Unit<select id="studio-unit" data-seg="true"><option value="86400000000">Days</option><option value="3600000000">Hours</option><option value="60000000">Minutes</option></select></label><button type="button" id="studio-preview">Show items in range</button></div><p id="studio-range-note" class="studio-note"></p></details>
+    <div id="studio-selection" class="studio-selection" hidden><div><strong id="studio-selection-title"></strong><p id="studio-selection-note"></p></div><div class="studio-selection-actions"><button type="button" id="studio-range-clear">Clear range</button><button type="button" id="studio-apply" class="primary-action" disabled>Apply filter</button></div></div>
+  </section>
+  <details id="studio-comparison" class="panel studio-comparison" hidden><summary>Compare this range with other items</summary><div class="studio-section-heading"><div><h3>What is different about these items?</h3><p id="studio-contrast-note"></p></div><span class="studio-badge">Patterns, not causes</span></div><div id="studio-contrasts"></div></details>
+  </div><div id="studio-breakdown-pane" data-studio-pane="breakdown" role="tabpanel" hidden><section class="panel studio-breakdown">
+    <div class="studio-section-heading"><div><h3>Compare by</h3></div><label>Break down by<select id="studio-group"><option value="">Choose a field…</option></select></label></div>
+    <div id="studio-breakdown-empty" class="studio-empty"><span aria-hidden="true">↳</span><p>Choose a field to compare time and volume across groups.</p></div>
+    <div id="studio-breakdown-results" hidden>
+      <div class="studio-breakdown-tools"><p id="studio-groups-note"></p><label>Show<select id="studio-group-metric"><option value="median_seconds">Median time</option><option value="mean_seconds">Average time</option><option value="p90_seconds">90% take up to</option><option value="items">Item count</option></select></label></div>
+      <div id="studio-group-chart"></div>
+      <details id="studio-values-editor" class="studio-values"><summary id="studio-values-summary">Filter specific values</summary><p class="studio-note">Select one or more values to focus every view on those items.</p><input id="studio-search" type="search" aria-label="Search recorded values" placeholder="Search values"><div id="studio-choices"></div><div class="studio-value-actions"><button type="button" id="studio-values-apply" class="primary-action">Use selected values</button><button type="button" id="studio-values-clear">Clear this field</button></div><p id="studio-values-note" class="studio-note"></p></details>
+      <details class="studio-table-details"><summary>All group statistics</summary><div class="tw"><table class="studio-table"><thead><tr><th>Group</th><th>Items</th><th>Measured</th><th>Average</th><th>Median</th><th>90% within</th><th>In range</th></tr></thead><tbody id="studio-groups"></tbody></table></div></details>
+    </div>
+  </section>
+  </div><div id="studio-items-pane" data-studio-pane="items" role="tabpanel" hidden><details id="studio-connected" class="studio-method" hidden><summary>Explore related records</summary><div class="studio-controls"><label>Follow this selection to<select id="studio-follow"></select></label><button type="button" id="studio-follow-apply">Follow linked records →</button><button type="button" id="studio-reset-linked">Reset linked selection</button></div><p>Follows recorded relationships from the current selection.</p></details>
+  <section class="studio-method"><div id="studio-evidence"></div><details class="studio-howto"><summary>How this is measured</summary><p id="studio-semantics"></p></details></section>
+<details class="studio-supporting"><summary>Slowest items and where they wait</summary>
+
+<section class="two">
+          <div class="panel">
+            <div class="panel-h"><h2>How long items take</h2><span class="hint" id="results-hist-hint">Items by time from first to last step</span></div>
+            <div class="panel-b hist"><svg id="results-hist" role="img" aria-labelledby="results-hist-hint"></svg><p class="hist-note" id="results-hist-note"></p></div>
+          </div>
+          <div class="panel">
+            <div class="panel-h"><h2>Where the waiting is</h2><span class="hint" id="results-wait-hint"></span></div>
+            <div class="tw"><table>
+              <thead><tr><th>Hand-off</th><th id="results-wait-head">Average</th><th class="n">Share of time</th></tr></thead>
+              <tbody id="results-waits"></tbody>
+            </table></div>
+          </div>
+        </section>
+<section class="panel slowest-panel" aria-labelledby="slowest-heading">
+          <div class="panel-h"><h2 id="slowest-heading">Slowest items</h2><span class="hint">Click one to see every step</span></div>
+          <div class="tw"><table>
+            <thead><tr><th>Item</th><th>Started</th><th class="n">Time</th><th class="n">Steps</th><th>Variant</th><th>Repeats</th></tr></thead>
+            <tbody id="results-slowest"></tbody>
+          </table></div>
+        </section>
+          </details>
+</div><footer class="inspector-footer"><button type="button" id="studio-compare">Compare groups ↗</button><button type="button" id="studio-save">Save view</button></footer>
+</section><section id="saved-views-panel" hidden aria-label="Saved views"><header class="inspector-heading"><h3>Saved views</h3><button type="button" id="saved-views-close" aria-label="Close saved views">×</button></header><p id="saved-views-status" role="status"></p><div id="saved-views-list"></div><div id="saved-agent-visuals"></div></section></aside>
+        </section>
+          </div>
+          <div class="view-panel" data-view-panel="variants">
+            <div class="variant-heading visually-hidden"><h2 id="variant-scope">Variants</h2><p id="variant-scope-note"></p></div>
+            <div class="variant-layout">
+              <section class="panel variant-canvas"><div class="panel-h"><p id="variant-coverage" class="coverage" role="status"></p><label class="explorer-metric">Metric <select id="variant-metric" aria-label="Variant metric"><option value="cases">Unique items</option><option value="frequency">Event occurrences</option><option value="performance">Average elapsed time</option></select></label><div class="explorer-zoom" role="group" aria-label="Variant zoom"><button type="button" data-explorer-zoom="variant" data-zoom="out" aria-label="Zoom out Variants">−</button><button type="button" data-explorer-zoom="variant" data-zoom="fit">Fit</button><button type="button" data-explorer-zoom="variant" data-zoom="in" aria-label="Zoom in Variants">+</button></div><button type="button" class="btn primary" id="variant-open-process">Show in Process →</button></div>
+                <div class="mapwrap"><svg id="variant-map" role="img" aria-label="Selected variant process flow"></svg></div><div id="variant-detail" class="variant-detail"></div>
+              </section>
+              <section class="panel variant-browser"><div class="panel-h"><h3>Recorded variants</h3><span id="variant-count" class="variant-count"></span></div><div class="variant-browser-controls"><label>Find a step <input id="variant-search" type="search" placeholder="Activity name"></label><label>Sort <select id="variant-sort"><option value="frequency">Most common</option><option value="slowest">Slowest average</option><option value="fastest">Fastest average</option></select></label><div class="explorer-actions"><button type="button" id="variant-all">Select all</button><button type="button" id="variant-reset">Clear</button></div></div>
+                <div id="variant-list" class="variant-list" role="group" aria-label="Select variants"></div><button type="button" id="variant-more">Show more variants</button><p id="variant-list-note" class="process-model-note"></p>
+              </section>
+            </div>
+
+          </div>
+          <div class="view-panel" data-view-panel="timing">
+
+          </div>
+          <div class="view-panel" data-view-panel="conformance">
+<section class="kpis" id="conf-figures" aria-label="Check summary"></section>
+          <section class="panel" aria-labelledby="conf-headline">
+            <div class="panel-h"><h2 id="conf-headline">Not checked yet</h2><span class="hint" id="conf-when"></span><div class="spacer"></div><button class="btn" id="check-case-conformance" type="button" disabled>Re-check</button></div>
+            <ol class="conf-line" id="conf-line"></ol>
+            <p class="conf-status hint" id="case-conformance-status" role="status" aria-live="polite"></p>
+          </section>
+          <section class="panel" aria-labelledby="conf-groups-title">
+            <div class="panel-h"><h2 id="conf-groups-title">Where it was not followed</h2><span class="hint" id="conf-groups-hint"></span></div>
+            <div class="tw"><table>
+              <thead><tr><th>What happened</th><th class="n">Items</th><th class="n">Share</th><th class="n">Amount</th></tr></thead>
+              <tbody id="conf-groups"></tbody>
+            </table></div>
+          </section>
+          <div hidden><span id="case-baseline-name"></span><button id="choose-case-baseline" type="button"></button><input id="case-model-input" type="file" accept=".model.json,application/json" /></div>
+          </div>
+          <div class="view-panel" data-view-panel="cases">
+<section class="panel items-panel" aria-labelledby="items-heading">
+          <div class="panel-h items-toolbar">
+            <h2 id="items-heading">All items</h2><span class="hint" id="items-count"></span>
+            <div class="spacer"></div>
+            <label class="visually-hidden" for="items-search">Search by identifier</label>
+            <input id="items-search" type="search" placeholder="Search by identifier" autocomplete="off" />
+            <label class="visually-hidden" for="items-order">Order</label>
+            <select id="items-order"><option value="slowest">Slowest first</option><option value="fastest">Fastest first</option><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="identifier">By identifier</option></select>
+          </div>
+          <div class="tw"><table>
+            <thead><tr><th>Item</th><th>Started</th><th class="n">Time</th><th class="n">Steps</th><th>Variant</th><th>Repeats</th></tr></thead>
+            <tbody id="results-cases"></tbody>
+          </table></div>
+          <div class="items-pager"><span id="items-range"></span><div class="spacer"></div><button class="btn" id="items-prev" type="button">Previous</button><button class="btn" id="items-next" type="button">Next</button></div>
+        </section>
+          </div>
+          <div class="view-panel" data-view-panel="compare">
+<section class="comparison-panel" aria-labelledby="comparison-title">
+              <div class="comparison-heading">
+                <div>
+                  <p class="kicker">Observed differences</p>
+                  <h3 id="comparison-title">Compare</h3>
+                  <p>Choose the groups you want to compare. A difference identifies where to investigate; it does not establish the cause.</p>
+                </div>
+                <fieldset class="overlay-switch" id="comparison-switch">
+                  <legend>Comparison type</legend>
+                  <label><input type="radio" name="comparison-type" value="cohorts" checked /> Groups</label>
+                  <label><input type="radio" name="comparison-type" value="periods" /> Time periods</label>
+                </fieldset>
+              </div>
+
+              <div class="comparison-controls" id="cohort-controls">
+                <label><span>Group by</span><select id="comparison-attribute"></select></label>
+                <label><span>First group</span><select id="comparison-left"></select></label>
+                <label><span>Second group</span><select id="comparison-right"></select></label>
+                <button class="primary-action" id="compare-cohorts" type="button">Compare groups</button>
+              </div>
+
+              <div class="comparison-controls period-controls" id="period-controls" hidden>
+                <label><span>Baseline starts</span><input id="baseline-start" type="datetime-local" step="1" /></label>
+                <label><span>Baseline ends</span><input id="baseline-end" type="datetime-local" step="1" /></label>
+                <label><span>Comparison starts</span><input id="comparison-start" type="datetime-local" step="1" /></label>
+                <label><span>Comparison ends</span><input id="comparison-end" type="datetime-local" step="1" /></label>
+                <button class="primary-action" id="compare-periods" type="button">Compare periods</button>
+              </div>
+              <p class="comparison-range" id="comparison-range"></p>
+              <div class="comparison-result" id="comparison-result" aria-live="polite">
+                <p>Choose two groups or two non-overlapping time periods to compare.</p>
+              </div>
+            </section>
+          </div>
+          <div class="view-panel" data-view-panel="objects">
+<section class="ocel-panel" id="ocel-panel" data-object-view="flow" hidden aria-labelledby="ocel-title">
+            <header class="ocel-header">
+              <div>
+                <p class="kicker">Object-centric process</p>
+                <h2 id="ocel-title">Connected processes</h2><p class="view-description">Follow related orders, items and other records together. A shared update is counted once, even when it involves several items.</p>
+                <p id="ocel-coverage"></p>
+              </div>
+              <div class="map-actions">
+                <button class="text-action" id="ocel-map-fit" type="button">Fit map</button>
+                <button class="text-action" id="ocel-map-actual" type="button">100%</button>
+                <button class="text-action" id="ocel-evidence-toggle" type="button" aria-expanded="false" aria-controls="ocel-evidence">Evidence</button>
+              </div>
+            </header>
+            <div class="summary-cards" id="ocel-summary" aria-label="Object-centric summary"></div>
+            <details class="filter-panel">
+              <summary><span>Filter connected items</span><span id="ocel-filter-count">All object types and relationships</span></summary>
+              <div class="ocel-filter-grid">
+                <label><span>Item types</span><select id="ocel-object-types" multiple size="5"></select></label>
+                <label><span>Event–object roles</span><select id="ocel-e2o-qualifiers" multiple size="5"></select></label>
+                <label><span>Object–object roles</span><select id="ocel-o2o-qualifiers" multiple size="5"></select></label>
+              </div>
+              <div class="filter-actions">
+                <button class="secondary-action" id="apply-ocel-filter" type="button">Apply object view</button>
+                <button class="text-action" id="reset-ocel-filter" type="button">Reset</button>
+                <span id="ocel-filter-status" role="status" aria-live="polite"></span>
+              </div>
+            </details>
+            <div id="ocel-quality" class="ocel-quality" aria-live="polite"></div>
+            <nav class="object-tabs" aria-label="Object analysis views">
+              <button type="button" data-object-view="flow" aria-pressed="true">Process flow</button>
+              <button type="button" data-object-view="variants" aria-pressed="false">Variants</button>
+              <button type="button" data-object-view="timing" aria-pressed="false">Timing</button>
+              <button type="button" data-object-view="model" aria-pressed="false">Models</button>
+              <button type="button" data-object-view="conformance" aria-pressed="false">Audit checks</button>
+              <button type="button" data-object-view="relationships" aria-pressed="false">Relationships</button>
+            </nav>
+            <div class="ocel-analysis-grid">
+            <div id="ocel-results">
+              <div class="ocel-workspace">
+                <section class="ocel-flow" aria-labelledby="ocel-flow-title">
+                  <div class="explorer-heading"><div><p class="kicker">Lifecycle flow</p><h3 id="ocel-flow-title">Process flow by item type</h3></div></div>
+                  <div class="ocel-flow-controls">
+                    <label><span>Item type</span><select id="ocel-flow-object-type"></select></label>
+                    <label><span>Connections to show</span><select id="ocel-flow-limit"><option>25</option><option selected>50</option><option>100</option><option>200</option></select></label>
+                    <div class="seg" id="ocel-flow-metric" role="group" aria-label="Map labels"><button type="button" data-metric="frequency" aria-pressed="true">Frequency</button><button type="button" data-metric="duration" aria-pressed="false">Duration</button></div>
+                    <span id="ocel-flow-status" role="status" aria-live="polite"></span>
+                  </div>
+                  <div class="ocel-map-canvas mapwrap"><svg id="ocel-process-map" role="img" aria-labelledby="ocel-flow-title ocel-flow-status"></svg></div>
+                  <div class="legend" id="ocel-flow-legend"></div>
+                  <p class="ocel-section-note ocel-map-note">The map follows one item type at a time, with its most common variant down the middle. Times are elapsed between steps of the same item, not waiting time. The rows below list the drawn connections.</p>
+                  <div id="ocel-flow-list" class="ocel-flow-list"></div>
+                </section>
+
+              </div>
+              <section class="ocel-variants" aria-labelledby="ocel-variants-title">
+                <div class="explorer-heading"><div><p class="kicker">Object paths</p><h3 id="ocel-variants-title">Recorded variants by item type</h3></div></div>
+                <p class="ocel-section-note">Equal-time activities stay together in one layer; their order is not inferred.</p>
+                <div id="ocel-variants" class="ocel-variant-list"></div>
+              </section>
+              <section class="ocel-time" aria-labelledby="ocel-time-title">
+                <div class="explorer-heading"><div><p class="kicker">Common-object timing</p><h3 id="ocel-time-title">Time between steps</h3></div></div>
+                <p class="ocel-section-note">Measures only through objects that participate in both activities. Results are elapsed time, not waiting time.</p>
+                <div class="ocel-time-controls">
+                  <label><span>From step</span><select id="ocel-time-from"></select></label>
+                  <label><span>To step</span><select id="ocel-time-to"></select></label>
+                  <button class="secondary-action" id="measure-ocel-time" type="button">Measure elapsed time</button>
+                  <span id="ocel-time-status" role="status" aria-live="polite"></span>
+                </div>
+                <div id="ocel-time-results" class="ocel-variant-list"></div>
+              </section>
+              <section class="ocel-synchronization" aria-labelledby="ocel-synchronization-title">
+                <div class="explorer-heading"><div><p class="kicker">Multi-object timing</p><h3 id="ocel-synchronization-title">See how object histories converge</h3></div></div>
+                <p class="ocel-section-note">Separates the spread between earlier object events from elapsed time after the latest prior event. These are observable elapsed times, not inferred waiting or availability.</p>
+                <div class="ocel-synchronization-controls">
+                  <button class="secondary-action" id="analyze-ocel-synchronization" type="button">Analyze synchronization</button>
+                  <span id="ocel-synchronization-status" role="status" aria-live="polite"></span>
+                </div>
+                <div id="ocel-synchronization-results" class="ocel-variant-list"></div>
+              </section>
+              <section class="ocel-bottlenecks" aria-labelledby="ocel-bottlenecks-title">
+                <div class="explorer-heading"><div><p class="kicker">Timing priorities</p><h3 id="ocel-bottlenecks-title">Rank object-centric bottlenecks</h3></div></div>
+                <p class="ocel-section-note">Ranks total observed timing burden. Lifecycle elapsed and multi-object convergence spread stay separate; rank is not a causal diagnosis.</p>
+                <div class="ocel-synchronization-controls">
+                  <button class="secondary-action" id="rank-ocel-bottlenecks" type="button">Rank timing burdens</button>
+                  <span id="ocel-bottleneck-status" role="status" aria-live="polite"></span>
+                </div>
+                <div class="ocel-bottleneck-grid">
+                  <div><h4>Lifecycle elapsed burden</h4><div id="ocel-lifecycle-bottlenecks" class="ocel-result-list"></div></div>
+                  <div><h4>Convergence spread burden</h4><div id="ocel-synchronization-bottlenecks" class="ocel-result-list"></div></div>
+                </div>
+              </section>
+              <section class="ocel-model" aria-labelledby="ocel-model-title">
+                <div class="explorer-heading"><div><p class="kicker">Native formal model</p><h3 id="ocel-model-title">Build a model of the connected process</h3></div></div>
+                <p class="ocel-section-note">Builds one sound lifecycle model per retained object type, then joins shared activities without choosing a traditional case ID. Filters and thresholds change the model.</p>
+                <div class="ocel-model-controls">
+                  <label><span>Noise filtering</span><select id="ocel-model-noise"><option value="0">None</option><option value="100">10%</option><option value="200" selected>20%</option><option value="300">30%</option><option value="500">50%</option></select></label>
+                  <label><span>Fixed-arc confidence</span><select id="ocel-model-variable"><option value="900">90%</option><option value="950">95%</option><option value="1000" selected>100%</option></select></label>
+                  <button class="secondary-action" id="discover-ocel-model" type="button">Discover native model</button>
+                  <button class="secondary-action" id="download-ocel-model" type="button" disabled>Save baseline</button>
+                  <span id="ocel-model-status" role="status" aria-live="polite"></span>
+                </div>
+                <div id="ocel-model-summary" class="ocel-projection-summary"></div>
+                <div class="ocel-model-grid">
+                  <div><h4>Object-type models</h4><div id="ocel-model-types" class="ocel-result-list"></div></div>
+                  <div><h4>Shared transitions</h4><div id="ocel-model-transitions" class="ocel-result-list"></div></div>
+                </div>
+              </section>
+              <section class="ocel-conformance" aria-labelledby="ocel-conformance-title">
+                <div class="explorer-heading"><div><p class="kicker">Explicit baseline</p><h3 id="ocel-conformance-title">Check against the expected process</h3></div></div>
+                <p class="ocel-section-note">Select a portable model saved from a reference period or approved process. Object lifecycles and shared-event participation are checked separately without flattening. This is diagnostic process evidence, not proof of regulatory compliance.</p>
+                <input id="ocel-model-input" type="file" accept=".ocelmodel.json,application/json" hidden>
+                <div class="ocel-conformance-controls">
+                  <button class="secondary-action" id="choose-ocel-baseline" type="button">Choose expected process</button>
+                  <span id="ocel-baseline-name">No expected process selected</span>
+                  <label><span>Method</span><select id="ocel-conformance-algorithm"><option value="token" selected>Fast check (token replay)</option><option value="alignment">Detailed check (alignment)</option></select></label>
+                  <label><span>Examples to show</span><select id="ocel-conformance-limit"><option>25</option><option selected>100</option><option>200</option></select></label>
+                  <button class="primary-action" id="check-ocel-conformance" type="button" disabled>Run audit check</button>
+                  <span id="ocel-conformance-status" role="status" aria-live="polite"></span>
+                </div>
+                <div id="ocel-conformance-summary" class="ocel-projection-summary"></div>
+                <div class="ocel-conformance-grid">
+                  <div><h4 id="ocel-conformance-objects-title">Worst object lifecycles</h4><div id="ocel-conformance-objects" class="ocel-result-list"></div></div>
+                  <div><h4 id="ocel-conformance-deviations-title">Replay deviations</h4><div id="ocel-conformance-deviations" class="ocel-result-list"></div></div>
+                </div>
+              </section>
+              <section class="ocel-projection" aria-labelledby="ocel-projection-title">
+                <div class="explorer-heading"><div><p class="kicker">Traditional case view</p><h3 id="ocel-projection-title">Preview an explicit case projection</h3></div></div>
+                <p class="ocel-section-note">Choose the object that becomes a case. The preview reports excluded and copied events before showing any path; native object-centric results above remain unchanged.</p>
+                <div class="ocel-projection-controls">
+                  <label><span>Case object type</span><select id="ocel-projection-type"></select></label>
+                  <label><span>Cases to preview</span><select id="ocel-projection-case-limit"><option>3</option><option selected>5</option><option>10</option><option>20</option></select></label>
+                  <label><span>Events per case</span><select id="ocel-projection-event-limit"><option>25</option><option selected>100</option><option>200</option></select></label>
+                  <button class="secondary-action" id="project-ocel-cases" type="button">Preview projection</button>
+                  <span id="ocel-projection-status" role="status" aria-live="polite"></span>
+                </div>
+                <div id="ocel-projection-summary" class="ocel-projection-summary"></div>
+                <div id="ocel-projection-warnings" class="ocel-result-list"></div>
+                <div id="ocel-projection-cases" class="ocel-variant-list"></div>
+              </section>
+              <div class="ocel-grid">
+                <section aria-labelledby="ocel-interactions-title"><div class="explorer-heading"><div><p class="kicker">Shared events</p><h3 id="ocel-interactions-title">Object interactions</h3></div></div><div id="ocel-interactions" class="ocel-result-list"></div></section>
+                <section aria-labelledby="ocel-participation-title"><div class="explorer-heading"><div><p class="kicker">Qualified roles</p><h3 id="ocel-participation-title">Activity participation</h3></div></div><div id="ocel-participation" class="ocel-result-list"></div></section>
+                <section aria-labelledby="ocel-relationships-title"><div class="explorer-heading"><div><p class="kicker">Recorded links</p><h3 id="ocel-relationships-title">Object relationships</h3></div></div><div id="ocel-relationships" class="ocel-result-list"></div></section>
+              </div>
+            </div>
+                <aside class="map-details" id="ocel-evidence" data-open="false" aria-live="polite">
+                  <p class="detail-label">Source evidence</p>
+                  <h3>Select a lifecycle or relationship</h3>
+                  <p>See the original events and objects behind a displayed aggregate.</p>
+                </aside>
+            </div>
+          </section>
+          </div>
+          <div class="view-panel" data-view-panel="quality">
+<section class="quality-panel" id="quality-panel" hidden aria-labelledby="quality-title">
+            <header class="quality-header">
+              <div><p class="kicker">Interpretation required</p><h2 id="quality-title">Check your data</h2></div>
+              <div id="quality-summary"></div>
+            </header>
+            <p class="quality-intro">These choices change what the numbers mean. Review the evidence and choose explicitly; the engine will not guess.</p>
+            <div class="quality-findings" id="quality-findings"></div>
+            <div class="quality-actions">
+              <button class="primary-action" id="apply-quality" type="button">Apply decisions and analyze <span aria-hidden="true">→</span></button>
+              <span id="quality-status" role="status" aria-live="polite"></span>
+            </div>
+          </section>
+          </div>
+          <section class="item-sheet" id="item-sheet" role="dialog" aria-labelledby="item-sheet-title" hidden>
+            <header class="inspector-heading"><h3 id="item-sheet-title">Item history</h3><button type="button" id="item-sheet-close" aria-label="Close">×</button></header>
+            <div id="case-detail" class="case-detail" aria-live="polite"></div>
+            <form class="case-search" id="case-search"><label for="case-id-input">Open another by its identifier</label><div><input id="case-id-input" type="search" autocomplete="off" /><button class="secondary-action" type="submit">Open</button></div></form>
+          </section>
+          <section class="data-built" id="data-built" role="dialog" aria-labelledby="data-built-title" hidden>
+            <header class="inspector-heading"><h3 id="data-built-title">How this data was built</h3><button type="button" id="data-built-close" aria-label="Close">×</button></header>
+            <div class="panel-b">
+              <dl class="kv data-built-facts" id="data-built-facts"></dl>
+              <div class="data-built-notes" id="data-built-notes"></div>
+              <p class="data-built-foot" id="data-built-foot"></p>
+            </div>
+          </section>
+          </div>
+        </div>
+<section class="access-error" id="access-error" hidden role="alert">
+            <strong>This page was opened without its access key.</strong>
+            <span>Open the glasstarn link your agent gave you, or run <code>glasstarn</code> in Terminal for a new one.</span>
+          </section>
+      </main>
+    </div>
+  </body>
+</html>

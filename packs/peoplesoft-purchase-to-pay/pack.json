@@ -1,0 +1,988 @@
+{
+  "id": "peoplesoft-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (PeopleSoft Financials and Supply Chain)",
+  "system": "PeopleSoft Financials and Supply Chain Management",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the PeopleSoft eProcurement, Purchasing and Payables tables, common in government and higher education. Not yet confirmed on a real system; tested only on made-up tables in the standard layout. Commitment control (budget checking) records a status, not a date, so it is kept as a fact on orders and vouchers, not as a step.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period for the business unit?",
+    "unit": "purchase order line",
+    "steps_per_unit": 6
+  },
+  "custom_prefixes": [],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "What time zone are PeopleSoft dates recorded in? PeopleSoft stores dates without a time zone. Give it as an offset from UTC, for example -05:00.",
+      "example": "-05:00"
+    }
+  ],
+  "tables": [
+    {
+      "name": "PS_REQ_HDR",
+      "noun": "requisitions",
+      "label": "Requisitions",
+      "export": "Requisitions created in the period for the business unit: BUSINESS_UNIT, REQ_ID, REQ_DT, REQ_STATUS, APPROVAL_DT and REQUESTOR_ID. Dates as YYYY-MM-DD.",
+      "required": [
+        "BUSINESS_UNIT",
+        "REQ_ID",
+        "REQ_DT",
+        "REQ_STATUS",
+        "APPROVAL_DT"
+      ],
+      "fields": [
+        "REQUESTOR_ID"
+      ],
+      "date_field": "REQ_DT",
+      "object": "ps_req",
+      "key": [
+        "BUSINESS_UNIT",
+        "REQ_ID"
+      ],
+      "optional": true
+    },
+    {
+      "name": "PS_PO_HDR",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase orders",
+      "export": "Purchase orders created in the period for the business unit: BUSINESS_UNIT, PO_ID, PO_DT, PO_STATUS, VENDOR_ID, APPROVAL_DT, BUDGET_HDR_STATUS and BUYER_ID. Dates as YYYY-MM-DD.",
+      "required": [
+        "BUSINESS_UNIT",
+        "PO_ID",
+        "PO_DT",
+        "PO_STATUS",
+        "VENDOR_ID",
+        "APPROVAL_DT"
+      ],
+      "fields": [
+        "BUDGET_HDR_STATUS",
+        "BUYER_ID"
+      ],
+      "date_field": "PO_DT",
+      "object": "ps_po",
+      "key": [
+        "BUSINESS_UNIT",
+        "PO_ID"
+      ],
+      "scope_field": "BUSINESS_UNIT"
+    },
+    {
+      "name": "PS_PO_LINE",
+      "noun": "purchase order lines",
+      "label": "Purchase order lines",
+      "export": "The lines of those orders: BUSINESS_UNIT, PO_ID, LINE_NBR, INV_ITEM_ID, CATEGORY_ID, CANCEL_STATUS and the line's quantity.",
+      "required": [
+        "BUSINESS_UNIT",
+        "PO_ID",
+        "LINE_NBR",
+        "CANCEL_STATUS"
+      ],
+      "fields": [
+        "INV_ITEM_ID",
+        "CATEGORY_ID",
+        "QTY_PO"
+      ],
+      "object": "ps_po_line",
+      "key": [
+        "BUSINESS_UNIT",
+        "PO_ID",
+        "LINE_NBR"
+      ]
+    },
+    {
+      "name": "PS_PO_LINE_DISTRIB",
+      "label": "Order line distributions",
+      "export": "The first distribution of each of those lines (DISTRIB_LINE_NUM 1): BUSINESS_UNIT, PO_ID, LINE_NBR, DISTRIB_LINE_NUM, BUSINESS_UNIT_REQ, REQ_ID and REQ_LINE_NBR (the requisition it came from).",
+      "required": [
+        "BUSINESS_UNIT",
+        "PO_ID",
+        "LINE_NBR",
+        "DISTRIB_LINE_NUM",
+        "BUSINESS_UNIT_REQ",
+        "REQ_ID"
+      ],
+      "fields": [
+        "REQ_LINE_NBR"
+      ],
+      "optional": true
+    },
+    {
+      "name": "PS_RECV_LN_SHIP",
+      "label": "Receipts",
+      "export": "Receipt lines for those orders: BUSINESS_UNIT, RECEIVER_ID, RECV_LN_NBR, RECV_SHIP_SEQ_NBR, BUSINESS_UNIT_PO, PO_ID, LINE_NBR, RECEIPT_DT and QTY_SH_ACCPT. Dates as YYYY-MM-DD.",
+      "required": [
+        "BUSINESS_UNIT",
+        "RECEIVER_ID",
+        "RECV_LN_NBR",
+        "RECV_SHIP_SEQ_NBR",
+        "BUSINESS_UNIT_PO",
+        "PO_ID",
+        "LINE_NBR",
+        "RECEIPT_DT"
+      ],
+      "fields": [
+        "QTY_SH_ACCPT"
+      ],
+      "date_field": "RECEIPT_DT"
+    },
+    {
+      "name": "PS_VOUCHER",
+      "noun": "vouchers",
+      "label": "Vouchers",
+      "export": "Vouchers for those orders: BUSINESS_UNIT, VOUCHER_ID, INVOICE_ID, INVOICE_DT, ENTERED_DT, APPROVAL_DT, MATCH_STATUS_VCHR, ENTRY_STATUS and VENDOR_ID. Dates as YYYY-MM-DD.",
+      "required": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID",
+        "ENTERED_DT",
+        "APPROVAL_DT",
+        "MATCH_STATUS_VCHR",
+        "ENTRY_STATUS"
+      ],
+      "fields": [
+        "INVOICE_ID",
+        "INVOICE_DT",
+        "VENDOR_ID",
+        "GROSS_AMT"
+      ],
+      "date_field": "ENTERED_DT",
+      "object": "ps_voucher",
+      "key": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID"
+      ]
+    },
+    {
+      "name": "PS_VOUCHER_LINE",
+      "label": "Voucher lines",
+      "export": "The lines of those vouchers: BUSINESS_UNIT, VOUCHER_ID, VOUCHER_LINE_NUM, BUSINESS_UNIT_PO, PO_ID and LINE_NBR (the order line each one bills).",
+      "required": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID",
+        "VOUCHER_LINE_NUM",
+        "BUSINESS_UNIT_PO",
+        "PO_ID",
+        "LINE_NBR"
+      ],
+      "fields": [
+        "MERCHANDISE_AMT"
+      ]
+    },
+    {
+      "name": "PS_PYMNT_VCHR_XREF",
+      "label": "Voucher payments",
+      "export": "Payment schedules of those vouchers: BUSINESS_UNIT, VOUCHER_ID, PYMNT_CNT, PYMNT_SELCT_STATUS, BANK_SETID, BANK_CD, BANK_ACCT_KEY and PYMNT_ID.",
+      "required": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID",
+        "PYMNT_CNT",
+        "PYMNT_SELCT_STATUS",
+        "BANK_SETID",
+        "BANK_CD",
+        "BANK_ACCT_KEY",
+        "PYMNT_ID"
+      ],
+      "fields": [
+        "PAID_AMT"
+      ],
+      "optional": true
+    },
+    {
+      "name": "PS_PAYMENT_TBL",
+      "label": "Payments",
+      "export": "The payments themselves: BANK_SETID, BANK_CD, BANK_ACCT_KEY, PYMNT_ID, PYMNT_DT, PYMNT_STATUS and PYMNT_ID_REF (check number). Dates as YYYY-MM-DD.",
+      "required": [
+        "BANK_SETID",
+        "BANK_CD",
+        "BANK_ACCT_KEY",
+        "PYMNT_ID",
+        "PYMNT_DT",
+        "PYMNT_STATUS"
+      ],
+      "fields": [
+        "PYMNT_ID_REF",
+        "PYMNT_AMT"
+      ],
+      "date_field": "PYMNT_DT",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-requisition",
+      "table": "PS_REQ_HDR",
+      "columns": [
+        "BUSINESS_UNIT",
+        "REQ_ID"
+      ],
+      "label": "requisitions listed once"
+    },
+    {
+      "id": "one-po",
+      "table": "PS_PO_HDR",
+      "columns": [
+        "BUSINESS_UNIT",
+        "PO_ID"
+      ],
+      "label": "orders listed once"
+    },
+    {
+      "id": "one-po-line",
+      "table": "PS_PO_LINE",
+      "columns": [
+        "BUSINESS_UNIT",
+        "PO_ID",
+        "LINE_NBR"
+      ],
+      "label": "order lines listed once"
+    },
+    {
+      "id": "one-distribution",
+      "table": "PS_PO_LINE_DISTRIB",
+      "columns": [
+        "BUSINESS_UNIT",
+        "PO_ID",
+        "LINE_NBR"
+      ],
+      "label": "one distribution per order line",
+      "where": [
+        {
+          "column": "DISTRIB_LINE_NUM",
+          "in": [
+            "1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "one-receipt-line",
+      "table": "PS_RECV_LN_SHIP",
+      "columns": [
+        "BUSINESS_UNIT",
+        "RECEIVER_ID",
+        "RECV_LN_NBR",
+        "RECV_SHIP_SEQ_NBR"
+      ],
+      "label": "receipt lines listed once"
+    },
+    {
+      "id": "one-voucher",
+      "table": "PS_VOUCHER",
+      "columns": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID"
+      ],
+      "label": "vouchers listed once"
+    },
+    {
+      "id": "one-voucher-line",
+      "table": "PS_VOUCHER_LINE",
+      "columns": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID",
+        "VOUCHER_LINE_NUM"
+      ],
+      "label": "voucher lines listed once"
+    },
+    {
+      "id": "one-payment-schedule",
+      "table": "PS_PYMNT_VCHR_XREF",
+      "columns": [
+        "BUSINESS_UNIT",
+        "VOUCHER_ID",
+        "PYMNT_CNT"
+      ],
+      "label": "payment schedules listed once"
+    },
+    {
+      "id": "one-payment",
+      "table": "PS_PAYMENT_TBL",
+      "columns": [
+        "BANK_SETID",
+        "BANK_CD",
+        "BANK_ACCT_KEY",
+        "PYMNT_ID"
+      ],
+      "label": "payments listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "PS_PO_LINE",
+        "columns": [
+          "BUSINESS_UNIT",
+          "PO_ID"
+        ]
+      },
+      "to": {
+        "table": "PS_PO_HDR",
+        "columns": [
+          "BUSINESS_UNIT",
+          "PO_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "distributions-have-requisitions",
+      "label": "order lines whose requisition is in the export",
+      "from": {
+        "table": "PS_PO_LINE_DISTRIB",
+        "columns": [
+          "BUSINESS_UNIT_REQ",
+          "REQ_ID"
+        ],
+        "where": [
+          {
+            "column": "REQ_ID",
+            "not_in": [
+              ""
+            ]
+          },
+          {
+            "column": "DISTRIB_LINE_NUM",
+            "in": [
+              "1"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PS_REQ_HDR",
+        "columns": [
+          "BUSINESS_UNIT",
+          "REQ_ID"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.9,
+      "question": {
+        "text": "{missing} of {total} order lines came from requisitions created before the period. Keep them without the requisition, or re-export with the older requisitions?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without the requisition"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older requisitions"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "receipts-have-lines",
+      "label": "receipt lines whose order line is in the export",
+      "from": {
+        "table": "PS_RECV_LN_SHIP",
+        "columns": [
+          "BUSINESS_UNIT_PO",
+          "PO_ID",
+          "LINE_NBR"
+        ]
+      },
+      "to": {
+        "table": "PS_PO_LINE",
+        "columns": [
+          "BUSINESS_UNIT",
+          "PO_ID",
+          "LINE_NBR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "voucher-lines-have-vouchers",
+      "label": "voucher lines whose voucher is in the export",
+      "from": {
+        "table": "PS_VOUCHER_LINE",
+        "columns": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ]
+      },
+      "to": {
+        "table": "PS_VOUCHER",
+        "columns": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "payments-have-vouchers",
+      "label": "payment schedules whose voucher is in the export",
+      "from": {
+        "table": "PS_PYMNT_VCHR_XREF",
+        "columns": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ]
+      },
+      "to": {
+        "table": "PS_VOUCHER",
+        "columns": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "paid-schedules-have-payments",
+      "label": "paid schedules whose payment is in the export",
+      "from": {
+        "table": "PS_PYMNT_VCHR_XREF",
+        "columns": [
+          "BANK_SETID",
+          "BANK_CD",
+          "BANK_ACCT_KEY",
+          "PYMNT_ID"
+        ],
+        "where": [
+          {
+            "column": "PYMNT_SELCT_STATUS",
+            "in": [
+              "P"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PS_PAYMENT_TBL",
+        "columns": [
+          "BANK_SETID",
+          "BANK_CD",
+          "BANK_ACCT_KEY",
+          "PYMNT_ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "ps_req",
+        "input": "PS_REQ_HDR",
+        "namespace": "peoplesoft",
+        "object_type": "requisition",
+        "key": [
+          "BUSINESS_UNIT",
+          "REQ_ID"
+        ],
+        "attributes": [
+          {
+            "column": "REQUESTOR_ID",
+            "name": "requester"
+          }
+        ]
+      },
+      {
+        "id": "ps_po",
+        "input": "PS_PO_HDR",
+        "namespace": "peoplesoft",
+        "object_type": "purchase order",
+        "key": [
+          "BUSINESS_UNIT",
+          "PO_ID"
+        ],
+        "attributes": [
+          {
+            "column": "VENDOR_ID",
+            "name": "supplier"
+          },
+          {
+            "column": "BUDGET_HDR_STATUS",
+            "name": "budget status"
+          }
+        ]
+      },
+      {
+        "id": "ps_po_line",
+        "input": "PS_PO_LINE",
+        "namespace": "peoplesoft",
+        "object_type": "purchase order line",
+        "key": [
+          "BUSINESS_UNIT",
+          "PO_ID",
+          "LINE_NBR"
+        ],
+        "attributes": [
+          {
+            "column": "INV_ITEM_ID",
+            "name": "item"
+          },
+          {
+            "column": "CATEGORY_ID",
+            "name": "category"
+          },
+          {
+            "column": "QTY_PO",
+            "name": "quantity"
+          },
+          {
+            "column": "CANCEL_STATUS",
+            "name": "cancel status"
+          }
+        ]
+      },
+      {
+        "id": "ps_voucher",
+        "input": "PS_VOUCHER",
+        "namespace": "peoplesoft",
+        "object_type": "voucher",
+        "key": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ],
+        "attributes": [
+          {
+            "column": "INVOICE_ID",
+            "name": "invoice number"
+          },
+          {
+            "column": "GROSS_AMT",
+            "name": "amount"
+          },
+          {
+            "column": "MATCH_STATUS_VCHR",
+            "name": "match status"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ps_req_created",
+        "input": "PS_REQ_HDR",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "REQ_ID"
+        ],
+        "activity": {
+          "value": "Create requisition"
+        },
+        "timestamp": {
+          "date": "REQ_DT",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "ps_req",
+            "columns": [
+              "BUSINESS_UNIT",
+              "REQ_ID"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "ps_req_approved",
+        "input": "PS_REQ_HDR",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "REQ_ID"
+        ],
+        "activity": {
+          "value": "Approve requisition"
+        },
+        "timestamp": {
+          "date": "APPROVAL_DT",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ps_req",
+            "columns": [
+              "BUSINESS_UNIT",
+              "REQ_ID"
+            ],
+            "qualifier": "requisition"
+          }
+        ]
+      },
+      {
+        "id": "ps_po_created",
+        "input": "PS_PO_HDR",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "PO_ID"
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": {
+          "date": "PO_DT",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "BUYER_ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ps_po",
+            "columns": [
+              "BUSINESS_UNIT",
+              "PO_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ps_po_approved",
+        "input": "PS_PO_HDR",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "PO_ID"
+        ],
+        "activity": {
+          "value": "Approve purchase order"
+        },
+        "timestamp": {
+          "date": "APPROVAL_DT",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ps_po",
+            "columns": [
+              "BUSINESS_UNIT",
+              "PO_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ps_goods_received",
+        "input": "PS_RECV_LN_SHIP",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "RECEIVER_ID",
+          "RECV_LN_NBR",
+          "RECV_SHIP_SEQ_NBR"
+        ],
+        "activity": {
+          "value": "Receive goods"
+        },
+        "timestamp": {
+          "date": "RECEIPT_DT",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "QTY_SH_ACCPT",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ps_po_line",
+            "columns": [
+              "BUSINESS_UNIT_PO",
+              "PO_ID",
+              "LINE_NBR"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "ps_voucher_entered",
+        "input": "PS_VOUCHER",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ],
+        "activity": {
+          "value": "Enter voucher"
+        },
+        "timestamp": {
+          "date": "ENTERED_DT",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "GROSS_AMT",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ps_voucher",
+            "columns": [
+              "BUSINESS_UNIT",
+              "VOUCHER_ID"
+            ],
+            "qualifier": "voucher"
+          }
+        ]
+      },
+      {
+        "id": "ps_voucher_approved",
+        "input": "PS_VOUCHER",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID"
+        ],
+        "activity": {
+          "value": "Approve voucher"
+        },
+        "timestamp": {
+          "date": "APPROVAL_DT",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ps_voucher",
+            "columns": [
+              "BUSINESS_UNIT",
+              "VOUCHER_ID"
+            ],
+            "qualifier": "voucher"
+          }
+        ]
+      },
+      {
+        "id": "ps_voucher_paid",
+        "input": "PS_PYMNT_VCHR_XREF",
+        "namespace": "peoplesoft",
+        "key": [
+          "BUSINESS_UNIT",
+          "VOUCHER_ID",
+          "PYMNT_CNT"
+        ],
+        "where": [
+          {
+            "column": "PYMNT_SELCT_STATUS",
+            "in": [
+              "P"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Pay voucher"
+        },
+        "lookup": {
+          "input": "PS_PAYMENT_TBL",
+          "key": [
+            "BANK_SETID",
+            "BANK_CD",
+            "BANK_ACCT_KEY",
+            "PYMNT_ID"
+          ],
+          "matching": [
+            "BANK_SETID",
+            "BANK_CD",
+            "BANK_ACCT_KEY",
+            "PYMNT_ID"
+          ],
+          "columns": [
+            "PYMNT_DT",
+            "PYMNT_ID_REF"
+          ]
+        },
+        "timestamp": {
+          "date": "PYMNT_DT",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "PYMNT_ID_REF",
+            "name": "payment reference"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ps_voucher",
+            "columns": [
+              "BUSINESS_UNIT",
+              "VOUCHER_ID"
+            ],
+            "qualifier": "voucher"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "ps_po_has_line",
+        "input": "PS_PO_LINE",
+        "source": {
+          "object": "ps_po",
+          "columns": [
+            "BUSINESS_UNIT",
+            "PO_ID"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "ps_po_line",
+          "columns": [
+            "BUSINESS_UNIT",
+            "PO_ID",
+            "LINE_NBR"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "ps_req_became_line",
+        "input": "PS_PO_LINE_DISTRIB",
+        "where": [
+          {
+            "column": "REQ_ID",
+            "not_in": [
+              ""
+            ]
+          },
+          {
+            "column": "DISTRIB_LINE_NUM",
+            "in": [
+              "1"
+            ]
+          }
+        ],
+        "source": {
+          "object": "ps_req",
+          "columns": [
+            "BUSINESS_UNIT_REQ",
+            "REQ_ID"
+          ],
+          "qualifier": "requisition"
+        },
+        "target": {
+          "object": "ps_po_line",
+          "columns": [
+            "BUSINESS_UNIT",
+            "PO_ID",
+            "LINE_NBR"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "ps_voucher_for_line",
+        "input": "PS_VOUCHER_LINE",
+        "where": [
+          {
+            "column": "PO_ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "ps_voucher",
+          "columns": [
+            "BUSINESS_UNIT",
+            "VOUCHER_ID"
+          ],
+          "qualifier": "voucher"
+        },
+        "target": {
+          "object": "ps_po_line",
+          "columns": [
+            "BUSINESS_UNIT_PO",
+            "PO_ID",
+            "LINE_NBR"
+          ],
+          "qualifier": "purchase order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "ps_req_created_lines",
+        "event": "ps_req_created",
+        "through": "ps_req",
+        "relationship": "ps_req_became_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ps_req_approved_lines",
+        "event": "ps_req_approved",
+        "through": "ps_req",
+        "relationship": "ps_req_became_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ps_po_created_lines",
+        "event": "ps_po_created",
+        "through": "ps_po",
+        "relationship": "ps_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ps_po_approved_lines",
+        "event": "ps_po_approved",
+        "through": "ps_po",
+        "relationship": "ps_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ps_voucher_entered_lines",
+        "event": "ps_voucher_entered",
+        "through": "ps_voucher",
+        "relationship": "ps_voucher_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ps_voucher_approved_lines",
+        "event": "ps_voucher_approved",
+        "through": "ps_voucher",
+        "relationship": "ps_voucher_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ps_voucher_paid_lines",
+        "event": "ps_voucher_paid",
+        "through": "ps_voucher",
+        "relationship": "ps_voucher_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "PeopleSoft purchase order ID",
+      "object": "ps_po",
+      "table": "PS_PO_HDR",
+      "key": [
+        "PO_ID"
+      ],
+      "example": "0000012345",
+      "carry": [
+        "ps_po_has_line"
+      ]
+    }
+  ]
+}

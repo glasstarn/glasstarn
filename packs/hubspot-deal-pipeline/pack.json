@@ -1,0 +1,370 @@
+{
+  "id": "hubspot-deal-pipeline",
+  "version": 1,
+  "name": "Deal pipeline (HubSpot)",
+  "system": "HubSpot",
+  "process": "deal pipeline",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a HubSpot developer test account. Five planted deals produced 25 events. Two won, one lost and one backward-stage loop were present in saved analysis. Stage, amount and close-date events matched independent HubSpot histories. This is scoped trial coverage, not certification or proof of complete vendor history retention. See the pack README.",
+  "case_object_type": "deal",
+  "size_check": {
+    "ask": "How many deals were created or changed in the period?",
+    "unit": "deal",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [],
+  "tables": [
+    {
+      "name": "HubSpotDeal",
+      "noun": "deals",
+      "date_label": "the deal was created",
+      "label": "HubSpot deals",
+      "export": "Deals changed in the period, from the HubSpot extract: id, created, dealstage, pipeline, amount, closedate, hubspot_owner_id, with the stage label.",
+      "required": [
+        "id",
+        "created",
+        "dealstage",
+        "pipeline",
+        "amount",
+        "closedate",
+        "hubspot_owner_id",
+        "dealstage_label"
+      ],
+      "fields": [],
+      "date_field": "created",
+      "object": "hs_deal",
+      "key": [
+        "id"
+      ]
+    },
+    {
+      "name": "HubSpotHistory",
+      "label": "HubSpot property history",
+      "export": "The history of the listed properties of those records, from the HubSpot extract: object, record, property, value, label, timestamp, source, user and whether the first value was present at record creation. A first assignment made later is a change.",
+      "required": [
+        "object",
+        "record",
+        "property",
+        "value",
+        "label",
+        "timestamp",
+        "first"
+      ],
+      "fields": [
+        "source",
+        "user"
+      ],
+      "date_field": "timestamp"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-HubSpotDeal",
+      "table": "HubSpotDeal",
+      "columns": [
+        "id"
+      ],
+      "label": "deals listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "history-has-deal",
+      "label": "history rows whose deal is in the extract",
+      "from": {
+        "table": "HubSpotHistory",
+        "columns": [
+          "record"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "deals"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "HubSpotDeal",
+        "columns": [
+          "id"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "hs_deal",
+        "input": "HubSpotDeal",
+        "namespace": "hubspot",
+        "object_type": "deal",
+        "key": [
+          "id"
+        ],
+        "attributes": [
+          {
+            "column": "dealstage_label",
+            "name": "stage"
+          },
+          {
+            "column": "amount",
+            "name": "amount"
+          },
+          {
+            "column": "pipeline",
+            "name": "pipeline"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "deal_created",
+        "input": "HubSpotDeal",
+        "namespace": "hubspot",
+        "key": [
+          "id"
+        ],
+        "activity": {
+          "value": "Create deal"
+        },
+        "timestamp": "created",
+        "objects": [
+          {
+            "object": "hs_deal",
+            "columns": [
+              "id"
+            ],
+            "qualifier": "deal"
+          }
+        ]
+      },
+      {
+        "id": "stage_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "deals"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "dealstage"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_deal",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "deal"
+          }
+        ],
+        "activity": {
+          "column": "label",
+          "prefix": "Stage: "
+        }
+      },
+      {
+        "id": "amount_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "deals"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "amount"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_deal",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "deal"
+          }
+        ],
+        "activity": {
+          "value": "Change amount"
+        }
+      },
+      {
+        "id": "close_date_moved",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "deals"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "closedate"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_deal",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "deal"
+          }
+        ],
+        "activity": {
+          "value": "Move close date"
+        }
+      },
+      {
+        "id": "owner_changed",
+        "input": "HubSpotHistory",
+        "namespace": "hubspot",
+        "key": [
+          "object",
+          "record",
+          "property",
+          "timestamp",
+          "value"
+        ],
+        "where": [
+          {
+            "column": "object",
+            "in": [
+              "deals"
+            ]
+          },
+          {
+            "column": "property",
+            "in": [
+              "hubspot_owner_id"
+            ]
+          },
+          {
+            "column": "first",
+            "in": [
+              "false"
+            ]
+          }
+        ],
+        "timestamp": "timestamp",
+        "attributes": [
+          {
+            "column": "user",
+            "name": "resource"
+          },
+          {
+            "column": "source",
+            "name": "source"
+          }
+        ],
+        "objects": [
+          {
+            "object": "hs_deal",
+            "columns": [
+              "record"
+            ],
+            "qualifier": "deal"
+          }
+        ],
+        "activity": {
+          "value": "Reassign deal"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "sap-purchase-to-pay",
+  "version": 2,
+  "name": "Purchase to pay (SAP ECC and S/4HANA)",
+  "system": "SAP ECC or SAP S/4HANA",
+  "process": "purchase to pay",
+  "status": "tested",
+  "note": "Tested by the Glasstarn project on a scoped SAP S/4HANA 2025 FPS01 trial: full purchase to pay and accounts payable checks, builds and five source-history comparisons each passed. Export category F orders and the current required fields. Other releases, customer settings and unobserved branches still require validation; see the pack README.",
+  "case_object_type": "purchase order item",
+  "size_check": {
+    "ask": "How many purchase order lines (table EKPO) were created in the period for the company code?",
+    "unit": "purchase order line",
+    "steps_per_unit": 4
+  },
+  "include": [
+    "sap-clock",
+    "sap-ecc-vendors",
+    "sap-ecc-requisitions",
+    "sap-ecc-purchasing",
+    "sap-ecc-payables",
+    "sap-ecc-purchasing-changes"
+  ],
+  "variants": [
+    {
+      "id": "accounts-payable",
+      "name": "Accounts payable: invoice to payment",
+      "case_object_type": "invoice verification document",
+      "tables": [
+        "LFA1",
+        "RBKP",
+        "BKPF",
+        "BSAK",
+        "CDHDR",
+        "CDPOS"
+      ]
+    }
+  ]
+}

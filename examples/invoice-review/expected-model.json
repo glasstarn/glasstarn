@@ -1,0 +1,94 @@
+{
+  "algorithm": "inductive_miner_infrequent",
+  "filtered_edges": 0,
+  "net": {
+    "final_marking": [
+      0,
+      1,
+      0,
+      0,
+      0
+    ],
+    "initial_marking": [
+      1,
+      0,
+      0,
+      0,
+      0
+    ],
+    "place_count": 5,
+    "transitions": [
+      {
+        "activity": "Receive invoice",
+        "id": 0,
+        "inputs": [
+          0
+        ],
+        "outputs": [
+          2
+        ]
+      },
+      {
+        "activity": "Validate invoice",
+        "id": 1,
+        "inputs": [
+          2
+        ],
+        "outputs": [
+          3
+        ]
+      },
+      {
+        "activity": "Approve invoice",
+        "id": 2,
+        "inputs": [
+          3
+        ],
+        "outputs": [
+          4
+        ]
+      },
+      {
+        "activity": "Pay invoice",
+        "id": 3,
+        "inputs": [
+          4
+        ],
+        "outputs": [
+          1
+        ]
+      }
+    ]
+  },
+  "noise_threshold_milli": 200,
+  "source": "synthetic expected process: receive, validate, approve, pay",
+  "tree": {
+    "children": [
+      {
+        "activity": "Receive invoice",
+        "kind": "activity"
+      },
+      {
+        "activity": "Validate invoice",
+        "kind": "activity"
+      },
+      {
+        "activity": "Approve invoice",
+        "kind": "activity"
+      },
+      {
+        "activity": "Pay invoice",
+        "kind": "activity"
+      }
+    ],
+    "kind": "sequence"
+  },
+  "used_flower_fallback": false,
+  "view": {
+    "cases_shown": 1,
+    "cases_total": 1,
+    "events_total": 4,
+    "narrowed": false,
+    "percent_shown": 100.0
+  }
+}

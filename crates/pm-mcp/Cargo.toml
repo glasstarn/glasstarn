@@ -1,0 +1,25 @@
+[package]
+name = "pm-mcp"
+description = "Read-only local MCP server for evidence-bounded process-mining queries."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+repository.workspace = true
+authors.workspace = true
+
+[dependencies]
+tempfile = "3"
+hmac = "0.12"
+pm-core = { path = "../pm-core" }
+pm-ingest = { path = "../pm-ingest" }
+pm-project = { path = "../pm-project" }
+pm-query = { path = "../pm-query" }
+rand_core = { version = "0.6.4", features = ["getrandom"] }
+serde.workspace = true
+serde_json.workspace = true
+sha2 = "0.10"
+
+[lints.rust]
+unsafe_code = "forbid"

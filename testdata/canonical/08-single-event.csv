@@ -1,0 +1,9 @@
+case_id,activity,timestamp
+LEAD-1,Created,2026-10-01 09:00:00
+LEAD-2,Created,2026-10-01 10:00:00
+LEAD-2,Qualified,2026-10-01 15:00:00
+LEAD-2,Converted,2026-10-02 11:00:00
+LEAD-3,Created,2026-10-01 11:00:00
+LEAD-4,Created,2026-10-02 08:00:00
+LEAD-4,Qualified,2026-10-02 14:00:00
+LEAD-5,Created,2026-10-02 09:00:00

@@ -1,0 +1,119 @@
+{
+  "version": 2,
+  "system": "salesforce",
+  "target_org": "approved-org",
+  "api_version": 66,
+  "start": "2026-01-01T00:00:00Z",
+  "end": "2026-04-01T00:00:00Z",
+  "objects": [
+    {
+      "name": "Opportunity",
+      "fields": [
+        "Id",
+        "Name",
+        "AccountId",
+        "CreatedDate",
+        "StageName",
+        "IsClosed",
+        "IsWon",
+        "CloseDate",
+        "Amount",
+        "Type",
+        "SBQQ__RenewedContract__c"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "OpportunityFieldHistory",
+      "fields": [
+        "Id",
+        "OpportunityId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "OpportunityId",
+      "parent": "Opportunity",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "SBQQ__Quote__c",
+      "fields": [
+        "Id",
+        "Name",
+        "SBQQ__Opportunity2__c",
+        "CreatedDate",
+        "SBQQ__Status__c",
+        "SBQQ__Primary__c",
+        "SBQQ__NetAmount__c",
+        "SBQQ__Ordered__c"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "records",
+      "history_gaps": []
+    },
+    {
+      "name": "SBQQ__Quote__History",
+      "fields": [
+        "Id",
+        "ParentId",
+        "Field",
+        "OldValue",
+        "NewValue",
+        "CreatedDate",
+        "DataType"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "ParentId",
+      "parent": "SBQQ__Quote__c",
+      "history_gaps": [
+        "History tracking and retention have not yet been verified in this org; run glasstarn extract discover first."
+      ]
+    },
+    {
+      "name": "Order",
+      "fields": [
+        "Id",
+        "SBQQ__Quote__c",
+        "CreatedDate",
+        "ActivatedDate",
+        "Status",
+        "OrderNumber",
+        "TotalAmount"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "SBQQ__Quote__c",
+      "parent": "SBQQ__Quote__c",
+      "history_gaps": []
+    },
+    {
+      "name": "Contract",
+      "fields": [
+        "Id",
+        "SBQQ__Quote__c",
+        "SBQQ__Order__c",
+        "CreatedDate",
+        "StartDate",
+        "EndDate",
+        "ActivatedDate",
+        "Status",
+        "ContractNumber"
+      ],
+      "time_field": "CreatedDate",
+      "kind": "history",
+      "item_field": "SBQQ__Quote__c",
+      "parent": "SBQQ__Quote__c",
+      "history_gaps": []
+    }
+  ]
+}

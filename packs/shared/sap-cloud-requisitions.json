@@ -1,0 +1,138 @@
+{
+  "id": "sap-cloud-requisitions",
+  "note": "Purchase requisitions from SAP S/4HANA Public Cloud data views.",
+  "tables": [
+    {
+      "name": "PurchaseRequisitionItem",
+      "noun": "requisition items",
+      "date_label": "the requisition was created",
+      "label": "Purchase requisition items",
+      "export": "Requisition items turned into the exported purchase orders, plus requisitions created in the period.",
+      "required": [
+        "PurchaseRequisition",
+        "PurchaseRequisitionItem",
+        "CreationDate",
+        "PurchaseOrder",
+        "PurchaseOrderItem"
+      ],
+      "fields": [
+        "Material",
+        "RequestedQuantity"
+      ],
+      "date_field": "CreationDate",
+      "object": "requisition",
+      "key": [
+        "PurchaseRequisition",
+        "PurchaseRequisitionItem"
+      ],
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-requisition-item",
+      "table": "PurchaseRequisitionItem",
+      "columns": [
+        "PurchaseRequisition",
+        "PurchaseRequisitionItem"
+      ],
+      "label": "requisition items listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "requisitions-reach-orders",
+      "label": "requisition items turned into an exported order item",
+      "from": {
+        "table": "PurchaseRequisitionItem",
+        "columns": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ],
+        "where": [
+          {
+            "column": "PurchaseOrder",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PurchaseOrderItem",
+        "columns": [
+          "PurchaseOrder",
+          "PurchaseOrderItem"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} requisition items ({missing_share}) were turned into purchase orders that are not in the export, usually orders created after the period or in another company code. They stay in the analysis as requisitions without an order. Is that fine?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Fine, keep them as they are"
+          },
+          {
+            "id": "widen",
+            "label": "Ask the administrator to export those orders too"
+          }
+        ],
+        "recommended": "keep"
+      }
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "requisition",
+        "input": "PurchaseRequisitionItem",
+        "namespace": "sap",
+        "object_type": "purchase requisition line",
+        "key": [
+          "PurchaseRequisition",
+          "PurchaseRequisitionItem"
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "requisition_created",
+        "input": "PurchaseRequisitionItem",
+        "namespace": "sap",
+        "key": [
+          "PurchaseRequisition",
+          "PurchaseRequisitionItem"
+        ],
+        "activity": {
+          "value": "Create purchase requisition"
+        },
+        "timestamp": {
+          "date": "CreationDate",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "requisition",
+            "columns": [
+              "PurchaseRequisition",
+              "PurchaseRequisitionItem"
+            ],
+            "qualifier": "requisition line"
+          },
+          {
+            "object": "order_item",
+            "columns": [
+              "PurchaseOrder",
+              "PurchaseOrderItem"
+            ],
+            "qualifier": "order line",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      }
+    ]
+  }
+}

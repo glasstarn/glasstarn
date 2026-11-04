@@ -1,0 +1,504 @@
+{
+  "id": "sap-ecc-purchasing",
+  "note": "Purchase orders and their history from SAP ECC or S/4HANA tables.",
+  "custom_prefixes": [
+    "ZZ",
+    "YY"
+  ],
+  "tables": [
+    {
+      "name": "EKKO",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase order headers",
+      "export": "Purchase orders of the company code created in the period: filter BSTYP = F, BUKRS and AEDAT. Export the other purchasing document categories separately; do not mix quotation/contract/agreement headers into this purchase-order pack.",
+      "required": [
+        "EBELN",
+        "BUKRS",
+        "LIFNR",
+        "AEDAT",
+        "BSTYP"
+      ],
+      "fields": [
+        "BSART",
+        "ERNAM",
+        "EKORG",
+        "EKGRP",
+        "WAERS",
+        "FRGKE"
+      ],
+      "date_field": "AEDAT",
+      "object": "order",
+      "key": [
+        "EBELN"
+      ],
+      "scope_field": "BUKRS",
+      "fan_out": [
+        {
+          "input": "EKPO",
+          "event_key": [
+            "EBELN"
+          ],
+          "target": {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line"
+          }
+        }
+      ]
+    },
+    {
+      "name": "EKPO",
+      "noun": "purchase order lines",
+      "label": "Purchase order lines",
+      "export": "All lines of the exported orders (filter EBELN by the EKKO export).",
+      "required": [
+        "EBELN",
+        "EBELP",
+        "LOEKZ",
+        "MATNR",
+        "WERKS",
+        "NETWR"
+      ],
+      "fields": [
+        "TXZ01",
+        "MENGE",
+        "MEINS",
+        "NETPR",
+        "ELIKZ"
+      ],
+      "object": "order_item",
+      "key": [
+        "EBELN",
+        "EBELP"
+      ]
+    },
+    {
+      "name": "EKBE",
+      "label": "Purchase order history (goods and invoice receipts)",
+      "export": "History of the exported orders (filter EBELN by the EKKO export), up to the export date.",
+      "required": [
+        "EBELN",
+        "EBELP",
+        "ZEKKN",
+        "VGABE",
+        "GJAHR",
+        "BELNR",
+        "BUZEI",
+        "BWART",
+        "CPUDT",
+        "CPUTM"
+      ],
+      "fields": [
+        "BEWTP",
+        "BUDAT",
+        "MENGE",
+        "DMBTR",
+        "WAERS"
+      ],
+      "date_field": "CPUDT"
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-order-header",
+      "table": "EKKO",
+      "columns": [
+        "EBELN"
+      ],
+      "label": "order headers listed once"
+    },
+    {
+      "id": "one-order-line",
+      "table": "EKPO",
+      "columns": [
+        "EBELN",
+        "EBELP"
+      ],
+      "label": "order lines listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-headers",
+      "label": "order lines whose order header is in the export",
+      "from": {
+        "table": "EKPO",
+        "columns": [
+          "EBELN"
+        ]
+      },
+      "to": {
+        "table": "EKKO",
+        "columns": [
+          "EBELN"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "history-matches-lines",
+      "label": "order history rows that belong to an exported order line",
+      "from": {
+        "table": "EKBE",
+        "columns": [
+          "EBELN",
+          "EBELP"
+        ]
+      },
+      "to": {
+        "table": "EKPO",
+        "columns": [
+          "EBELN",
+          "EBELP"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "orders-have-vendors",
+      "label": "orders whose vendor is in the vendor list",
+      "from": {
+        "table": "EKKO",
+        "columns": [
+          "LIFNR"
+        ]
+      },
+      "to": {
+        "table": "LFA1",
+        "columns": [
+          "LIFNR"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "ekko-document-scope",
+      "scope": true,
+      "label": "purchase-order headers must have BSTYP F; export quotations/contracts/agreements separately",
+      "from": {
+        "table": "EKKO",
+        "columns": [
+          "BSTYP"
+        ]
+      },
+      "to": {
+        "table": "EKKO",
+        "columns": [
+          "BSTYP"
+        ],
+        "where": [
+          {
+            "column": "BSTYP",
+            "in": [
+              "F"
+            ]
+          }
+        ]
+      },
+      "expect": "all",
+      "require_nonblank": true
+    }
+  ],
+  "recipe": {
+    "objects": [
+      {
+        "id": "order",
+        "input": "EKKO",
+        "namespace": "sap",
+        "object_type": "purchase order",
+        "key": [
+          "EBELN"
+        ],
+        "attributes": [
+          {
+            "column": "BUKRS",
+            "name": "company code"
+          }
+        ]
+      },
+      {
+        "id": "order_item",
+        "input": "EKPO",
+        "namespace": "sap",
+        "object_type": "purchase order item",
+        "key": [
+          "EBELN",
+          "EBELP"
+        ],
+        "attributes": [
+          {
+            "column": "MATNR",
+            "name": "material"
+          },
+          {
+            "column": "WERKS",
+            "name": "plant"
+          },
+          {
+            "column": "NETWR",
+            "name": "net value"
+          },
+          {
+            "column": "LOEKZ",
+            "name": "deletion flag"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "order_created",
+        "input": "EKKO",
+        "namespace": "sap",
+        "key": [
+          "EBELN"
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": {
+          "date": "AEDAT",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order",
+            "columns": [
+              "EBELN"
+            ],
+            "qualifier": "order"
+          },
+          {
+            "object": "vendor",
+            "columns": [
+              "LIFNR"
+            ],
+            "qualifier": "vendor",
+            "optional": true
+          }
+        ]
+      },
+      {
+        "id": "goods_received",
+        "input": "EKBE",
+        "namespace": "sap",
+        "key": [
+          "EBELN",
+          "EBELP",
+          "ZEKKN",
+          "VGABE",
+          "GJAHR",
+          "BELNR",
+          "BUZEI"
+        ],
+        "where": [
+          {
+            "column": "VGABE",
+            "in": [
+              "1"
+            ]
+          },
+          {
+            "column": "BWART",
+            "in": [
+              "101",
+              "103",
+              "105"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Record goods receipt"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "goods_receipt_reversed",
+        "input": "EKBE",
+        "namespace": "sap",
+        "key": [
+          "EBELN",
+          "EBELP",
+          "ZEKKN",
+          "VGABE",
+          "GJAHR",
+          "BELNR",
+          "BUZEI"
+        ],
+        "where": [
+          {
+            "column": "VGABE",
+            "in": [
+              "1"
+            ]
+          },
+          {
+            "column": "BWART",
+            "in": [
+              "102",
+              "104",
+              "106",
+              "162"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reverse goods receipt"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      },
+      {
+        "id": "goods_returned",
+        "input": "EKBE",
+        "namespace": "sap",
+        "key": [
+          "EBELN",
+          "EBELP",
+          "ZEKKN",
+          "VGABE",
+          "GJAHR",
+          "BELNR",
+          "BUZEI"
+        ],
+        "where": [
+          {
+            "column": "VGABE",
+            "in": [
+              "1"
+            ]
+          },
+          {
+            "column": "BWART",
+            "in": [
+              "122",
+              "161"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Return goods to vendor"
+        },
+        "timestamp": {
+          "date": "CPUDT",
+          "time": "CPUTM",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "order_item",
+            "columns": [
+              "EBELN",
+              "EBELP"
+            ],
+            "qualifier": "order line"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "item_of_order",
+        "input": "EKPO",
+        "source": {
+          "object": "order_item",
+          "columns": [
+            "EBELN",
+            "EBELP"
+          ],
+          "qualifier": "order line"
+        },
+        "target": {
+          "object": "order",
+          "columns": [
+            "EBELN"
+          ],
+          "qualifier": "belongs to order"
+        }
+      },
+      {
+        "id": "order_lines",
+        "input": "EKPO",
+        "source": {
+          "object": "order",
+          "columns": [
+            "EBELN"
+          ],
+          "qualifier": "order"
+        },
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "EBELN",
+            "EBELP"
+          ],
+          "qualifier": "has line"
+        }
+      }
+    ],
+    "event_links": [
+      {
+        "id": "order_created_lines",
+        "input": "EKPO",
+        "event": "order_created",
+        "event_key": [
+          "EBELN"
+        ],
+        "target": {
+          "object": "order_item",
+          "columns": [
+            "EBELN",
+            "EBELP"
+          ],
+          "qualifier": "order line"
+        }
+      }
+    ]
+  },
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "SAP purchase order number",
+      "object": "order",
+      "table": "EKKO",
+      "key": [
+        "EBELN"
+      ],
+      "example": "4500001234",
+      "carry": [
+        "order_lines"
+      ]
+    }
+  ]
+}

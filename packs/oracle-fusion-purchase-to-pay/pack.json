@@ -1,0 +1,1302 @@
+{
+  "id": "oracle-fusion-purchase-to-pay",
+  "version": 1,
+  "name": "Purchase to pay (Oracle Fusion Cloud)",
+  "system": "Oracle Fusion Cloud Procurement and Payables",
+  "process": "purchase to pay",
+  "status": "untested",
+  "note": "Written by the Glasstarn project from public knowledge of the Oracle Purchasing, Receiving and Payables tables. Not yet confirmed on a real system; tested only on made-up tables in the standard layout.",
+  "case_object_type": "purchase order line",
+  "size_check": {
+    "ask": "How many purchase order lines were created in the period for the operating unit?",
+    "unit": "purchase order line",
+    "steps_per_unit": 5
+  },
+  "custom_prefixes": [
+    "ATTRIBUTE*"
+  ],
+  "settings": [
+    {
+      "id": "offset",
+      "question": "Oracle Fusion Cloud stores times in UTC; answer Z unless the extract converted them. Give it as an offset from UTC, for example Z or +01:00.",
+      "example": "Z"
+    }
+  ],
+  "tables": [
+    {
+      "name": "PO_HEADERS_ALL",
+      "noun": "purchase orders",
+      "date_label": "the order was created",
+      "label": "Purchase orders",
+      "export": "Standard purchase orders created in the period for the operating unit (filter ORG_ID, TYPE_LOOKUP_CODE STANDARD, CREATION_DATE). Extract with BI Publisher (SQL on the tables below) or BI Cloud Connector. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "PO_HEADER_ID",
+        "SEGMENT1",
+        "VENDOR_ID",
+        "ORG_ID",
+        "CREATION_DATE",
+        "AUTHORIZATION_STATUS",
+        "TYPE_LOOKUP_CODE"
+      ],
+      "fields": [
+        "APPROVED_DATE",
+        "CREATED_BY",
+        "CURRENCY_CODE"
+      ],
+      "date_field": "CREATION_DATE",
+      "object": "ora_po",
+      "key": [
+        "PO_HEADER_ID"
+      ],
+      "scope_field": "ORG_ID"
+    },
+    {
+      "name": "PO_LINES_ALL",
+      "noun": "purchase order lines",
+      "label": "Purchase order lines",
+      "export": "The lines of those orders: PO_LINE_ID, PO_HEADER_ID, LINE_NUM, ITEM_ID, QUANTITY, UNIT_PRICE, CREATION_DATE, CANCEL_FLAG and CANCEL_DATE.",
+      "required": [
+        "PO_LINE_ID",
+        "PO_HEADER_ID",
+        "LINE_NUM",
+        "QUANTITY",
+        "CREATION_DATE",
+        "CANCEL_FLAG",
+        "CANCEL_DATE"
+      ],
+      "fields": [
+        "ITEM_ID",
+        "UNIT_PRICE",
+        "CATEGORY_ID"
+      ],
+      "object": "ora_po_line",
+      "key": [
+        "PO_LINE_ID"
+      ]
+    },
+    {
+      "name": "PO_ACTION_HISTORY",
+      "label": "Approval history",
+      "export": "Approval actions on those orders (OBJECT_TYPE_CODE PO): OBJECT_ID, OBJECT_TYPE_CODE, SEQUENCE_NUM, ACTION_CODE, ACTION_DATE and EMPLOYEE_ID.",
+      "required": [
+        "OBJECT_ID",
+        "OBJECT_TYPE_CODE",
+        "SEQUENCE_NUM",
+        "ACTION_CODE",
+        "ACTION_DATE"
+      ],
+      "fields": [
+        "EMPLOYEE_ID"
+      ],
+      "date_field": "ACTION_DATE",
+      "optional": true
+    },
+    {
+      "name": "PO_REQUISITION_LINES_ALL",
+      "label": "Requisition lines",
+      "export": "Requisition lines that became those order lines: REQUISITION_LINE_ID, REQUISITION_HEADER_ID, LINE_LOCATION_ID, CREATION_DATE and QUANTITY.",
+      "required": [
+        "REQUISITION_LINE_ID",
+        "REQUISITION_HEADER_ID",
+        "LINE_LOCATION_ID",
+        "CREATION_DATE"
+      ],
+      "fields": [
+        "QUANTITY",
+        "ITEM_ID"
+      ],
+      "date_field": "CREATION_DATE",
+      "optional": true
+    },
+    {
+      "name": "PO_LINE_LOCATIONS_ALL",
+      "label": "Order shipments",
+      "export": "The shipments of those order lines: LINE_LOCATION_ID, PO_LINE_ID and PO_HEADER_ID.",
+      "required": [
+        "LINE_LOCATION_ID",
+        "PO_LINE_ID",
+        "PO_HEADER_ID"
+      ],
+      "fields": [
+        "NEED_BY_DATE",
+        "PROMISED_DATE"
+      ],
+      "optional": true
+    },
+    {
+      "name": "RCV_TRANSACTIONS",
+      "label": "Receiving transactions",
+      "export": "Receiving transactions for those orders: TRANSACTION_ID, TRANSACTION_TYPE, TRANSACTION_DATE, PO_HEADER_ID, PO_LINE_ID and QUANTITY. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "TRANSACTION_ID",
+        "TRANSACTION_TYPE",
+        "TRANSACTION_DATE",
+        "PO_HEADER_ID",
+        "PO_LINE_ID",
+        "QUANTITY"
+      ],
+      "fields": [
+        "CREATION_DATE"
+      ],
+      "date_field": "TRANSACTION_DATE"
+    },
+    {
+      "name": "AP_INVOICES_ALL",
+      "noun": "supplier invoices",
+      "label": "Supplier invoices",
+      "export": "Supplier invoices for those orders: INVOICE_ID, INVOICE_NUM, VENDOR_ID, INVOICE_DATE, CREATION_DATE, INVOICE_AMOUNT, CANCELLED_DATE and ORG_ID. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "INVOICE_ID",
+        "INVOICE_NUM",
+        "VENDOR_ID",
+        "CREATION_DATE",
+        "INVOICE_AMOUNT",
+        "CANCELLED_DATE"
+      ],
+      "fields": [
+        "INVOICE_DATE",
+        "ORG_ID",
+        "INVOICE_CURRENCY_CODE"
+      ],
+      "date_field": "CREATION_DATE",
+      "object": "ora_invoice",
+      "key": [
+        "INVOICE_ID"
+      ]
+    },
+    {
+      "name": "AP_INVOICE_LINES_ALL",
+      "label": "Supplier invoice lines",
+      "export": "The lines of those invoices: INVOICE_ID, LINE_NUMBER, LINE_TYPE_LOOKUP_CODE, PO_HEADER_ID, PO_LINE_ID and AMOUNT.",
+      "required": [
+        "INVOICE_ID",
+        "LINE_NUMBER",
+        "LINE_TYPE_LOOKUP_CODE",
+        "PO_HEADER_ID",
+        "PO_LINE_ID"
+      ],
+      "fields": [
+        "AMOUNT"
+      ]
+    },
+    {
+      "name": "AP_HOLDS_ALL",
+      "label": "Invoice holds",
+      "export": "Holds on those invoices: HOLD_ID, INVOICE_ID, HOLD_LOOKUP_CODE, HOLD_DATE, RELEASE_LOOKUP_CODE and LAST_UPDATE_DATE.",
+      "required": [
+        "HOLD_ID",
+        "INVOICE_ID",
+        "HOLD_LOOKUP_CODE",
+        "HOLD_DATE",
+        "RELEASE_LOOKUP_CODE",
+        "LAST_UPDATE_DATE"
+      ],
+      "fields": [],
+      "date_field": "HOLD_DATE",
+      "optional": true
+    },
+    {
+      "name": "AP_INVOICE_PAYMENTS_ALL",
+      "label": "Invoice payments",
+      "export": "Payments of those invoices: INVOICE_PAYMENT_ID, INVOICE_ID, CHECK_ID, AMOUNT, CREATION_DATE and REVERSAL_FLAG. Dates with their time, as YYYY-MM-DD HH:MM:SS.",
+      "required": [
+        "INVOICE_PAYMENT_ID",
+        "INVOICE_ID",
+        "CHECK_ID",
+        "CREATION_DATE",
+        "REVERSAL_FLAG"
+      ],
+      "fields": [
+        "AMOUNT",
+        "ACCOUNTING_DATE"
+      ],
+      "date_field": "CREATION_DATE",
+      "optional": true
+    }
+  ],
+  "unique": [
+    {
+      "id": "one-po-headers-all",
+      "table": "PO_HEADERS_ALL",
+      "columns": [
+        "PO_HEADER_ID"
+      ],
+      "label": "purchase orders listed once"
+    },
+    {
+      "id": "one-po-lines-all",
+      "table": "PO_LINES_ALL",
+      "columns": [
+        "PO_LINE_ID"
+      ],
+      "label": "purchase order lines listed once"
+    },
+    {
+      "id": "one-po-action-history",
+      "table": "PO_ACTION_HISTORY",
+      "columns": [
+        "OBJECT_ID",
+        "OBJECT_TYPE_CODE",
+        "SEQUENCE_NUM"
+      ],
+      "label": "approval history listed once"
+    },
+    {
+      "id": "one-po-requisition-lines-all",
+      "table": "PO_REQUISITION_LINES_ALL",
+      "columns": [
+        "REQUISITION_LINE_ID"
+      ],
+      "label": "requisition lines listed once"
+    },
+    {
+      "id": "one-po-line-locations-all",
+      "table": "PO_LINE_LOCATIONS_ALL",
+      "columns": [
+        "LINE_LOCATION_ID"
+      ],
+      "label": "order shipments listed once"
+    },
+    {
+      "id": "one-rcv-transactions",
+      "table": "RCV_TRANSACTIONS",
+      "columns": [
+        "TRANSACTION_ID"
+      ],
+      "label": "receiving transactions listed once"
+    },
+    {
+      "id": "one-ap-invoices-all",
+      "table": "AP_INVOICES_ALL",
+      "columns": [
+        "INVOICE_ID"
+      ],
+      "label": "supplier invoices listed once"
+    },
+    {
+      "id": "one-ap-invoice-lines-all",
+      "table": "AP_INVOICE_LINES_ALL",
+      "columns": [
+        "INVOICE_ID",
+        "LINE_NUMBER"
+      ],
+      "label": "supplier invoice lines listed once"
+    },
+    {
+      "id": "one-ap-holds-all",
+      "table": "AP_HOLDS_ALL",
+      "columns": [
+        "HOLD_ID"
+      ],
+      "label": "invoice holds listed once"
+    },
+    {
+      "id": "one-ap-invoice-payments-all",
+      "table": "AP_INVOICE_PAYMENTS_ALL",
+      "columns": [
+        "INVOICE_PAYMENT_ID"
+      ],
+      "label": "invoice payments listed once"
+    }
+  ],
+  "checks": [
+    {
+      "id": "lines-have-orders",
+      "label": "order lines whose order is in the export",
+      "from": {
+        "table": "PO_LINES_ALL",
+        "columns": [
+          "PO_HEADER_ID"
+        ]
+      },
+      "to": {
+        "table": "PO_HEADERS_ALL",
+        "columns": [
+          "PO_HEADER_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "approvals-have-orders",
+      "label": "approval actions whose order is in the export",
+      "from": {
+        "table": "PO_ACTION_HISTORY",
+        "columns": [
+          "OBJECT_ID"
+        ],
+        "where": [
+          {
+            "column": "OBJECT_TYPE_CODE",
+            "in": [
+              "PO"
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PO_HEADERS_ALL",
+        "columns": [
+          "PO_HEADER_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "receipts-have-lines",
+      "label": "receiving transactions whose order line is in the export",
+      "from": {
+        "table": "RCV_TRANSACTIONS",
+        "columns": [
+          "PO_LINE_ID"
+        ]
+      },
+      "to": {
+        "table": "PO_LINES_ALL",
+        "columns": [
+          "PO_LINE_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-invoices",
+      "label": "invoice lines whose invoice is in the export",
+      "from": {
+        "table": "AP_INVOICE_LINES_ALL",
+        "columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "to": {
+        "table": "AP_INVOICES_ALL",
+        "columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "invoice-lines-have-order-lines",
+      "label": "invoice lines matched to an order line in the export",
+      "from": {
+        "table": "AP_INVOICE_LINES_ALL",
+        "columns": [
+          "PO_LINE_ID"
+        ],
+        "where": [
+          {
+            "column": "PO_LINE_ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PO_LINES_ALL",
+        "columns": [
+          "PO_LINE_ID"
+        ]
+      },
+      "expect": "most",
+      "threshold": 0.95,
+      "question": {
+        "text": "{missing} of {total} invoice lines are matched to orders created before the period. Keep them without their order, or re-export with the older orders?",
+        "options": [
+          {
+            "id": "keep",
+            "label": "Keep them without their order"
+          },
+          {
+            "id": "re-export",
+            "label": "Re-export with the older orders"
+          }
+        ],
+        "recommended": "keep"
+      }
+    },
+    {
+      "id": "holds-have-invoices",
+      "label": "holds whose invoice is in the export",
+      "from": {
+        "table": "AP_HOLDS_ALL",
+        "columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "to": {
+        "table": "AP_INVOICES_ALL",
+        "columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "payments-have-invoices",
+      "label": "payments whose invoice is in the export",
+      "from": {
+        "table": "AP_INVOICE_PAYMENTS_ALL",
+        "columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "to": {
+        "table": "AP_INVOICES_ALL",
+        "columns": [
+          "INVOICE_ID"
+        ]
+      },
+      "expect": "all"
+    },
+    {
+      "id": "requisitions-have-shipments",
+      "label": "requisition lines whose order shipment is in the export",
+      "from": {
+        "table": "PO_REQUISITION_LINES_ALL",
+        "columns": [
+          "LINE_LOCATION_ID"
+        ],
+        "where": [
+          {
+            "column": "LINE_LOCATION_ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ]
+      },
+      "to": {
+        "table": "PO_LINE_LOCATIONS_ALL",
+        "columns": [
+          "LINE_LOCATION_ID"
+        ]
+      },
+      "expect": "all"
+    }
+  ],
+  "recipe": {
+    "version": 1,
+    "format": "ocel",
+    "objects": [
+      {
+        "id": "ora_po",
+        "input": "PO_HEADERS_ALL",
+        "namespace": "oracle",
+        "object_type": "purchase order",
+        "key": [
+          "PO_HEADER_ID"
+        ],
+        "attributes": [
+          {
+            "column": "SEGMENT1",
+            "name": "order number"
+          },
+          {
+            "column": "VENDOR_ID",
+            "name": "supplier"
+          },
+          {
+            "column": "ORG_ID",
+            "name": "operating unit"
+          }
+        ]
+      },
+      {
+        "id": "ora_po_line",
+        "input": "PO_LINES_ALL",
+        "namespace": "oracle",
+        "object_type": "purchase order line",
+        "key": [
+          "PO_LINE_ID"
+        ],
+        "attributes": [
+          {
+            "column": "LINE_NUM",
+            "name": "line"
+          },
+          {
+            "column": "ITEM_ID",
+            "name": "item"
+          },
+          {
+            "column": "QUANTITY",
+            "name": "quantity"
+          },
+          {
+            "column": "UNIT_PRICE",
+            "name": "unit price"
+          }
+        ]
+      },
+      {
+        "id": "ora_invoice",
+        "input": "AP_INVOICES_ALL",
+        "namespace": "oracle",
+        "object_type": "supplier invoice",
+        "key": [
+          "INVOICE_ID"
+        ],
+        "attributes": [
+          {
+            "column": "INVOICE_NUM",
+            "name": "invoice number"
+          },
+          {
+            "column": "INVOICE_AMOUNT",
+            "name": "amount"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "id": "ora_requisition_created",
+        "input": "PO_REQUISITION_LINES_ALL",
+        "namespace": "oracle",
+        "key": [
+          "REQUISITION_LINE_ID"
+        ],
+        "where": [
+          {
+            "column": "LINE_LOCATION_ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Create requisition"
+        },
+        "lookup": {
+          "input": "PO_LINE_LOCATIONS_ALL",
+          "key": [
+            "LINE_LOCATION_ID"
+          ],
+          "matching": [
+            "LINE_LOCATION_ID"
+          ],
+          "columns": [
+            "PO_LINE_ID"
+          ]
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "objects": [
+          {
+            "object": "ora_po_line",
+            "columns": [
+              "PO_LINE_ID"
+            ],
+            "qualifier": "purchase order line",
+            "optional": true,
+            "allow_unmatched": true
+          }
+        ]
+      },
+      {
+        "id": "ora_po_created",
+        "input": "PO_HEADERS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "PO_HEADER_ID"
+        ],
+        "activity": {
+          "value": "Create purchase order"
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "CREATED_BY",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po",
+            "columns": [
+              "PO_HEADER_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_po_submitted",
+        "input": "PO_ACTION_HISTORY",
+        "namespace": "oracle",
+        "key": [
+          "OBJECT_ID",
+          "OBJECT_TYPE_CODE",
+          "SEQUENCE_NUM"
+        ],
+        "where": [
+          {
+            "column": "OBJECT_TYPE_CODE",
+            "in": [
+              "PO"
+            ]
+          },
+          {
+            "column": "ACTION_CODE",
+            "in": [
+              "SUBMIT"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Submit purchase order for approval"
+        },
+        "timestamp": {
+          "date": "ACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "EMPLOYEE_ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po",
+            "columns": [
+              "OBJECT_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_po_forwarded",
+        "input": "PO_ACTION_HISTORY",
+        "namespace": "oracle",
+        "key": [
+          "OBJECT_ID",
+          "OBJECT_TYPE_CODE",
+          "SEQUENCE_NUM"
+        ],
+        "where": [
+          {
+            "column": "OBJECT_TYPE_CODE",
+            "in": [
+              "PO"
+            ]
+          },
+          {
+            "column": "ACTION_CODE",
+            "in": [
+              "FORWARD"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Forward purchase order"
+        },
+        "timestamp": {
+          "date": "ACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "EMPLOYEE_ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po",
+            "columns": [
+              "OBJECT_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_po_approved",
+        "input": "PO_ACTION_HISTORY",
+        "namespace": "oracle",
+        "key": [
+          "OBJECT_ID",
+          "OBJECT_TYPE_CODE",
+          "SEQUENCE_NUM"
+        ],
+        "where": [
+          {
+            "column": "OBJECT_TYPE_CODE",
+            "in": [
+              "PO"
+            ]
+          },
+          {
+            "column": "ACTION_CODE",
+            "in": [
+              "APPROVE"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Approve purchase order"
+        },
+        "timestamp": {
+          "date": "ACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "EMPLOYEE_ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po",
+            "columns": [
+              "OBJECT_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_po_rejected",
+        "input": "PO_ACTION_HISTORY",
+        "namespace": "oracle",
+        "key": [
+          "OBJECT_ID",
+          "OBJECT_TYPE_CODE",
+          "SEQUENCE_NUM"
+        ],
+        "where": [
+          {
+            "column": "OBJECT_TYPE_CODE",
+            "in": [
+              "PO"
+            ]
+          },
+          {
+            "column": "ACTION_CODE",
+            "in": [
+              "REJECT"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Reject purchase order"
+        },
+        "timestamp": {
+          "date": "ACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "EMPLOYEE_ID",
+            "name": "resource"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po",
+            "columns": [
+              "OBJECT_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_po_line_cancelled",
+        "input": "PO_LINES_ALL",
+        "namespace": "oracle",
+        "key": [
+          "PO_LINE_ID"
+        ],
+        "where": [
+          {
+            "column": "CANCEL_FLAG",
+            "in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Cancel order line"
+        },
+        "timestamp": {
+          "date": "CANCEL_DATE",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ora_po_line",
+            "columns": [
+              "PO_LINE_ID"
+            ],
+            "qualifier": "purchase order line"
+          }
+        ]
+      },
+      {
+        "id": "ora_goods_received",
+        "input": "RCV_TRANSACTIONS",
+        "namespace": "oracle",
+        "key": [
+          "TRANSACTION_ID"
+        ],
+        "where": [
+          {
+            "column": "TRANSACTION_TYPE",
+            "in": [
+              "RECEIVE"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Receive goods"
+        },
+        "timestamp": {
+          "date": "TRANSACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "QUANTITY",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po_line",
+            "columns": [
+              "PO_LINE_ID"
+            ],
+            "qualifier": "purchase order line"
+          },
+          {
+            "object": "ora_po",
+            "columns": [
+              "PO_HEADER_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_goods_delivered",
+        "input": "RCV_TRANSACTIONS",
+        "namespace": "oracle",
+        "key": [
+          "TRANSACTION_ID"
+        ],
+        "where": [
+          {
+            "column": "TRANSACTION_TYPE",
+            "in": [
+              "DELIVER"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Deliver goods to requester"
+        },
+        "timestamp": {
+          "date": "TRANSACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "QUANTITY",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po_line",
+            "columns": [
+              "PO_LINE_ID"
+            ],
+            "qualifier": "purchase order line"
+          },
+          {
+            "object": "ora_po",
+            "columns": [
+              "PO_HEADER_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_goods_returned",
+        "input": "RCV_TRANSACTIONS",
+        "namespace": "oracle",
+        "key": [
+          "TRANSACTION_ID"
+        ],
+        "where": [
+          {
+            "column": "TRANSACTION_TYPE",
+            "in": [
+              "RETURN TO VENDOR"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Return goods to supplier"
+        },
+        "timestamp": {
+          "date": "TRANSACTION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "QUANTITY",
+            "name": "quantity"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_po_line",
+            "columns": [
+              "PO_LINE_ID"
+            ],
+            "qualifier": "purchase order line"
+          },
+          {
+            "object": "ora_po",
+            "columns": [
+              "PO_HEADER_ID"
+            ],
+            "qualifier": "purchase order"
+          }
+        ]
+      },
+      {
+        "id": "ora_invoice_created",
+        "input": "AP_INVOICES_ALL",
+        "namespace": "oracle",
+        "key": [
+          "INVOICE_ID"
+        ],
+        "activity": {
+          "value": "Record supplier invoice"
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "INVOICE_AMOUNT",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_invoice",
+            "columns": [
+              "INVOICE_ID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      },
+      {
+        "id": "ora_invoice_cancelled",
+        "input": "AP_INVOICES_ALL",
+        "namespace": "oracle",
+        "key": [
+          "INVOICE_ID"
+        ],
+        "activity": {
+          "value": "Cancel supplier invoice"
+        },
+        "timestamp": {
+          "date": "CANCELLED_DATE",
+          "offset": "{setting:offset}"
+        },
+        "optional_timestamp": true,
+        "objects": [
+          {
+            "object": "ora_invoice",
+            "columns": [
+              "INVOICE_ID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      },
+      {
+        "id": "ora_invoice_held",
+        "input": "AP_HOLDS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "HOLD_ID"
+        ],
+        "activity": {
+          "value": "Place invoice on hold"
+        },
+        "timestamp": {
+          "date": "HOLD_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "HOLD_LOOKUP_CODE",
+            "name": "hold"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_invoice",
+            "columns": [
+              "INVOICE_ID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      },
+      {
+        "id": "ora_hold_released",
+        "input": "AP_HOLDS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "HOLD_ID"
+        ],
+        "where": [
+          {
+            "column": "RELEASE_LOOKUP_CODE",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Release invoice hold"
+        },
+        "timestamp": {
+          "date": "LAST_UPDATE_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "HOLD_LOOKUP_CODE",
+            "name": "hold"
+          },
+          {
+            "column": "RELEASE_LOOKUP_CODE",
+            "name": "release"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_invoice",
+            "columns": [
+              "INVOICE_ID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      },
+      {
+        "id": "ora_invoice_paid",
+        "input": "AP_INVOICE_PAYMENTS_ALL",
+        "namespace": "oracle",
+        "key": [
+          "INVOICE_PAYMENT_ID"
+        ],
+        "where": [
+          {
+            "column": "REVERSAL_FLAG",
+            "not_in": [
+              "Y"
+            ]
+          }
+        ],
+        "activity": {
+          "value": "Pay supplier invoice"
+        },
+        "timestamp": {
+          "date": "CREATION_DATE",
+          "offset": "{setting:offset}"
+        },
+        "attributes": [
+          {
+            "column": "AMOUNT",
+            "name": "amount"
+          }
+        ],
+        "objects": [
+          {
+            "object": "ora_invoice",
+            "columns": [
+              "INVOICE_ID"
+            ],
+            "qualifier": "supplier invoice"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "id": "ora_po_has_line",
+        "input": "PO_LINES_ALL",
+        "source": {
+          "object": "ora_po",
+          "columns": [
+            "PO_HEADER_ID"
+          ],
+          "qualifier": "purchase order"
+        },
+        "target": {
+          "object": "ora_po_line",
+          "columns": [
+            "PO_LINE_ID"
+          ],
+          "qualifier": "purchase order line"
+        }
+      },
+      {
+        "id": "ora_invoice_for_line",
+        "input": "AP_INVOICE_LINES_ALL",
+        "where": [
+          {
+            "column": "LINE_TYPE_LOOKUP_CODE",
+            "in": [
+              "ITEM"
+            ]
+          },
+          {
+            "column": "PO_LINE_ID",
+            "not_in": [
+              ""
+            ]
+          }
+        ],
+        "source": {
+          "object": "ora_invoice",
+          "columns": [
+            "INVOICE_ID"
+          ],
+          "qualifier": "supplier invoice"
+        },
+        "target": {
+          "object": "ora_po_line",
+          "columns": [
+            "PO_LINE_ID"
+          ],
+          "qualifier": "purchase order line",
+          "allow_unmatched": true
+        }
+      }
+    ],
+    "carried_links": [
+      {
+        "id": "ora_po_created_lines",
+        "event": "ora_po_created",
+        "through": "ora_po",
+        "relationship": "ora_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_po_submitted_lines",
+        "event": "ora_po_submitted",
+        "through": "ora_po",
+        "relationship": "ora_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_po_approved_lines",
+        "event": "ora_po_approved",
+        "through": "ora_po",
+        "relationship": "ora_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_po_rejected_lines",
+        "event": "ora_po_rejected",
+        "through": "ora_po",
+        "relationship": "ora_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_po_forwarded_lines",
+        "event": "ora_po_forwarded",
+        "through": "ora_po",
+        "relationship": "ora_po_has_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_invoice_created_lines",
+        "event": "ora_invoice_created",
+        "through": "ora_invoice",
+        "relationship": "ora_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_invoice_cancelled_lines",
+        "event": "ora_invoice_cancelled",
+        "through": "ora_invoice",
+        "relationship": "ora_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_invoice_held_lines",
+        "event": "ora_invoice_held",
+        "through": "ora_invoice",
+        "relationship": "ora_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_hold_released_lines",
+        "event": "ora_hold_released",
+        "through": "ora_invoice",
+        "relationship": "ora_invoice_for_line",
+        "qualifier": "purchase order line"
+      },
+      {
+        "id": "ora_invoice_paid_lines",
+        "event": "ora_invoice_paid",
+        "through": "ora_invoice",
+        "relationship": "ora_invoice_for_line",
+        "qualifier": "purchase order line"
+      }
+    ]
+  },
+  "variants": [
+    {
+      "id": "accounts-payable",
+      "name": "Accounts payable: invoice to payment",
+      "case_object_type": "supplier invoice",
+      "tables": [
+        "AP_INVOICES_ALL",
+        "AP_INVOICE_LINES_ALL",
+        "AP_HOLDS_ALL",
+        "AP_INVOICE_PAYMENTS_ALL"
+      ]
+    }
+  ],
+  "link_targets": [
+    {
+      "id": "purchase_order",
+      "label": "Oracle purchase order number",
+      "object": "ora_po",
+      "table": "PO_HEADERS_ALL",
+      "key": [
+        "SEGMENT1"
+      ],
+      "example": "100234",
+      "carry": [
+        "ora_po_has_line"
+      ]
+    }
+  ]
+}
