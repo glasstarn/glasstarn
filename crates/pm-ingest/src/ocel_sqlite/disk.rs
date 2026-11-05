@@ -228,9 +228,19 @@ impl DiskLog {
         ));
         let guard = Scratch(building.clone());
         drop(Self::build(path, &building)?);
-        std::fs::rename(&building, &file).map_err(|error| {
-            OcelSqliteError::Data(format!("cannot keep the scratch copy: {error}"))
-        })?;
+        if let Err(error) = std::fs::rename(&building, &file) {
+            // Another glasstarn built the same copy at the same moment and is
+            // already using it. Windows will not replace a file that is open,
+            // so use that copy and drop ours (the guard removes it).
+            if file.is_file()
+                && let Ok(log) = Self::reopen(&file)
+            {
+                return Ok(log);
+            }
+            return Err(OcelSqliteError::Data(format!(
+                "cannot keep the scratch copy: {error}"
+            )));
+        }
         drop(guard);
         evict(cache, &file);
         Self::reopen(&file)
